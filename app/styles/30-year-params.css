@@ -1,0 +1,163 @@
+/* ============================================================================
+   30-years-params.css — Paramètres de calcul (année)
+   ----------------------------------------------------------------------------
+   Contient uniquement :
+   - #year-params (conteneur rendu par JS)
+   - lignes de paramètres (kv / rule)
+   - explications + récapitulatif
+   ========================================================================== */
+
+/* Le conteneur JS reste "nu" : pas de sous-carte supplémentaire */
+#year-params{
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.year-params-title{
+  margin: 0 0 12px 0;
+  color: #111;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.year-param-row{
+  margin: 8px 0;
+}
+
+.year-param-row.is-kv{
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  padding: 6px 0;
+  margin: 0;
+}
+
+.year-param-label{
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.year-param-value{
+  font-weight: 800;
+  letter-spacing: .2px;
+  white-space: nowrap;
+}
+
+.year-param-sub{
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+}
+
+.year-param-sub .hint{
+  margin: 0;
+  font-size: 12px;
+}
+
+.year-param-row.is-rule{
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: var(--card-2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.year-rule-title{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 10px;
+}
+
+.year-rule-formula{
+  margin-top: 6px;
+}
+
+.year-rule-formula .hint{
+  margin: 0;
+  font-size: 12px;
+}
+
+.year-param-row.is-rule code{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid var(--border);
+}
+
+.inline-label{
+  font-weight: 600;
+  margin-right: 6px;
+}
+
+/* --- Explication + récap (paramètres de calcul) -------------------------- */
+
+.calc-explain{
+  margin-top: 10px;
+  padding: 12px 12px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.calc-explain p{
+  margin: 0 0 10px 0;
+  font-size: 13px;
+  color: #111;
+}
+
+.calc-explain p:last-child{
+  margin-bottom: 0;
+}
+
+.calc-explain a{
+  color: #1d4ed8;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.calc-explain code{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 8px;
+  background: var(--card-2);
+  border: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.year-params-subtitle{
+  margin: 14px 0 8px 0;
+  font-weight: 800;
+  font-size: 13px;
+  color: #111;
+}
+
+.calc-recap{
+  padding: 10px 12px;
+  background: var(--card-2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.calc-recap-list{
+  margin: 0;
+  padding-left: 18px;
+}
+
+.calc-recap-list li{
+  margin: 6px 0;
+  font-size: 13px;
+}
+
+.calc-recap-list li.hint{
+  margin-top: 8px;
+  font-size: 12px;
+}

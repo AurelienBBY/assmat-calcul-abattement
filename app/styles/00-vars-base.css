@@ -1,0 +1,91 @@
+/* ============================================================================
+   00-vars-base.css — Variables + base typographie
+   ----------------------------------------------------------------------------
+   Contenu volontairement minimal :
+   - Variables CSS (couleurs, rayons, ombres)
+   - Reset léger + styles globaux (typo, titres, textes)
+   ========================================================================== */
+
+:root{
+  --maxw: 1100px;
+  --radius: 25px;
+  --border: #e6e6e0;
+  --muted: #6b7280;
+  --bg: #ffffff;           /* neutral white */
+  --card: #f9f9f7;         /* blanc cassé */
+  --card-2: #f2f2ef;       /* léger contraste */
+  --shadow: 0 12px 28px rgba(0,0,0,.28);
+}
+
+*{ box-sizing: border-box; }
+
+html, body{
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  line-height: 1.35;
+  color: #111;
+  background: var(--bg);
+}
+
+h1{
+  margin: 0 0 10px 0;
+  font-size: 22px;
+}
+
+h2{
+  margin: 0 0 12px 0;
+  font-size: 16px;
+}
+
+.intro{
+  margin: 0;
+  color: var(--muted);
+}
+
+.hint{
+  margin: 10px 0 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.warn{ font-weight: 700; }
+
+.footer-note,
+.footer-date{
+  margin: 6px 0 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+label{ font-weight: 600; }
+
+select,
+input[type="number"],
+input[type="time"]{
+  font: inherit;
+  padding: 7px 10px;
+  border: 1px solid #d6d6d0;
+  border-radius: 12px;
+  background: #fff;
+  color: #111;
+}
+
+input[type="time"]{
+  padding: 6px 8px;
+  min-width: 128px;
+}
+
+/* --- Utilitaires accessibilité ------------------------------------------ */
+
+.sr-only{
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}

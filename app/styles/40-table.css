@@ -1,0 +1,104 @@
+/* ============================================================================
+   40-table.css — Tableau mensuel (détail journalier)
+   ----------------------------------------------------------------------------
+   Contient uniquement :
+   - titres liés au tableau
+   - table (.abmat-table)
+   - séparateurs semaine + total semaine
+   - helpers colonnes + champs horaires
+   ========================================================================== */
+
+.month-heading{
+  margin: 0 0 10px 0;
+  color: var(--muted);
+}
+
+.abmat-table{
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.abmat-table thead th{
+  background: var(--card-2);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 8px;
+  font-size: 13px;
+  text-align: left;
+  vertical-align: bottom;
+  white-space: nowrap;
+}
+
+.abmat-table .th-sub{
+  font-weight: 500;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.abmat-table tbody td{
+  border-top: 1px solid var(--border);
+  padding: 10px 8px;
+  vertical-align: top;
+  font-size: 13px;
+}
+
+/* Séparateur de semaine */
+.week-sep td{
+  background: #e8edff;
+  font-weight: 800;
+  border-top: 2px solid #c7d2fe;
+}
+
+/* Ligne total semaine */
+.week-total td{
+  background: var(--card-2);
+  font-weight: 800;
+  text-align: right;
+  padding-right: 40px;
+}
+
+/* Colonnes / sous contenus */
+.col-date strong{
+  display: inline-block;
+  margin-bottom: 4px;
+}
+
+.date-iso{
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.time-pair{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sep{
+  color: var(--muted);
+}
+
+.col-hours,
+.col-abatt,
+.col-total{
+  text-align: center;
+  white-space: nowrap;
+}
+
+.col-total strong{
+  font-size: 14px;
+}
+
+@media (max-width: 720px){
+  .abmat-table thead th,
+  .abmat-table tbody td{
+    padding: 8px 6px;
+    font-size: 12px;
+  }
+
+  .week-total td{
+    padding-right: 14px;
+  }
+}

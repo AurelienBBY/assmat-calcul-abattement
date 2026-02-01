@@ -1,0 +1,66 @@
+/* ============================================================================
+   10-layout-cards.css — Layout commun + "cartes"
+   ----------------------------------------------------------------------------
+   Contient uniquement :
+   - largeur max + centrage
+   - padding externe commun
+   - styles "carte" (background, radius, shadow)
+   ========================================================================== */
+
+/* Conteneurs principaux : même largeur et mêmes marges */
+header,
+section,
+main,
+footer{
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* Petit alignement interne du header (titre + intro) */
+header h1,
+header .intro{
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+/* "Carte" header */
+header{
+  margin: 18px auto;
+  padding: 18px 16px;
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  color: #111;
+}
+
+/* "Cartes" standard */
+section,
+main,
+footer{
+  margin: 14px auto;
+  padding: 18px 16px;
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  color: #111;
+}
+
+/* Padding interne commun (contenu des cartes)
+   - s’applique à tous les enfants directs des cartes
+   - évite de répéter des paddings par section
+*/
+:where(header, section, main, footer) > *{
+  padding-left: 18px;
+  padding-right: 18px;
+}
+
+/* Exceptions : éléments pleine largeur */
+:where(header, section, main, footer) > .no-inner-pad{
+  padding-left: 0;
+  padding-right: 0;
+}
+
+footer{
+  padding-bottom: 28px;
+}

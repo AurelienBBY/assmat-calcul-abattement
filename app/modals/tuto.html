@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Calcul de l’abattement – Assistante maternelle</title>
+
+  <!--
+    Feuille de style principale.
+    Contient la mise en page écran + les règles d’impression (PDF).
+  -->
+  <link rel="stylesheet" href="app/styles/00-vars-base.css" />
+  <link rel="stylesheet" href="app/styles/10-layout-cards.css" />
+
+  <link rel="stylesheet" href="app/styles/20-period.css" />
+  <link rel="stylesheet" href="app/styles/30-year-params.css" />
+  <link rel="stylesheet" href="app/styles/40-table.css" />
+  <link rel="stylesheet" href="app/styles/50-actions.css" />
+
+  <link rel="stylesheet" href="app/styles/60-tuto.css" />
+  <link rel="stylesheet" href="app/styles/70-modal.css" />
+
+  <link rel="stylesheet" href="app/styles/90-print.css" />
+
+  <!--
+    Empêche le zoom automatique sur mobile (lisible mais usage prévu surtout sur ordinateur).
+  -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+<body>
+
+  <!-- =========================================================
+       EN-TÊTE
+       ========================================================= -->
+  <header>
+    <h1>Calcul de l’abattement fiscal – Assistante maternelle</h1>
+
+    <p class="intro">
+      Outil de calcul pour la déclaration des revenus avec abattement forfaitaire.
+    </p>
+  </header>
+
+  <!-- =========================================================
+     TUTO (APERÇU + MODALE DÉTAILLÉE)
+     ========================================================= -->
+  <section id="tuto-section" class="no-print">
+    <h2>Comment fonctionne cet outil ?</h2>
+
+    <p class="hint">
+      Cet outil vous aide à calculer l’<strong>abattement fiscal des assistantes maternelles</strong> pour préparer votre déclaration.
+    </p>
+
+    <p>
+      Le principe est simple : vous remplissez vos <strong>jours de garde mois par mois</strong>, et l’outil calcule automatiquement
+      l’abattement correspondant (par jour et par enfant), puis affiche un récapitulatif.
+    </p>
+
+    <ol class="tuto-steps">
+      <li><strong>Choisissez la période</strong> à compléter (année et mois).</li>
+      <li><strong>Renseignez vos jours</strong> : heures de présence, nombre d’enfants, indemnités si nécessaire.</li>
+      <li><strong>Vérifiez le récapitulatif</strong> (abattement total + montant à déclarer).</li>
+      <li><strong>Sauvegardez</strong> ou <strong>imprimez</strong> pour archiver le mois.</li>
+    </ol>
+
+    <p class="hint">
+      💡 Astuce : exportez le mois une fois terminé, puis importez-le plus tard si vous devez le modifier ou le vérifier.
+    </p>
+
+    <div class="tuto-actions">
+      <button type="button" class="btn-secondary" data-open-tuto>
+        Voir le tutoriel détaillé
+      </button>
+    </div>
+  </section>
+
+    <!-- =========================================================
+       DONNÉES (SAUVEGARDE / IMPORT)
+    ========================================================= -->
+  <section id="data-section" class="no-print">
+    <h2>Données</h2>
+
+    <p class="hint">
+      Importez un fichier pour reprendre un mois, ou sauvegardez vos données pour les réutiliser plus tard.
+    </p>
+
+    <div id="data-actions">
+      <!-- Généré dynamiquement par app.js (export / import) -->
+    </div>
+
+    <p class="hint">
+      💡 Conseil : exportez le mois une fois terminé pour conserver
+      une sauvegarde.
+    </p>
+  </section>
+
+    <!-- =========================================================
+       PARAMÈTRES DE CALCUL (ANNÉE)
+       ========================================================= -->
+  <section id="year-params-section">
+    <h2>Paramètres de calcul — déclaration avec abattement</h2>
+
+    <!--
+      Cette section affiche :
+      - le SMIC horaire brut retenu pour l’année
+      - le coefficient légal (3 × SMIC)
+      - le forfait journalier par enfant
+      Elle est principalement informative mais peut être modifiable
+      si le SMIC de l’année n’est pas encore connu.
+    -->
+    <div id="year-params">
+      <!-- Généré dynamiquement par app.js -->
+    </div>
+  </section>
+
+  <!-- =========================================================
+       SÉLECTION DE LA PÉRIODE (MOIS / ANNÉE)
+       ========================================================= -->
+  <section id="period-section">
+    <h2>Période de calcul</h2>
+    <p class="hint">
+    Choisissez l’année et le mois à afficher.
+    </p>
+
+    <!--
+      Sélecteurs du mois et de l’année.
+      Le JavaScript se chargera de générer automatiquement
+      les jours ouvrés du mois sélectionné.
+    -->
+    <div id="period-selector">
+      <!-- Généré dynamiquement par app.js -->
+    </div>
+  </section>
+
+  <!-- =========================================================
+       TABLEAU DES JOURS DU MOIS
+       ========================================================= -->
+  <main>
+    <h2>Détail journalier</h2>
+
+    <!--
+      Tableau principal :
+      - une ligne = un jour ouvré
+      - jusqu’à 3 enfants par jour
+      - calcul automatique des heures et de l’abattement
+    -->
+    <div id="month-table">
+      <!-- Généré dynamiquement par app.js -->
+    </div>
+  </main>
+
+  <!-- =========================================================
+       RÉCAPITULATIF MENSUEL & RAPPROCHEMENT PAIE
+       ========================================================= -->
+  <section id="summary-section">
+    <h2>Récapitulatif</h2>
+
+    <!--
+      Cette zone contient :
+      - total de l’abattement du mois
+      - saisie du revenu net imposable
+      - saisie des indemnités de frais (IRF)
+      - calcul du revenu imposable final
+    -->
+    <div id="summary">
+      <!-- Généré dynamiquement par app.js -->
+    </div>
+  </section>
+
+    <!-- =========================================================
+       IMPRESSION
+       ========================================================= -->
+  <section id="print-section" class="no-print">
+    <h2>Impression</h2>
+
+    <p class="hint">
+      Générez une version imprimable ou un PDF à partir des données actuellement affichées.
+    </p>
+
+    <div id="print-actions">
+      <!-- Généré dynamiquement par app.js (impression / PDF) -->
+    </div>
+  </section>
+
+  <!-- =========================================================
+       PIED DE PAGE / MENTIONS
+       ========================================================= -->
+  <footer>
+    <p class="footer-note">
+      Calcul basé sur le SMIC horaire brut au 1er janvier de l’année considérée
+      – Article 80 sexies du Code général des impôts.
+    </p>
+
+    <p class="footer-date">
+      Document généré le <span id="generated-date"></span>.
+    </p>
+  </footer>
+
+  <div class="modal" id="tuto-modal" aria-hidden="true">
+  <div class="modal__overlay" data-close-tuto></div>
+
+  <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="tuto-modal-title" tabindex="-1">
+    <header class="modal__header">
+      <h2 id="tuto-modal-title">Tutoriel détaillé</h2>
+      <button type="button" class="modal__close" data-close-tuto aria-label="Fermer">✕</button>
+    </header>
+
+    <div class="modal__content">
+      <h3>1) Choisir la période</h3>
+      <ul>
+        <li>Sélectionnez l’année et le mois.</li>
+        <li>Le tableau se met à jour automatiquement.</li>
+      </ul>
+
+      <h3>2) Remplir les jours</h3>
+      <ul>
+        <li>Pour chaque jour travaillé, indiquez les heures (et les enfants concernés si applicable).</li>
+        <li>Renseignez les indemnités / frais si ton outil les prévoit.</li>
+      </ul>
+
+      <h3>3) Lire le récapitulatif</h3>
+      <ul>
+        <li>Vérifiez le total mensuel calculé.</li>
+        <li>Comparez avec la fiche de paie si besoin.</li>
+      </ul>
+
+      <h3>4) Sauvegarde / Import</h3>
+      <ul>
+        <li><strong>Exporter</strong> : enregistre un fichier JSON sur ton ordinateur.</li>
+        <li><strong>Importer</strong> : recharge un fichier exporté pour reprendre un mois.</li>
+      </ul>
+
+      <h3>5) Impression / PDF</h3>
+      <ul>
+        <li>Cliquez sur <strong>Imprimer / PDF</strong> pour générer une version imprimable.</li>
+        <li>Dans la fenêtre d’impression : choisissez “Enregistrer en PDF”.</li>
+      </ul>
+    </div>
+
+    <footer class="modal__footer">
+      <button type="button" class="btn-secondary" data-close-tuto>Fermer</button>
+    </footer>
+  </div>
+</div>
+
+  <!-- =========================================================
+       SCRIPTS
+       ========================================================= -->
+
+  <!--
+    Configuration légale :
+    - SMIC horaire par année
+    - coefficient légal
+  -->
+  <script src="app/config.js"></script>
+
+  <!--
+    Modules (ordre important) :
+    - utils   : helpers + locale FR
+    - calc    : calculs métier (sans DOM)
+    - storage : localStorage + export/import JSON
+    - render  : rendu DOM + événements
+    - app     : orchestration (bootstrap)
+  -->
+  <script src="app/lib/utils.js"></script>
+  <script src="app/lib/calc.js"></script>
+  <script src="app/lib/storage.js"></script>
+  <script src="app/lib/render.js"></script>
+  <script src="app/app.js"></script>
+
+</body>
+</html>
