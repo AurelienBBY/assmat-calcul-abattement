@@ -72,7 +72,18 @@
     </div>
   </section>
 
-    <!-- =========================================================
+  <!-- =========================================================
+       EXPLICATION (NON INTERACTIF)
+       ========================================================= -->
+  <section id="explain-section" class="no-print">
+    <h2>Explication — règles générales</h2>
+
+    <div id="explain">
+      <!-- Généré dynamiquement par app.js (renderExplain) -->
+    </div>
+  </section>
+
+  <!-- =========================================================
        DONNÉES (SAUVEGARDE / IMPORT)
     ========================================================= -->
   <section id="data-section" class="no-print">
@@ -92,24 +103,6 @@
     </p>
   </section>
 
-    <!-- =========================================================
-       PARAMÈTRES DE CALCUL (ANNÉE)
-       ========================================================= -->
-  <section id="year-params-section">
-    <h2>Paramètres de calcul — déclaration avec abattement</h2>
-
-    <!--
-      Cette section affiche :
-      - le SMIC horaire brut retenu pour l’année
-      - le coefficient légal (3 × SMIC)
-      - le forfait journalier par enfant
-      Elle est principalement informative mais peut être modifiable
-      si le SMIC de l’année n’est pas encore connu.
-    -->
-    <div id="year-params">
-      <!-- Généré dynamiquement par app.js -->
-    </div>
-  </section>
 
   <!-- =========================================================
        SÉLECTION DE LA PÉRIODE (MOIS / ANNÉE)
@@ -126,6 +119,22 @@
       les jours ouvrés du mois sélectionné.
     -->
     <div id="period-selector">
+      <!-- Généré dynamiquement par app.js -->
+    </div>
+  </section>
+
+  <!--
+      Cette section affiche :
+      - le SMIC horaire brut retenu pour l’année
+      - le coefficient légal (3 × SMIC)
+      - le forfait journalier par enfant
+      Elle est principalement informative mais peut être modifiable
+      si le SMIC de l’année n’est pas encore connu.
+    -->
+  <section id="year-params-section">
+    <h2>Paramètres de calcul — déclaration avec abattement</h2>
+
+    <div id="year-params">
       <!-- Généré dynamiquement par app.js -->
     </div>
   </section>
@@ -203,41 +212,15 @@
       <button type="button" class="modal__close" data-close-tuto aria-label="Fermer">✕</button>
     </header>
 
-    <div class="modal__content">
-      <h3>1) Choisir la période</h3>
-      <ul>
-        <li>Sélectionnez l’année et le mois.</li>
-        <li>Le tableau se met à jour automatiquement.</li>
-      </ul>
-
-      <h3>2) Remplir les jours</h3>
-      <ul>
-        <li>Pour chaque jour travaillé, indiquez les heures (et les enfants concernés si applicable).</li>
-        <li>Renseignez les indemnités / frais si ton outil les prévoit.</li>
-      </ul>
-
-      <h3>3) Lire le récapitulatif</h3>
-      <ul>
-        <li>Vérifiez le total mensuel calculé.</li>
-        <li>Comparez avec la fiche de paie si besoin.</li>
-      </ul>
-
-      <h3>4) Sauvegarde / Import</h3>
-      <ul>
-        <li><strong>Exporter</strong> : enregistre un fichier JSON sur ton ordinateur.</li>
-        <li><strong>Importer</strong> : recharge un fichier exporté pour reprendre un mois.</li>
-      </ul>
-
-      <h3>5) Impression / PDF</h3>
-      <ul>
-        <li>Cliquez sur <strong>Imprimer / PDF</strong> pour générer une version imprimable.</li>
-        <li>Dans la fenêtre d’impression : choisissez “Enregistrer en PDF”.</li>
-      </ul>
+    <div class="modal__content" id="tuto-modal-content">
+      <iframe
+        id="tuto-modal-frame"
+        class="tuto-embed"
+        title="Tutoriel détaillé"
+        src=""
+        loading="lazy"
+    ></iframe>
     </div>
-
-    <footer class="modal__footer">
-      <button type="button" class="btn-secondary" data-close-tuto>Fermer</button>
-    </footer>
   </div>
 </div>
 
@@ -264,7 +247,23 @@
   <script src="app/lib/calc.js"></script>
   <script src="app/lib/storage.js"></script>
   <script src="app/lib/render.js"></script>
+  <script src="app/lib/render/explain.js"></script>
+  <script src="app/lib/render/rules.js"></script>
   <script src="app/app.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const openBtn = document.querySelector('[data-open-tuto]');
+    const frame = document.getElementById('tuto-modal-frame');
+
+    if (!openBtn || !frame) return;
+
+    openBtn.addEventListener('click', () => {
+      if (frame.dataset.loaded) return;
+      frame.src = 'app/modals/tuto.html';
+      frame.dataset.loaded = '1';
+    });
+  });
+</script>
 
 </body>
 </html>

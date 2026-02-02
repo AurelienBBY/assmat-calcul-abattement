@@ -322,6 +322,7 @@ function getSmicInfo() {
 
   function renderAll(initialRender) {
     const periodEl = U.safeEl("period-selector");
+    const explainEl = U.safeEl("explain");
     const yearParamsEl = U.safeEl("year-params");
     const tableEl = U.safeEl("month-table");
     const summaryEl = U.safeEl("summary");
@@ -329,23 +330,35 @@ function getSmicInfo() {
     // 1) Sélecteurs (on peut re-render, c’est léger)
     R.renderPeriodSelector(periodEl, { year: state.year, monthIndex: state.monthIndex }, onPeriodChange);
 
+    // 1bis) Explication (non interactif)
+    if (explainEl && typeof R.renderExplain === "function") {
+    R.renderExplain(explainEl, {
+        year: state.year,
+        forfaitJour: computeForfaitJour()
+    });
+    }
+
     // 2) Paramètres année
     const coeff = getCoefficient();
     const forfaitJour = computeForfaitJour();
 
-    R.renderYearParams(
-      yearParamsEl,
-      {
+    const renderYearRulesFn = (typeof R.renderYearRules === "function")
+    ? R.renderYearRules
+    : R.renderYearParams;
+
+    renderYearRulesFn(
+    yearParamsEl,
+    {
         year: state.year,
         coefficient: coeff,
         forfaitJour,
         smicOverride: state.data ? state.data.smicOverride : null
-      },
-      () => {
+    },
+    () => {
         const info = getSmicInfo();
         return { smicFromConfig: info.smicFromConfig, smicEffective: info.smicEffective };
-      },
-      onSmicOverrideChange
+    },
+    onSmicOverrideChange
     );
 
     // 3) Tableau

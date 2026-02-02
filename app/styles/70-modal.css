@@ -64,3 +64,36 @@
   display: flex;
   justify-content: flex-end;
 }
+
+/* ----------------------------------------------------------------------------
+   Iframe tuto (chargée depuis app/modals/tuto.html)
+   - occupe toute la largeur
+   - hauteur confortable
+   - scroll interne si besoin
+   ------------------------------------------------------------------------- */
+
+.tuto-embed{
+  width: 100%;
+  border: 0;
+  display: block;
+  height: min(70vh, 720px);
+  overflow: auto;
+}
+
+/* Le contenu de la modale doit pouvoir laisser l’iframe respirer */
+.modal__content{
+  padding: 12px 0;
+}
+
+/* Sur petits écrans : réduire la marge et augmenter la place utile */
+@media (max-width: 720px){
+  .modal__panel{
+    width: calc(100% - 24px);
+    margin: 4vh auto;
+    max-height: 92vh;
+  }
+
+  .tuto-embed{
+    height: 72vh;
+  }
+}
