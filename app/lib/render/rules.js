@@ -1,4 +1,3 @@
-
 /* ============================================================================
    render/rules.js — Bloc "Règles appliquées" (année)
    ----------------------------------------------------------------------------
@@ -44,34 +43,6 @@
       ? state.smicOverride
       : null;
 
-    // Petit rappel contextuel
-    const subtitle = document.createElement("p");
-    subtitle.className = "hint";
-    subtitle.textContent = `Règles appliquées — année ${year}`;
-    container.appendChild(subtitle);
-
-    // Récap des règles (écran + PDF)
-    const recapTitle = document.createElement("p");
-    recapTitle.className = "year-params-subtitle";
-    recapTitle.textContent = `Récapitulatif des règles appliquées — année ${year}`;
-    container.appendChild(recapTitle);
-
-    const recap = document.createElement("div");
-    recap.className = "calc-recap";
-
-    const smicLabel = (typeof smicFromConfig === "number")
-      ? `${smicFromConfig.toFixed(2)} €`
-      : "non renseigné";
-
-    recap.innerHTML =
-      `<ul class="calc-recap-list">` +
-      `  <li><strong>Forfait (par enfant, garde ≥ 8h)</strong> : <strong>${U.fmtEuro(forfaitJour)}</strong> <span class="hint">(= 3 × SMIC horaire brut au 01/01/${year})</span></li>` +
-      `  <li><strong>Forfait (par enfant, garde &lt; 8h)</strong> : <span class="hint">(forfait ÷ 8) × heures de présence</span></li>` +
-      `  <li class="hint">Calcul par jour et par enfant. SMIC au 01/01/${year} : <strong>${smicLabel}</strong>.</li>` +
-      `</ul>`;
-
-    container.appendChild(recap);
-
     // Saisie du SMIC uniquement si absent de la config
     if (typeof smicFromConfig !== "number") {
       const smicMissing = document.createElement("div");
@@ -79,7 +50,7 @@
       smicMissing.innerHTML =
         `<div class="year-rule-title"><strong>SMIC manquant</strong> <span class="hint">pour l’année ${year}</span></div>` +
         `<div class="year-param-sub">` +
-        `  <label class="inline-label" for="abmat-smic-input">Saisir le SMIC horaire brut :</label> ` +
+        `  <label class="inline-label" for="abmat-smic-input">Saisir le SMIC horaire brut au 1er janvier ${year} :</label> ` +
         `  <input id="abmat-smic-input" type="text" inputmode="decimal" autocomplete="off" placeholder="Ex : 12,02" data-year-smic-input /> ` +
         `  <span class="hint">Cette valeur sert à calculer le forfait journalier (3 × SMIC).</span>` +
         `</div>`;
@@ -122,6 +93,28 @@
         smicInput.addEventListener("blur", apply);
       }
     }
+
+    // Récap des règles (écran + PDF)
+    const recapTitle = document.createElement("p");
+    recapTitle.className = "year-params-subtitle";
+    recapTitle.textContent = `Somme forfaitaire à déduire pour en année ${year}`;
+    container.appendChild(recapTitle);
+
+    const recap = document.createElement("div");
+    recap.className = "calc-recap";
+
+    const smicLabel = (typeof smicFromConfig === "number")
+      ? `${smicFromConfig.toFixed(2)} €`
+      : "non renseigné";
+
+    recap.innerHTML =
+      `<ul class="calc-recap-list">` +
+      `  <li><strong>Forfait (par enfant, garde ≥ 8h)</strong> : <strong>${U.fmtEuro(forfaitJour)}</strong> <span class="hint">(= 3 × SMIC horaire brut au 01/01/${year})</span></li>` +
+      `  <li><strong>Forfait (par enfant, garde &lt; 8h)</strong> : <span class="hint">(forfait ÷ 8) × heures de présence</span></li>` +
+      `  <li class="hint">Calcul par jour et par enfant. SMIC au 01/01/${year} : <strong>${smicLabel}</strong>.</li>` +
+      `</ul>`;
+
+    container.appendChild(recap);
   };
 
   // Backward-compat : tant que app.js appelle encore renderYearParams
