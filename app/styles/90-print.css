@@ -54,9 +54,7 @@
   /* Les conteneurs JS ne doivent pas créer de sous-cadres */
   .period-controls,
   #year-params,
-  #summary,
-  #data-actions,
-  #print-actions{
+  #summary{
     border: 0 !important;
     background: transparent !important;
     padding: 0 !important;

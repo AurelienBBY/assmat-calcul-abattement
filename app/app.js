@@ -437,51 +437,10 @@
         obs.observe(sentinel);
     }
 
-    function getOrCreateToolbarImportInput() {
-        let inp = document.getElementById("abmat-toolbar-import");
-        if (inp) return inp;
-
-        inp = document.createElement("input");
-        inp.type = "file";
-        inp.id = "abmat-toolbar-import";
-        inp.accept = "application/json,.json";
-        inp.style.position = "fixed";
-        inp.style.left = "-9999px";
-        inp.style.width = "1px";
-        inp.style.height = "1px";
-
-        inp.addEventListener("change", () => {
-            const f = inp.files && inp.files[0] ? inp.files[0] : null;
-            // reset pour pouvoir réimporter le même fichier
-            inp.value = "";
-            if (!f) return;
-
-            setToolbarLoadUI("loading", f.name || "");
-            onImportRequest(f);
-        });
-
-        document.body.appendChild(inp);
-        return inp;
-    }
 
     function initToolbarSticky() {
         const bar = document.getElementById("app-toolbar");
         if (!bar) return;
-
-        // 1) Actions
-        const btns = Array.from(document.querySelectorAll("[data-toolbar-action]"));
-        btns.forEach((btn) => {
-            btn.addEventListener("click", () => {
-                const a = btn.getAttribute("data-toolbar-action");
-                if (a === "export") { onExport(); return; }
-                if (a === "print") { onPrint(); return; }
-                if (a === "import" || a === "load") {
-                    const inp = getOrCreateToolbarImportInput();
-                    inp.click();
-                    return;
-                }
-            });
-        });
 
         // 2) Contexte (mois/année) : visible uniquement si on a scrollé sous la section Période
         // IMPORTANT : #period-section peut être rendu après (via renderPeriodSelector).
@@ -582,7 +541,7 @@
             onMoneyChange
         );
 
-        // 5) Actions (split-only): rendu dans #data-actions / #print-actions
+        // 5) Actions : branchées sur la toolbar sticky (export / import / print)
         R.renderActions(null, { year: state.year, monthIndex: state.monthIndex }, onPrint, onExport, onImportRequest);
 
         // 6) Date d’édition
