@@ -11,6 +11,9 @@
 :root {
   /* fallback si la variable n’est pas encore définie dans 00-vars-base.css */
   --toolbar-h: 44px;
+  --toolbar-sticky-offset: 95px;
+  --toolbar-left-nudge-y: 17px;
+  --toolbar-actions-nudge-y: -17px;
 }
 
 /* Conteneur sticky */
@@ -19,15 +22,14 @@
   top: 0;
   z-index: 200;
 
-  min-height: var(--toolbar-h);
+  min-height: 52px; /* header principal */
+  padding: 12px 16px;
+
   display: flex;
-  align-items: center;
+  flex-wrap: nowrap;
+  align-items: stretch; /* chaque colonne prend toute la hauteur */
   justify-content: space-between;
   gap: 12px;
-  flex-wrap: nowrap;
-  overflow: visible;
-
-  padding: 8px 12px;
 
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(10px);
@@ -35,6 +37,22 @@
 
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
+}
+
+/* Transition douce entre états */
+.app-toolbar {
+  transition:
+    min-height 200ms ease,
+    padding 200ms ease,
+    box-shadow 200ms ease,
+    backdrop-filter 200ms ease;
+}
+
+/* État compact : quand on a scrollé sous le hero */
+.app-toolbar--compact {
+  min-height: 36px;
+  padding: 6px 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
 }
 
 /* Sur fond très clair, on garde une séparation nette */
@@ -49,16 +67,51 @@
   flex: 1 1 auto;
   min-width: 0;
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  justify-content: center; /* centre verticalement titre + intro dans la barre */
+  gap: 3px;
+  transform: translateY(var(--toolbar-left-nudge-y));
 }
 
 .app-toolbar__title {
   font-weight: 700;
-  font-size: 14px;
+  font-size: 18px;
   line-height: 1;
   color: #111;
   white-space: nowrap;
+}
+
+.app-toolbar__left .intro {
+  margin: 0;
+  padding-left: 0; /* aligné exactement avec le titre */
+  font-size: 13.5px; /* plus lisible */
+  line-height: 1.25;
+  color: rgba(0, 0, 0, 0.55); /* plus doux */
+}
+
+.app-toolbar--compact .app-toolbar__left .intro {
+  display: none;
+}
+
+.app-toolbar--compact .app-toolbar__title {
+  font-size: 14px;
+}
+
+/* Ligne haute : Titre + contexte sur la même ligne */
+.app-toolbar__topline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.app-toolbar__topline .app-toolbar__title {
+  flex: 0 0 auto;
+}
+
+.app-toolbar__topline .app-toolbar__context {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 /* Contexte (ex: “• Février 2028”) */
@@ -69,7 +122,11 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 100%;
+  max-width: 40vw;
+}
+
+.app-toolbar--compact .app-toolbar__context {
+  opacity: 0.85;
 }
 
 /* Par défaut, le contexte peut être caché (affiché via JS au scroll) */
@@ -79,12 +136,13 @@
 
 /* Zone droite : boutons */
 .app-toolbar__actions {
+  flex: 0 0 auto;
+  align-self: stretch;
+  transform: translateY(var(--toolbar-actions-nudge-y));
   display: flex;
   align-items: center;
-  justify-content: flex-end; /* force l’alignement à droite */
+  justify-content: flex-end;
   gap: 10px;
-  flex: 0 0 auto;           /* empêche toute expansion */
-  margin-left: auto;        /* pousse le bloc à droite */
   white-space: nowrap;
 }
 
@@ -94,7 +152,7 @@
   background: rgba(255, 255, 255, 0.95);
   color: #111;
 
-  height: 28px;
+  height: 30px;
   padding: 0 10px;
 
   border-radius: 14px;
@@ -111,6 +169,13 @@
   transition: transform 120ms ease, background 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
 }
 
+.app-toolbar--compact .toolbar-btn {
+  height: 26px;
+}
+
+.app-toolbar--compact .toolbar-btn--load {
+  height: 32px; /* garde la lisibilité du bouton à 2 lignes */
+}
 
 /* Bouton Charger : 2 lignes (label + nom de fichier) */
 .toolbar-btn--load {
@@ -193,7 +258,7 @@
   }
 
   .app-toolbar__context {
-    max-width: 44vw;
+    max-width: 52vw;
   }
 
   .toolbar-btn {
@@ -222,10 +287,6 @@
 }
 
 @media (max-width: 420px) {
-  .app-toolbar__title {
-    display: none;
-  }
-
   .app-toolbar__context {
     max-width: 52vw;
   }

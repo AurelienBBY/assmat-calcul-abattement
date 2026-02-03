@@ -19,6 +19,7 @@
   --abmat-weekbar-h: 34px; /* hauteur approximative de la barre "Semaine" */
   --abmat-weekbar-gap: 6px;
   --abmat-sticky-overlap: 6px; /* recouvre l'ombre/bord du thead pour éviter un "gap" visible */
+  --abmat-sticky-top: var(--toolbar-sticky-offset, var(--toolbar-h));
 }
 
 .abmat-table{
@@ -59,7 +60,7 @@
   vertical-align: bottom;
   white-space: nowrap;
   position: sticky;
-  top: var(--toolbar-h);
+  top: var(--abmat-sticky-top);
   z-index: 5;
 }
 
@@ -90,7 +91,7 @@
   display: inline-block;
   width: 100%;
   top: calc(
-    var(--toolbar-h)
+    var(--abmat-sticky-top)
     + var(--abmat-thead-h)
     + var(--abmat-weekbar-h)
     + var(--abmat-weekbar-gap)
@@ -104,7 +105,7 @@
     display: inline-block;
     width: 100%;
     top: calc(
-      var(--toolbar-h)
+      var(--abmat-sticky-top)
       + var(--abmat-thead-h)
       + var(--abmat-weekbar-h)
       + var(--abmat-weekbar-gap)
@@ -149,7 +150,7 @@
 /* Sticky barre de semaine : "Semaine du … au …" */
 .abmat-table tbody tr.week-sep td{
   position: sticky;
-  top: calc(var(--toolbar-h) + var(--abmat-thead-h) - var(--abmat-sticky-overlap));
+  top: calc(var(--abmat-sticky-top) + var(--abmat-thead-h) - var(--abmat-sticky-overlap));
   z-index: 5;
   background: #e8edff;
   box-shadow: 0 6px 10px rgba(0,0,0,0.08);

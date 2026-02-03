@@ -283,6 +283,7 @@
             alert("Sélectionnez d’abord un fichier JSON à importer.");
             return;
         }
+        setToolbarLoadUI("loading", file && file.name ? file.name : "");
 
         try {
             const text = await file.text();
@@ -297,7 +298,10 @@
                         "Ce fichier ne correspond pas au mois/année actuellement sélectionné.\n" +
                         "Voulez-vous quand même l’importer dans le mois affiché ?"
                     );
-                    if (!allowMismatch) return;
+                    if (!allowMismatch) {
+                        setToolbarLoadUI("idle", "");
+                        return;
+                    }
                 }
             } catch (e) {
                 // on laisse importMonthFromJsonText gérer l’erreur
@@ -313,7 +317,9 @@
             const monthAbatt = computeMonthTotalAbattAndRefreshTable();
             updateSummary(monthAbatt);
             saveNow();
+            setToolbarLoadUI("loaded", file && file.name ? file.name : "");
         } catch (e) {
+            setToolbarLoadUI("error", file && file.name ? file.name : "");
             alert("Impossible d’importer ce fichier : " + (e && e.message ? e.message : String(e)));
         }
     }
@@ -336,11 +342,99 @@
         ctx.textContent = `• ${m} ${y}`;
     }
 
+        // --- Toolbar: état import ("Charger les données") ------------------------
+
+    const toolbarDataState = {
+        status: "idle", // idle | loading | loaded | error
+        fileName: ""
+    };
+
+    function getToolbarLoadButton() {
+        return document.querySelector('[data-toolbar-action="load"], [data-toolbar-action="import"]');
+    }
+
+    function getToolbarLoadStatusEl() {
+        return document.querySelector('[data-toolbar-load-status]');
+    }
+
+    function setToolbarLoadUI(nextStatus, fileName) {
+        toolbarDataState.status = nextStatus || "idle";
+        toolbarDataState.fileName = (typeof fileName === "string") ? fileName : "";
+
+        const btn = getToolbarLoadButton();
+        const statusEl = getToolbarLoadStatusEl();
+
+        if (btn) {
+            btn.classList.remove("is-idle", "is-loading", "is-loaded", "is-error");
+            btn.classList.add(
+                toolbarDataState.status === "loading" ? "is-loading" :
+                toolbarDataState.status === "loaded" ? "is-loaded" :
+                toolbarDataState.status === "error" ? "is-error" :
+                "is-idle"
+            );
+
+            // Désactive pendant le chargement
+            btn.disabled = (toolbarDataState.status === "loading");
+
+            // Libellé: on tente de cibler un sous-élément si présent, sinon textContent
+            const labelNode = btn.querySelector('[data-toolbar-load-label]') || btn;
+            if (toolbarDataState.status === "loading") {
+                labelNode.textContent = "Chargement…";
+            } else if (toolbarDataState.status === "loaded") {
+                labelNode.textContent = "Données chargées";
+            } else {
+                labelNode.textContent = "Charger les données";
+            }
+
+            // Accessibilité
+            btn.setAttribute(
+                "aria-label",
+                toolbarDataState.status === "loaded" && toolbarDataState.fileName
+                    ? ("Données chargées : " + toolbarDataState.fileName)
+                    : (toolbarDataState.status === "loading" ? "Chargement des données" : "Charger des données")
+            );
+        }
+
+        if (statusEl) {
+            if (toolbarDataState.status === "loaded" && toolbarDataState.fileName) {
+                statusEl.textContent = "✅ " + toolbarDataState.fileName;
+                statusEl.style.display = "";
+            } else if (toolbarDataState.status === "error") {
+                statusEl.textContent = "❌ Import impossible";
+                statusEl.style.display = "";
+            } else {
+                statusEl.textContent = "";
+                statusEl.style.display = "none";
+            }
+        }
+    }
+
     function setToolbarContextVisible(visible) {
         const bar = document.getElementById("app-toolbar");
         if (!bar) return;
         if (visible) bar.classList.remove("app-toolbar--context-hidden");
         else bar.classList.add("app-toolbar--context-hidden");
+    }
+
+    // --- Toolbar sticky : mode compact quand on quitte le hero ---------------
+
+    function attachToolbarShrinkObserver() {
+        const bar = document.getElementById("app-toolbar");
+        const sentinel = document.getElementById("toolbar-sentinel");
+        if (!bar || !sentinel || typeof IntersectionObserver !== "function") return;
+
+        const obs = new IntersectionObserver(
+            (entries) => {
+                const e = entries && entries[0] ? entries[0] : null;
+                if (!e) return;
+                // Sentinel visible => on est encore sur le hero => toolbar "large"
+                // Sentinel non visible => on a scrollé => toolbar "compact"
+                bar.classList.toggle("app-toolbar--compact", !e.isIntersecting);
+            },
+            { root: null, threshold: 0 }
+        );
+
+        obs.observe(sentinel);
     }
 
     function getOrCreateToolbarImportInput() {
@@ -360,7 +454,10 @@
             const f = inp.files && inp.files[0] ? inp.files[0] : null;
             // reset pour pouvoir réimporter le même fichier
             inp.value = "";
-            if (f) onImportRequest(f);
+            if (!f) return;
+
+            setToolbarLoadUI("loading", f.name || "");
+            onImportRequest(f);
         });
 
         document.body.appendChild(inp);
@@ -378,7 +475,7 @@
                 const a = btn.getAttribute("data-toolbar-action");
                 if (a === "export") { onExport(); return; }
                 if (a === "print") { onPrint(); return; }
-                if (a === "import") {
+                if (a === "import" || a === "load") {
                     const inp = getOrCreateToolbarImportInput();
                     inp.click();
                     return;
@@ -418,11 +515,10 @@
             return true;
         }
 
-    // On tente tout de suite, puis on retente juste après le premier render si besoin.
-    if (!attachPeriodObserver()) {
-      setTimeout(attachPeriodObserver, 0);
-    }
-
+        // On tente tout de suite, puis on retente juste après le premier render si besoin.
+        if (!attachPeriodObserver()) {
+            setTimeout(attachPeriodObserver, 0);
+        }
     }
 
     // --- Rendu global ---------------------------------------------------------
@@ -526,6 +622,8 @@
         state.monthIndex = now.getMonth();
 
         initToolbarSticky();
+        attachToolbarShrinkObserver();
+        setToolbarLoadUI("idle", "");
         loadAndRenderMonth(true);
         if (typeof window.initTutoModal === "function") window.initTutoModal();
     });
