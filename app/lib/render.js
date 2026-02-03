@@ -415,13 +415,21 @@
         const trTotal = document.createElement("tr");
         trTotal.className = "week-total";
 
-        const tdTotal = document.createElement("td");
-        tdTotal.colSpan = 6;
-        tdTotal.innerHTML =
-          `Total abattement semaine du <strong>${startLabel}</strong> au <strong>${endLabel}</strong> : ` +
-          `<strong><span data-week-total data-week-start="${isoStart}" data-week-end="${isoEnd}">—</span></strong>`;
+        // Libellé sur les 5 premières colonnes
+        const tdLabel = document.createElement("td");
+        tdLabel.className = "week-total-label";
+        tdLabel.colSpan = 5;
+        tdLabel.innerHTML =
+          `Total abattement semaine du <strong>${startLabel}</strong> au <strong>${endLabel}</strong>`;
 
-        trTotal.appendChild(tdTotal);
+        // Montant aligné sur la colonne Abattement
+        const tdAmount = document.createElement("td");
+        tdAmount.className = "week-total-amount col-abatt";
+        tdAmount.innerHTML =
+          `<span class="week-total-pill"><span data-week-total data-week-start="${isoStart}" data-week-end="${isoEnd}">—</span></span>`;
+
+        trTotal.appendChild(tdLabel);
+        trTotal.appendChild(tdAmount);
         tbody.appendChild(trTotal);
       }
     }

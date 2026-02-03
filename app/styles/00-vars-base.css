@@ -10,6 +10,7 @@
   --maxw: 1100px;
   --radius: 25px;
   --border: #e6e6e0;
+  --toolbar-h: 52px; /* hauteur de la toolbar sticky */
   --muted: #6b7280;
   --bg: #ffffff;           /* neutral white */
   --card: #f9f9f7;         /* blanc cassé */

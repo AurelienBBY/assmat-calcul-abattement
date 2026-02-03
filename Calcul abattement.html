@@ -10,6 +10,7 @@
   -->
   <link rel="stylesheet" href="app/styles/00-vars-base.css" />
   <link rel="stylesheet" href="app/styles/10-layout-cards.css" />
+  <link rel="stylesheet" href="app/styles/15-toolbar.css" />
 
   <link rel="stylesheet" href="app/styles/20-period.css" />
   <link rel="stylesheet" href="app/styles/30-year-params.css" />
@@ -37,6 +38,36 @@
     <p class="intro">
       Outil de calcul pour la déclaration des revenus avec abattement forfaitaire.
     </p>
+  </header>
+
+  <!-- =========================================================
+       MINI TOOLBAR STICKY (ACTIONS + CONTEXTE)
+       ========================================================= -->
+  <header id="app-toolbar" class="app-toolbar app-toolbar--context-hidden no-print" role="banner">
+    <div class="app-toolbar__left">
+      <div class="app-toolbar__title">Abattement assmat</div>
+      <div class="app-toolbar__context" data-toolbar-context aria-live="polite"></div>
+    </div>
+
+    <div class="app-toolbar__actions" aria-label="Actions">
+      <button type="button" class="toolbar-btn" data-toolbar-action="export" title="Sauvegarder (exporter le mois)" aria-label="Sauvegarder (exporter le mois)">
+        <span class="toolbar-btn__icon" aria-hidden="true">💾</span>
+        <span class="toolbar-btn__label">Sauvegarder</span>
+        <span class="toolbar-btn__label-short">Sauveg.</span>
+      </button>
+
+      <button type="button" class="toolbar-btn" data-toolbar-action="import" title="Importer (reprendre un mois)" aria-label="Importer (reprendre un mois)">
+        <span class="toolbar-btn__icon" aria-hidden="true">📂</span>
+        <span class="toolbar-btn__label">Importer</span>
+        <span class="toolbar-btn__label-short">Import</span>
+      </button>
+
+      <button type="button" class="toolbar-btn" data-toolbar-action="print" title="Imprimer" aria-label="Imprimer">
+        <span class="toolbar-btn__icon" aria-hidden="true">🖨</span>
+        <span class="toolbar-btn__label">Imprimer</span>
+        <span class="toolbar-btn__label-short">Impr.</span>
+      </button>
+    </div>
   </header>
 
   <!-- =========================================================
@@ -138,6 +169,7 @@
       <!-- Généré dynamiquement par app.js -->
     </div>
   </section>
+  <div id="period-sentinel" aria-hidden="true"></div>
 
   <!-- =========================================================
        TABLEAU DES JOURS DU MOIS

@@ -55,7 +55,7 @@
   border-bottom: 1px solid var(--border);
   padding: 10px 8px;
   font-size: 13px;
-  text-align: left;
+  text-align: center;
   vertical-align: bottom;
   white-space: nowrap;
   position: sticky;
@@ -81,12 +81,14 @@
   background-clip: padding-box;
   box-shadow: 10px 0 14px rgba(0,0,0,0.03);
   vertical-align: top;
+  text-align: center;
 }
 
 /* Le libellé de date “glisse” dans la cellule (rowspan=3) pour rester lisible */
 .abmat-table tbody td.col-date .col-date__inner{
   position: sticky;
   display: inline-block;
+  width: 100%;
   top: calc(
     var(--toolbar-h)
     + var(--abmat-thead-h)
@@ -98,6 +100,9 @@
 
 @media (max-width: 720px){
   .abmat-table tbody td.col-date .col-date__inner{
+    position: sticky;
+    display: inline-block;
+    width: 100%;
     top: calc(
       var(--toolbar-h)
       + var(--abmat-thead-h)
@@ -129,8 +134,9 @@
 .abmat-table tbody td{
   border-top: 1px solid var(--border);
   padding: 10px 8px;
-  vertical-align: top;
+  vertical-align: middle;
   font-size: 13px;
+  text-align: center;
 }
 
 /* Séparateur de semaine */
@@ -149,12 +155,33 @@
   box-shadow: 0 6px 10px rgba(0,0,0,0.08);
 }
 
+/* Les lignes de semaine restent lisibles */
+.week-sep td{ text-align: left; }
+
 /* Ligne total semaine */
 .week-total td{
   background: var(--card-2);
   font-weight: 800;
+}
+
+.week-total td.week-total-label{
   text-align: right;
-  padding-right: 40px;
+  padding-right: 16px;
+}
+
+.week-total td.week-total-amount{
+  text-align: center;
+}
+
+.week-total-pill{
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: #fff;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+  font-weight: 800;
+  white-space: nowrap;
 }
 
 /* Colonnes / sous contenus */
@@ -172,6 +199,11 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  justify-content: center;
+}
+
+.abmat-table input[type="time"]{
+  text-align: center;
 }
 
 .sep{
@@ -183,6 +215,14 @@
 .col-total{
   text-align: center;
   white-space: nowrap;
+  font-weight: 700;
+}
+
+.col-hours .muted,
+.col-abatt .muted,
+.col-hours .sep,
+.col-abatt .sep{
+  font-weight: 400;
 }
 
 .col-total strong{
@@ -196,8 +236,8 @@
     font-size: 12px;
   }
 
-  .week-total td{
-    padding-right: 14px;
+  .week-total td.week-total-label{
+    padding-right: 12px;
   }
 }
 
