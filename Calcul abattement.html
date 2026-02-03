@@ -15,7 +15,6 @@
   <link rel="stylesheet" href="app/styles/20-period.css" />
   <link rel="stylesheet" href="app/styles/30-year-params.css" />
   <link rel="stylesheet" href="app/styles/40-table.css" />
-  <link rel="stylesheet" href="app/styles/50-actions.css" />
 
   <link rel="stylesheet" href="app/styles/60-tuto.css" />
   <link rel="stylesheet" href="app/styles/70-modal.css" />
@@ -43,13 +42,13 @@
     </div>
 
     <div class="app-toolbar__actions" aria-label="Actions">
-      <button type="button" class="toolbar-btn" data-toolbar-action="export" title="Sauvegarder (exporter le mois)" aria-label="Sauvegarder (exporter le mois)">
+      <button type="button" class="toolbar-btn" data-toolbar-action="export" title="Sauvegarder (exporter le mois)" aria-label="Sauvegarder (exporter le mois)" id="abmat-action-save">
         <span class="toolbar-btn__icon" aria-hidden="true">💾</span>
         <span class="toolbar-btn__label">Sauvegarder</span>
         <span class="toolbar-btn__label-short">Sauveg.</span>
       </button>
 
-      <button type="button" class="toolbar-btn toolbar-btn--load" data-toolbar-action="import" title="Importer (reprendre un mois)" aria-label="Importer (reprendre un mois)">
+      <button type="button" class="toolbar-btn toolbar-btn--load" data-toolbar-action="import" title="Importer (reprendre un mois)" aria-label="Importer (reprendre un mois)" id="abmat-action-load">
         <span class="toolbar-btn__icon" aria-hidden="true">📂</span>
 
         <span class="toolbar-btn__content">
@@ -58,7 +57,9 @@
         </span>
       </button>
 
-      <button type="button" class="toolbar-btn" data-toolbar-action="print" title="Imprimer" aria-label="Imprimer">
+      <input id="abmat-action-file" type="file" accept="application/json" hidden />
+
+      <button type="button" class="toolbar-btn" data-toolbar-action="print" title="Imprimer" aria-label="Imprimer" id="abmat-action-print">
         <span class="toolbar-btn__icon" aria-hidden="true">🖨</span>
         <span class="toolbar-btn__label">Imprimer</span>
         <span class="toolbar-btn__label-short">Impr.</span>
@@ -109,27 +110,6 @@
       <!-- Généré dynamiquement par app.js (renderExplain) -->
     </div>
   </section>
-
-  <!-- =========================================================
-       DONNÉES (SAUVEGARDE / IMPORT)
-    ========================================================= -->
-  <section id="data-section" class="no-print">
-    <h2>Données</h2>
-
-    <p class="hint">
-      Importez un fichier pour reprendre un mois, ou sauvegardez vos données pour les réutiliser plus tard.
-    </p>
-
-    <div id="data-actions">
-      <!-- Généré dynamiquement par app.js (export / import) -->
-    </div>
-
-    <p class="hint">
-      💡 Conseil : exportez le mois une fois terminé pour conserver
-      une sauvegarde.
-    </p>
-  </section>
-
 
   <!-- =========================================================
        SÉLECTION DE LA PÉRIODE (MOIS / ANNÉE)
@@ -199,21 +179,6 @@
     -->
     <div id="summary">
       <!-- Généré dynamiquement par app.js -->
-    </div>
-  </section>
-
-    <!-- =========================================================
-       IMPRESSION
-       ========================================================= -->
-  <section id="print-section" class="no-print">
-    <h2>Impression</h2>
-
-    <p class="hint">
-      Générez une version imprimable ou un PDF à partir des données actuellement affichées.
-    </p>
-
-    <div id="print-actions">
-      <!-- Généré dynamiquement par app.js (impression / PDF) -->
     </div>
   </section>
 

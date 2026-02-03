@@ -540,89 +540,77 @@
   // -------------------------------------------------------------------------
 
   /**
-   * Rend les actions dans des conteneurs dédiés :
-   * - #data-actions  : Export + Import
-   * - #print-actions : Impression
+   * Branche les actions sur la toolbar sticky.
    *
-   * NOTE: le param `container` est conservé uniquement pour compatibilité avec l’appelant,
-   * mais n’est plus utilisé (on supprime le mode legacy).
+   * Attendus dans le DOM (toolbar) :
+   * - #abmat-action-save  (bouton "Sauvegarder")
+   * - #abmat-action-load  (bouton "Charger")
+   * - #abmat-action-print (bouton "Imprimer")
+   * - #abmat-action-file  (input[type=file] caché, accept application/json)
    *
-   * @param {HTMLElement} container
-   * @param {Object} state {year, monthIndex}
-   * @param {()=>void} onPrint
-   * @param {()=>void} onExport
-   * @param {(file:File|null)=>void} onImportRequest
+   * NOTE: on ne rend plus de blocs "Données" / "Impression" dans la page.
+   * Le param `container` est conservé pour compatibilité, mais n’est plus utilisé.
    */
   R.renderActions = function renderActions(container, state, onPrint, onExport, onImportRequest) {
-    // Cibles dédiées (nouveau modèle)
-    const dataTarget = document.getElementById("data-actions");
-    const printTarget = document.getElementById("print-actions");
+    // Toolbar targets
+    const btnSave = document.getElementById("abmat-action-save");
+    const btnLoad = document.getElementById("abmat-action-load");
+    const btnPrint = document.getElementById("abmat-action-print");
+    const fileInput = document.getElementById("abmat-action-file");
 
-    // Helpers
-    const clear = (el) => {
-      if (!el) return;
-      el.innerHTML = "";
-    };
-
-    const y = state.year;
-    const m = U.pad2(state.monthIndex + 1);
-    const filename = `abattement-assmat-${y}-${m}.json`;
-
-    const renderPrintOnly = (target) => {
-      clear(target);
-
-      const wrap = document.createElement("div");
-      wrap.className = "actions-wrap";
-      wrap.innerHTML = `<button type="button" id="abmat-print">🖨️ Imprimer / PDF</button>`;
-
-      target.appendChild(wrap);
-
-      const btnPrint = target.querySelector("#abmat-print");
-      if (btnPrint) btnPrint.addEventListener("click", () => onPrint && onPrint());
-    };
-
-    const renderDataOnly = (target) => {
-      clear(target);
-
-      const wrap = document.createElement("div");
-      wrap.className = "actions-wrap";
-      wrap.innerHTML =
-        `<button type="button" id="abmat-export">💾 Exporter le mois (JSON)</button> ` +
-        `<span class="actions-sep" aria-hidden="true"></span>` +
-        `<input type="file" id="abmat-import-file" accept="application/json" /> ` +
-        `<button type="button" id="abmat-import">📂 Importer un mois (JSON)</button>` +
-        `<p class="hint">Nom du fichier exporté : <strong>${filename}</strong></p>`;
-
-      target.appendChild(wrap);
-
-      const btnExport = target.querySelector("#abmat-export");
-      const btnImport = target.querySelector("#abmat-import");
-      const fileInput = target.querySelector("#abmat-import-file");
-
-      if (btnExport) btnExport.addEventListener("click", () => onExport && onExport());
-
-      if (btnImport && fileInput) {
-        btnImport.addEventListener("click", () => {
-          const file = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
-          onImportRequest && onImportRequest(file);
-        });
-      }
-    };
-
-    // Split-only : on ne rend que si les conteneurs existent.
-    if (!dataTarget && !printTarget) {
-      // On évite de casser l’app, mais on force le nouveau modèle.
+    // Garde-fous : si la toolbar n’existe pas (ex: intégration partielle), on ne casse pas.
+    if (!btnSave && !btnLoad && !btnPrint && !fileInput) {
       if (container) container.innerHTML = "";
-      console.warn("ABMAT.renderActions: conteneurs #data-actions / #print-actions introuvables (mode legacy supprimé).", {
-        hasContainer: !!container,
-        year: state && state.year,
-        monthIndex: state && state.monthIndex
-      });
       return;
     }
 
-    if (dataTarget) renderDataOnly(dataTarget);
-    if (printTarget) renderPrintOnly(printTarget);
+    // (Ré)initialise le champ fichier pour permettre de recharger le même fichier deux fois.
+    const resetFile = () => {
+      if (fileInput) fileInput.value = "";
+    };
+
+    // Sauvegarde (export)
+    if (btnSave) {
+      btnSave.addEventListener("click", () => {
+        onExport && onExport();
+      });
+    }
+
+    // Impression
+    if (btnPrint) {
+      btnPrint.addEventListener("click", () => {
+        onPrint && onPrint();
+      });
+    }
+
+    // Chargement (import)
+    if (btnLoad) {
+      btnLoad.addEventListener("click", () => {
+        if (fileInput) {
+          resetFile();
+          fileInput.click();
+        } else {
+          // Fallback : si pas d'input file, on déclenche quand même le handler côté app.
+          onImportRequest && onImportRequest(null);
+        }
+      });
+    }
+
+    // Quand un fichier est choisi
+    if (fileInput) {
+      fileInput.addEventListener("change", () => {
+        const file = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+        onImportRequest && onImportRequest(file);
+      });
+    }
+
+    // (Optionnel) expose le nom de fichier attendu via title sur le bouton Charger
+    // sans polluer l’UI.
+    if (btnLoad && state && Number.isFinite(Number(state.year)) && Number.isFinite(Number(state.monthIndex))) {
+      const y = state.year;
+      const m = U.pad2(state.monthIndex + 1);
+      btnLoad.title = `Importer un fichier JSON (ex: abattement-assmat-${y}-${m}.json)`;
+    }
   };
 
   // -------------------------------------------------------------------------
