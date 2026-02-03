@@ -8,9 +8,17 @@
    - helpers colonnes + champs horaires
    ========================================================================== */
 
+
 .month-heading{
   margin: 0 0 10px 0;
   color: var(--muted);
+}
+
+:root{
+  --abmat-thead-h: 44px; /* hauteur approximative du header tableau */
+  --abmat-weekbar-h: 34px; /* hauteur approximative de la barre "Semaine" */
+  --abmat-weekbar-gap: 6px;
+  --abmat-sticky-overlap: 6px; /* recouvre l'ombre/bord du thead pour éviter un "gap" visible */
 }
 
 .abmat-table{
@@ -68,7 +76,7 @@
 .abmat-table tbody td.col-date{
   position: sticky;
   left: 0;
-  z-index: 4; /* au-dessus des cellules normales */
+  z-index: 3; /* sous la barre semaine sticky */
   background: inherit; /* conserve le fond des lignes week-sep / week-total */
   background-clip: padding-box;
   box-shadow: 10px 0 14px rgba(0,0,0,0.03);
@@ -78,13 +86,25 @@
 /* Le libellé de date “glisse” dans la cellule (rowspan=3) pour rester lisible */
 .abmat-table tbody td.col-date .col-date__inner{
   position: sticky;
-  top: calc(var(--toolbar-h) + 44px); /* toolbar + hauteur approx de l'en-tête du tableau */
   display: inline-block;
+  top: calc(
+    var(--toolbar-h)
+    + var(--abmat-thead-h)
+    + var(--abmat-weekbar-h)
+    + var(--abmat-weekbar-gap)
+    - var(--abmat-sticky-overlap)
+  );
 }
 
 @media (max-width: 720px){
   .abmat-table tbody td.col-date .col-date__inner{
-    top: calc(var(--toolbar-h) + 40px);
+    top: calc(
+      var(--toolbar-h)
+      + var(--abmat-thead-h)
+      + var(--abmat-weekbar-h)
+      + var(--abmat-weekbar-gap)
+      - var(--abmat-sticky-overlap)
+    );
   }
 }
 
@@ -118,6 +138,15 @@
   background: #e8edff;
   font-weight: 800;
   border-top: 2px solid #c7d2fe;
+}
+
+/* Sticky barre de semaine : "Semaine du … au …" */
+.abmat-table tbody tr.week-sep td{
+  position: sticky;
+  top: calc(var(--toolbar-h) + var(--abmat-thead-h) - var(--abmat-sticky-overlap));
+  z-index: 5;
+  background: #e8edff;
+  box-shadow: 0 6px 10px rgba(0,0,0,0.08);
 }
 
 /* Ligne total semaine */
@@ -174,6 +203,12 @@
 
 @media print{
   .abmat-table thead th{
+    position: static;
+  }
+}
+
+@media print{
+  .abmat-table tbody tr.week-sep td{
     position: static;
   }
 }
