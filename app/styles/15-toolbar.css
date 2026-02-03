@@ -1,5 +1,3 @@
-
-
 /* ============================================================================
    15-toolbar.css — Mini barre d’outils sticky (actions globales)
    ----------------------------------------------------------------------------
@@ -12,7 +10,7 @@
 
 :root {
   /* fallback si la variable n’est pas encore définie dans 00-vars-base.css */
-  --toolbar-h: 52px;
+  --toolbar-h: 44px;
 }
 
 /* Conteneur sticky */
@@ -21,13 +19,15 @@
   top: 0;
   z-index: 200;
 
-  height: var(--toolbar-h);
+  min-height: var(--toolbar-h);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  flex-wrap: nowrap;
+  overflow: visible;
 
-  padding: 10px 14px;
+  padding: 8px 12px;
 
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(10px);
@@ -46,9 +46,10 @@
 
 /* Zone gauche : titre + contexte */
 .app-toolbar__left {
+  flex: 1 1 auto;
   min-width: 0;
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 10px;
 }
 
@@ -68,7 +69,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 48vw;
+  max-width: 100%;
 }
 
 /* Par défaut, le contexte peut être caché (affiché via JS au scroll) */
@@ -80,8 +81,11 @@
 .app-toolbar__actions {
   display: flex;
   align-items: center;
+  justify-content: flex-end; /* force l’alignement à droite */
   gap: 10px;
-  flex-shrink: 0;
+  flex: 0 0 auto;           /* empêche toute expansion */
+  margin-left: auto;        /* pousse le bloc à droite */
+  white-space: nowrap;
 }
 
 .toolbar-btn {
@@ -90,21 +94,68 @@
   background: rgba(255, 255, 255, 0.95);
   color: #111;
 
-  height: 34px;
+  height: 28px;
   padding: 0 10px;
 
-  border-radius: 10px;
+  border-radius: 14px;
   cursor: pointer;
 
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 
   font-weight: 600;
   font-size: 13px;
   line-height: 1;
 
   transition: transform 120ms ease, background 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+}
+
+
+/* Bouton Charger : 2 lignes (label + nom de fichier) */
+.toolbar-btn--load {
+  height: 36px;            /* un peu plus haut pour 2 lignes */
+  padding: 0 10px;
+  align-items: center;
+}
+
+.toolbar-btn__content {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;            /* permet l’ellipsis */
+}
+
+.toolbar-btn__sub {
+  display: block;          /* l’élément existe, JS gère display:none/"" */
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 600;
+  opacity: 0.75;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Quand le sous-texte est masqué via style="display:none", on garde un bouton compact */
+.toolbar-btn--load .toolbar-btn__sub[style*="display:none"] {
+  display: none;
+}
+
+/* Si le sous-texte est visible, on resserre légèrement l’espacement vertical */
+.toolbar-btn--load .toolbar-btn__label {
+  line-height: 1;
+}
+
+/* États visuels optionnels */
+.toolbar-btn.is-loaded {
+  border-color: rgba(46, 125, 50, 0.4);
+}
+
+.toolbar-btn.is-error {
+  border-color: rgba(211, 47, 47, 0.4);
 }
 
 .toolbar-btn:hover {
@@ -146,7 +197,7 @@
   }
 
   .toolbar-btn {
-    padding: 0 9px;
+    padding: 0 8px;
   }
 
   .toolbar-btn__label {
@@ -155,6 +206,18 @@
 
   .toolbar-btn__label-short {
     display: inline;
+  }
+
+  /* Sur petits écrans, le bouton Charger garde son label (sinon il devient incompréhensible) */
+  .toolbar-btn--load .toolbar-btn__label {
+    display: inline;
+  }
+  .toolbar-btn--load .toolbar-btn__label-short {
+    display: none;
+  }
+
+  .toolbar-btn--load .toolbar-btn__sub {
+    max-width: 140px;
   }
 }
 

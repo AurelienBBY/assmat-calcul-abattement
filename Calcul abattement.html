@@ -56,10 +56,13 @@
         <span class="toolbar-btn__label-short">Sauveg.</span>
       </button>
 
-      <button type="button" class="toolbar-btn" data-toolbar-action="import" title="Importer (reprendre un mois)" aria-label="Importer (reprendre un mois)">
+      <button type="button" class="toolbar-btn toolbar-btn--load" data-toolbar-action="import" title="Importer (reprendre un mois)" aria-label="Importer (reprendre un mois)">
         <span class="toolbar-btn__icon" aria-hidden="true">📂</span>
-        <span class="toolbar-btn__label">Importer</span>
-        <span class="toolbar-btn__label-short">Import</span>
+
+        <span class="toolbar-btn__content">
+          <span class="toolbar-btn__label" data-toolbar-load-label>Charger les données</span>
+          <span class="toolbar-btn__sub" data-toolbar-load-status style="display:none"></span>
+        </span>
       </button>
 
       <button type="button" class="toolbar-btn" data-toolbar-action="print" title="Imprimer" aria-label="Imprimer">
