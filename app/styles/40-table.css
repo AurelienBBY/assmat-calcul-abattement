@@ -39,6 +39,7 @@
   background-clip: padding-box;
 }
 
+
 .abmat-table thead th{
   background: var(--card-2);
   background-clip: padding-box;
@@ -52,6 +53,51 @@
   position: sticky;
   top: var(--toolbar-h);
   z-index: 5;
+}
+
+/* Sticky 1ère colonne (Date) — utile en scroll horizontal */
+.abmat-table thead th.col-date{
+  position: sticky;
+  left: 0;
+  z-index: 6; /* au-dessus des autres th sticky */
+  background: var(--card-2);
+  background-clip: padding-box;
+  box-shadow: 10px 0 14px rgba(0,0,0,0.06);
+}
+
+.abmat-table tbody td.col-date{
+  position: sticky;
+  left: 0;
+  z-index: 4; /* au-dessus des cellules normales */
+  background: inherit; /* conserve le fond des lignes week-sep / week-total */
+  background-clip: padding-box;
+  box-shadow: 10px 0 14px rgba(0,0,0,0.03);
+  vertical-align: top;
+}
+
+/* Le libellé de date “glisse” dans la cellule (rowspan=3) pour rester lisible */
+.abmat-table tbody td.col-date .col-date__inner{
+  position: sticky;
+  top: calc(var(--toolbar-h) + 44px); /* toolbar + hauteur approx de l'en-tête du tableau */
+  display: inline-block;
+}
+
+@media (max-width: 720px){
+  .abmat-table tbody td.col-date .col-date__inner{
+    top: calc(var(--toolbar-h) + 40px);
+  }
+}
+
+@media print{
+  .abmat-table tbody td.col-date .col-date__inner{
+    position: static;
+  }
+}
+
+/* Evite un “trou” visuel à la jonction */
+.abmat-table thead th.col-date,
+.abmat-table tbody td.col-date{
+  border-right: 1px solid var(--border);
 }
 
 .abmat-table .th-sub{

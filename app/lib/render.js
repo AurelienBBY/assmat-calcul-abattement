@@ -260,6 +260,7 @@
 
     // Colonnes : Date | Enfant | Heure d'entrée | Heure de sortie | Temps de présence | Abattement
     const thDate = document.createElement("th");
+    thDate.className = "col-date";
     thDate.textContent = "Date";
     trh.appendChild(thDate);
 
@@ -346,8 +347,10 @@
           tdDate.className = "col-date";
           tdDate.setAttribute("rowspan", "3");
           tdDate.innerHTML =
+            `<div class="col-date__inner">` +
             `<strong class="date-day">${weekdayLabel}</strong><br>` +
-            `<span class="date-num">${U.pad2(day)}/${U.pad2(monthIndex + 1)}</span>`;
+            `<span class="date-num">${U.pad2(day)}/${U.pad2(monthIndex + 1)}</span>` +
+            `</div>`;
           tr.appendChild(tdDate);
         }
 
