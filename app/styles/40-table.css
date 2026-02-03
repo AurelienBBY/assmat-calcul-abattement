@@ -15,20 +15,43 @@
 
 .abmat-table{
   width: 100%;
-  border-collapse: collapse;
+
+  /* Sticky header reliability (Safari)
+     - avoid border-collapse: collapse
+     - avoid overflow:hidden on the table element */
+  border-collapse: separate;
+  border-spacing: 0;
+
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  overflow: hidden;
+  overflow: visible;
+}
+
+/* Coins arrondis sans casser le sticky */
+.abmat-table thead th:first-child{ border-top-left-radius: var(--radius); }
+.abmat-table thead th:last-child{ border-top-right-radius: var(--radius); }
+.abmat-table tbody tr:last-child td:first-child{ border-bottom-left-radius: var(--radius); }
+.abmat-table tbody tr:last-child td:last-child{ border-bottom-right-radius: var(--radius); }
+
+/* Empêche les fonds des cellules de dépasser les coins arrondis */
+.abmat-table thead th,
+.abmat-table tbody td{
+  background-clip: padding-box;
 }
 
 .abmat-table thead th{
   background: var(--card-2);
+  background-clip: padding-box;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.06);
   border-bottom: 1px solid var(--border);
   padding: 10px 8px;
   font-size: 13px;
   text-align: left;
   vertical-align: bottom;
   white-space: nowrap;
+  position: sticky;
+  top: var(--toolbar-h);
+  z-index: 5;
 }
 
 .abmat-table .th-sub{
@@ -100,5 +123,11 @@
 
   .week-total td{
     padding-right: 14px;
+  }
+}
+
+@media print{
+  .abmat-table thead th{
+    position: static;
   }
 }
