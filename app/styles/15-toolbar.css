@@ -152,7 +152,7 @@
   background: rgba(255, 255, 255, 0.95);
   color: #111;
 
-  height: 30px;
+  height: 36px;
   padding: 0 10px;
 
   border-radius: 14px;
@@ -170,16 +170,12 @@
 }
 
 .app-toolbar--compact .toolbar-btn {
-  height: 26px;
+  height: 30px;
 }
 
-.app-toolbar--compact .toolbar-btn--load {
-  height: 32px; /* garde la lisibilité du bouton à 2 lignes */
-}
 
 /* Bouton Charger : 2 lignes (label + nom de fichier) */
 .toolbar-btn--load {
-  height: 36px;            /* un peu plus haut pour 2 lignes */
   padding: 0 10px;
   align-items: center;
 }
