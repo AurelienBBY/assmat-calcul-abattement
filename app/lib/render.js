@@ -479,26 +479,46 @@
     container.appendChild(title);
 
     const bloc = document.createElement("div");
+    bloc.className = "summary-card";
     bloc.innerHTML =
-      `<div class="year-param-row">` +
-      `  <strong>Total abattement du mois :</strong> <span data-month-abatt>—</span>` +
+      // A) A renseigner
+      `<div class="summary-section summary-section--input">` +
+      `  <div class="summary-section__title"><strong>À renseigner (fiche de paie)</strong></div>` +
+      `  <p class="hint summary-help">Ces montants ne viennent pas du tableau : saisissez-les tels qu’ils apparaissent sur votre fiche de paie.</p>` +
+      `  <div class="year-param-row summary-row">` +
+      `    <label class="inline-label" for="abmat-net">Revenu net imposable :</label>` +
+      `    <input id="abmat-net" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0,00" />` +
+      `    <div class="hint summary-sub">Montant "net imposable" du mois.</div>` +
+      `  </div>` +
+      `  <div class="year-param-row summary-row">` +
+      `    <label class="inline-label" for="abmat-irf">Indemnités représentatives de frais (IRF) :</label>` +
+      `    <input id="abmat-irf" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0,00" />` +
+      `    <div class="hint summary-sub">Si vous n’en avez pas, laissez 0.</div>` +
+      `  </div>` +
+      `  <div class="summary-warning hint" data-summary-warning style="display:none"></div>` +
       `</div>` +
-      `<div class="year-param-row">` +
-      `  <label class="inline-label" for="abmat-net">Revenu net imposable (fiche de paie) :</label>` +
-      `  <input id="abmat-net" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0,00" />` +
-      `</div>` +
-      `<div class="year-param-row">` +
-      `  <label class="inline-label" for="abmat-irf">Indemnités représentatives de frais (IRF) :</label>` +
-      `  <input id="abmat-irf" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0,00" />` +
-      `</div>` +
-      `<hr>` +
-      `<div class="year-param-row">` +
-      `  <strong>Total perçu (net + IRF) :</strong> <span data-month-percu>—</span>` +
-      `</div>` +
-      `<div class="year-param-row">` +
-      `  <strong>Revenu imposable après abattement :</strong> <span data-month-imposable>—</span>` +
-      `</div>` +
-      `<p class="hint">Le revenu imposable ne peut pas être négatif.</p>`;
+
+      // B) Résultats
+      `<div class="summary-section summary-section--results">` +
+      `  <div class="summary-section__title"><strong>Résultats (calculés)</strong></div>` +
+      `  <div class="year-param-row summary-row">` +
+      `    <span><strong>Total perçu</strong> <span class="hint">(net + IRF, avant abattement)</span> :</span>` +
+      `    <span data-month-percu>—</span>` +
+      `  </div>` +
+      `  <div class="year-param-row summary-row">` +
+      `    <span><strong>Abattement total calculé</strong> :</span>` +
+      `    <span data-month-abatt>—</span>` +
+      `  </div>` +
+      `  <div class="summary-result" role="status" aria-live="polite">` +
+      `    <div class="summary-result__label">Montant à déclarer <span class="hint">(après abattement)</span></div>` +
+      `    <div class="summary-result__value" data-month-declare>—</div>` +
+      `  </div>` +
+      `  <div class="year-param-row summary-row summary-row--muted">` +
+      `    <span>Revenu imposable après abattement :</span>` +
+      `    <span data-month-imposable>—</span>` +
+      `  </div>` +
+      `  <p class="hint">Le montant à déclarer ne peut pas être négatif.</p>` +
+      `</div>`;
     container.appendChild(bloc);
 
     const netEl = container.querySelector("#abmat-net");
@@ -529,10 +549,12 @@
     const abattEl = container.querySelector("[data-month-abatt]");
     const percuEl = container.querySelector("[data-month-percu]");
     const imposableEl = container.querySelector("[data-month-imposable]");
+    const declareEl = container.querySelector("[data-month-declare]");
 
     if (abattEl) abattEl.textContent = U.fmtEuro(computed.monthAbatt || 0);
     if (percuEl) percuEl.textContent = U.fmtEuro(computed.percu || 0);
     if (imposableEl) imposableEl.textContent = U.fmtEuro(computed.imposable || 0);
+    if (declareEl) declareEl.textContent = U.fmtEuro(computed.imposable || 0);
   };
 
   // -------------------------------------------------------------------------
