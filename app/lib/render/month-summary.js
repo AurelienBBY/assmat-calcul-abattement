@@ -33,6 +33,18 @@
     return `${(v || 0).toFixed(2)} €`;
   }
 
+  function getMonthLabelLower(state) {
+    try {
+      const idx = state && typeof state.monthIndex === "number" ? state.monthIndex : null;
+      if (idx === null) return "";
+      const months = U && Array.isArray(U.MONTHS_FR) ? U.MONTHS_FR : null;
+      const label = months && months[idx] ? String(months[idx]) : "";
+      return label ? label.toLowerCase() : "";
+    } catch (e) {
+      return "";
+    }
+  }
+
   // ---------------------------------------------------------------------------
   // 4) Récapitulatif du mois (mensuel)
   // ---------------------------------------------------------------------------
@@ -41,30 +53,40 @@
    * Rendu de la box "Résultats (calculés)".
    * @returns {HTMLDivElement}
    */
-  R.renderMonthSummaryResultsBox = function renderMonthSummaryResultsBox() {
+  R.renderMonthSummaryResultsBox = function renderMonthSummaryResultsBox(state) {
     const box = document.createElement("div");
-    box.className = "summary-section summary-section--results";
+
+    // IMPORTANT: pas de sous-carte ici. La section HTML est déjà la carte principale.
+    box.className = "month-results";
+
+    const monthLabel = getMonthLabelLower(state);
+    const monthSuffix = monthLabel ? ` de ${monthLabel}` : "";
 
     box.innerHTML =
-      `<div class="summary-section__title"><strong>Résultats (calculés)</strong></div>` +
-      `<div class="year-param-row summary-row">` +
-      `  <span><strong>Total perçu</strong> <span class="hint">(net + IRF, avant abattement)</span> :</span>` +
-      `  <span data-month-percu>—</span>` +
-      `</div>` +
-      `<div class="year-param-row summary-row">` +
-      `  <span><strong>Abattement total calculé</strong> :</span>` +
-      `  <span data-month-abatt>—</span>` +
-      `</div>` +
       `<div class="summary-result" role="status" aria-live="polite">` +
-      `  <div class="summary-result__label">Montant à déclarer <span class="hint">(après abattement)</span></div>` +
-      `  <div class="summary-result__value" data-month-declare>—</div>` +
+      `  <div class="summary-result__label">Revenu imposable après abattement</div>` +
+      `  <div class="hint">À reporter sur votre déclaration.</div>` +
+      `  <div class="summary-result__value" data-month-imposable>—</div>` +
       `</div>` +
-      `<div class="year-param-row summary-row summary-row--muted">` +
-      `  <span>Revenu imposable après abattement :</span>` +
-      `  <span data-month-imposable>—</span>` +
-      `</div>` +
-      `<p class="hint">Le montant à déclarer ne peut pas être négatif.</p>`;
-
+      `<div class="month-details" aria-label="Détails du calcul">` +
+      `  <div class="month-details__title">Détails</div>` +
+      `  <div class="year-param-row summary-row">` +
+      `    <span>` +
+      `      <strong>Total perçu</strong>` +
+      `      <span class="hint">Net + IRF, avant abattement.</span>` +
+      `    </span>` +
+      `    <span data-month-percu>—</span>` +
+      `  </div>` +
+      `  <div class="year-param-row summary-row">` +
+      `    <span>` +
+      `      <strong>Abattement total pour le mois${monthSuffix}</strong>` +
+      `      <span class="hint">Somme des abattements calculés sur le tableau.</span>` +
+      `    </span>` +
+      `    <span data-month-abatt>—</span>` +
+      `  </div>` +
+      `  <p class="hint month-details__note">Le revenu imposable après abattement ne peut pas être négatif.</p>` +
+      `</div>`;
+      
     return box;
   };
 
@@ -78,18 +100,8 @@
     if (!container) return;
     container.innerHTML = "";
 
-    const title = document.createElement("h3");
-    title.className = "summary-title";
-    if (U && Array.isArray(U.MONTHS_FR) && Number.isFinite(Number(state && state.monthIndex))) {
-      const m = U.MONTHS_FR[state.monthIndex] || "";
-      title.textContent = `Récapitulatif — ${m} ${state.year}`.trim();
-    } else {
-      title.textContent = "Récapitulatif";
-    }
-    container.appendChild(title);
-
-    // Box unique : résultats calculés
-    const resultsBox = R.renderMonthSummaryResultsBox();
+    // Box unique : résultats calculés (la section parente porte déjà le titre du mois)
+    const resultsBox = R.renderMonthSummaryResultsBox(state);
     container.appendChild(resultsBox);
   };
 
@@ -104,7 +116,6 @@
     const abattEl = container.querySelector("[data-month-abatt]");
     const percuEl = container.querySelector("[data-month-percu]");
     const imposableEl = container.querySelector("[data-month-imposable]");
-    const declareEl = container.querySelector("[data-month-declare]");
 
     const abatt = computed && typeof computed.abatt === "number" ? computed.abatt : 0;
     const percu = computed && typeof computed.percu === "number" ? computed.percu : 0;
@@ -113,6 +124,5 @@
     if (abattEl) abattEl.textContent = safeFmtEuro(abatt);
     if (percuEl) percuEl.textContent = safeFmtEuro(percu);
     if (imposableEl) imposableEl.textContent = safeFmtEuro(imposable);
-    if (declareEl) declareEl.textContent = safeFmtEuro(imposable);
   };
 })();
