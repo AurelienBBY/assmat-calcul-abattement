@@ -2,7 +2,7 @@
    app.js — Bootstrap (orchestration)
    ----------------------------------------------------------------------------
    Ce fichier est volontairement "court" :
-   - Rendu DOM :        app/lib/render.js  (ABMAT.render)
+   - Rendu DOM :        app/lib/render/* (ABMAT.render)
    - Calculs métier :   app/lib/calc.js    (ABMAT.calc)
    - Stockage :         app/lib/storage.js (ABMAT.storage)
    - Utilitaires :      app/lib/utils.js   (ABMAT.utils)
@@ -211,11 +211,13 @@
         const percu = U.round2(net + irf);
         const imposable = Math.max(0, U.round2(percu - (monthAbatt || 0)));
 
-        R.updateSummaryComputed(summaryEl, {
-            monthAbatt: monthAbatt || 0,
-            percu,
-            imposable
-        });
+        if (typeof R.updateMonthSummaryComputed === "function") {
+            R.updateMonthSummaryComputed(summaryEl, {
+                abatt: monthAbatt || 0,
+                percu,
+                imposable
+            });
+        }
     }
 
     // --- Callbacks UI ---------------------------------------------------------
@@ -260,8 +262,17 @@
 
     function onMoneyChange(chg) {
         if (!state.data) return;
-        state.data.netImposable = Number.isFinite(Number(chg.netImposable)) ? Number(chg.netImposable) : 0;
-        state.data.irf = Number.isFinite(Number(chg.irf)) ? Number(chg.irf) : 0;
+
+        // Compat : month-summary peut envoyer {net, irf} ou {netImposable, irf}
+        const netVal = (chg && typeof chg === "object")
+            ? (chg.netImposable ?? chg.net ?? 0)
+            : 0;
+        const irfVal = (chg && typeof chg === "object")
+            ? (chg.irf ?? 0)
+            : 0;
+
+        state.data.netImposable = Number.isFinite(Number(netVal)) ? Number(netVal) : 0;
+        state.data.irf = Number.isFinite(Number(irfVal)) ? Number(irfVal) : 0;
         saveNow();
 
         const monthAbatt = computeMonthTotalAbattAndRefreshTable();
@@ -529,23 +540,29 @@
         // 3) Tableau
         R.renderMonthTable(tableEl, { year: state.year, monthIndex: state.monthIndex }, onTimeChange);
 
-        // 4) Récap
-        R.renderSummary(
-            summaryEl,
-            {
-                year: state.year,
-                monthIndex: state.monthIndex,
-                netImposable: state.data ? state.data.netImposable : 0,
-                irf: state.data ? state.data.irf : 0
-            },
-            onMoneyChange
-        );
+        // 4) Récap (mensuel)
+        if (typeof R.renderMonthSummary === "function") {
+            R.renderMonthSummary(
+                summaryEl,
+                {
+                    year: state.year,
+                    monthIndex: state.monthIndex,
+                    netImposable: state.data ? state.data.netImposable : 0,
+                    irf: state.data ? state.data.irf : 0
+                },
+                onMoneyChange
+            );
+        }
 
         // 5) Actions : branchées sur la toolbar sticky (export / import / print)
-        R.renderActions(null, { year: state.year, monthIndex: state.monthIndex }, onPrint, onExport, onImportRequest);
+        if (typeof R.renderActions === "function") {
+            R.renderActions(null, { year: state.year, monthIndex: state.monthIndex }, onPrint, onExport, onImportRequest);
+        }
 
         // 6) Date d’édition
-        R.renderGeneratedDate();
+        if (typeof R.renderGeneratedDate === "function") {
+            R.renderGeneratedDate();
+        }
 
         if (initialRender) {
             // À l’init, on s’assure que la locale FR est posée

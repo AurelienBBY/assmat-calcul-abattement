@@ -152,7 +152,7 @@
        TABLEAU DES JOURS DU MOIS
        ========================================================= -->
   <main>
-    <h2>Détail journalier</h2>
+    <h2>Temps de présence des enfants</h2>
 
     <!--
       Tableau principal :
@@ -240,9 +240,17 @@
   <script src="app/lib/utils.js"></script>
   <script src="app/lib/calc.js"></script>
   <script src="app/lib/storage.js"></script>
-  <script src="app/lib/render.js"></script>
+
+  <!-- Renderers (ordre important) -->
+  <script src="app/lib/render/index.js"></script>
   <script src="app/lib/render/explain.js"></script>
-  <script src="app/lib/render/rules.js"></script>
+  <script src="app/lib/render/period.js"></script>
+  <script src="app/lib/render/year-abattement.js"></script>
+  <script src="app/lib/render/month-table.js"></script>
+  <script src="app/lib/render/month-summary.js"></script>
+  <script src="app/lib/render/toolbar-actions.js"></script>
+  <script src="app/lib/render/footer.js"></script>
+
   <script src="app/app.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', () => {
