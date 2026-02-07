@@ -505,6 +505,22 @@
         // Toolbar : met à jour le texte mois/année (si présent)
         updateToolbarContextText();
 
+        // Titres dynamiques des sections (mois / année)
+        const monthLabel = getMonthLabelFR(state.monthIndex);
+        const yearLabel = state.year;
+
+        const payslipSection = document.getElementById("payslip-section");
+        if (payslipSection) {
+            const h2 = payslipSection.querySelector("h2");
+            if (h2) h2.textContent = `Déclaration du mois — ${monthLabel} ${yearLabel}`;
+        }
+
+        const resultsSection = document.getElementById("month-results-section");
+        if (resultsSection) {
+            const h2 = resultsSection.querySelector("h2");
+            if (h2) h2.textContent = `Résultats du mois — ${monthLabel} ${yearLabel}`;
+        }
+
         // 1bis) Explication (non interactif)
         if (explainEl && typeof R.renderExplain === "function") {
             R.renderExplain(explainEl, {

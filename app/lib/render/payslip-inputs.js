@@ -67,22 +67,32 @@
    */
   R.renderPayslipInputsBox = function renderPayslipInputsBox(state) {
     const box = document.createElement("div");
-    box.className = "summary-section summary-section--input";
+
+    // IMPORTANT: pas de sous-carte ici. La section HTML est déjà la carte principale.
+    box.className = "payslip-form";
 
     box.innerHTML =
-      `<div class="summary-section__title"><strong>À renseigner (fiche de paie)</strong></div>` +
-      `<p class="hint summary-help">Ces montants ne viennent pas du tableau : saisissez-les tels qu’ils apparaissent sur votre fiche de paie.</p>` +
-      `<div class="year-param-row summary-row">` +
-      `  <label class="inline-label" for="abmat-net">Revenu net imposable :</label>` +
-      `  <input id="abmat-net" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0,00" />` +
-      `  <div class="hint summary-sub">Montant "net imposable" du mois.</div>` +
+      `<div class="payslip-row">` +
+      `  <div class="payslip-row__text">` +
+      `    <label class="inline-label" for="abmat-net">Revenu net imposable :</label>` +
+      `    <div class="hint payslip-hint">Montant "net imposable" du mois.</div>` +
+      `  </div>` +
+      `  <div class="payslip-row__field payslip-field--currency">` +
+      `    <input id="abmat-net" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0,00" />` +
+      `    <span class="payslip-currency">€</span>` +
+      `  </div>` +
       `</div>` +
-      `<div class="year-param-row summary-row">` +
-      `  <label class="inline-label" for="abmat-irf">Indemnités représentatives de frais (IRF) :</label>` +
-      `  <input id="abmat-irf" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0,00" />` +
-      `  <div class="hint summary-sub">Si vous n’en avez pas, laissez 0.</div>` +
+      `<div class="payslip-row payslip-row--divider">` +
+      `  <div class="payslip-row__text">` +
+      `    <label class="inline-label" for="abmat-irf">Indemnités représentatives de frais (IRF) :</label>` +
+      `    <div class="hint payslip-hint">Si vous n’en avez pas, laissez 0.</div>` +
+      `  </div>` +
+      `  <div class="payslip-row__field payslip-field--currency">` +
+      `    <input id="abmat-irf" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0,00" />` +
+      `    <span class="payslip-currency">€</span>` +
+      `  </div>` +
       `</div>` +
-      `<div class="summary-warning hint" data-summary-warning style="display:none"></div>`;
+      `<div class="payslip-warning hint" data-summary-warning style="display:none"></div>`;
 
     // Pré-remplissage
     const money = initialMoneyFromState(state);
@@ -111,8 +121,10 @@
     const irfEl = box.querySelector("#abmat-irf");
 
     // Garde anti double-bind (si re-render)
-    const root = box;
-    if (root && root.dataset && root.dataset.abmatBound === "1") return;
+    const root = container;
+    if (root && root.dataset && root.dataset.abmatBound === "1") {
+      // On re-render quand même (container.innerHTML vient d'être vidé), donc on ne return pas.
+    }
     if (root && root.dataset) root.dataset.abmatBound = "1";
 
     const emit = () => {
@@ -136,7 +148,7 @@
   };
 
   // ---------------------------------------------------------------------------
-  // Compat : anciens noms pendant la refacto
+  // Compat : alias pour anciens usages (la structure est modifiée mais fonctionnellement identique)
   // ---------------------------------------------------------------------------
 
   // Ancien helper utilisé dans month-summary.js (avant découpage)
