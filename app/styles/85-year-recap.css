@@ -1,0 +1,171 @@
+/* ============================================================================
+   80-month-results.css — Résultats du mois (calculés)
+   ----------------------------------------------------------------------------
+   - La section #month-results-section est la carte principale.
+   - Le renderer injecte un conteneur .month-results dans #month-results.
+   - On met en avant le "Revenu imposable après abattement" puis les détails.
+   ========================================================================== */
+
+#month-results-section {
+  margin-top: 16px;
+}
+
+/* Titre de section : Résultats du mois — <mois année> */
+#month-results-section h2 {
+  font-size: 1.05rem;
+  font-weight: 800;
+  line-height: 1.25;
+  margin-bottom: 4px;
+}
+
+#month-results-section .hint {
+  margin-top: 4px;
+}
+
+/* Conteneur rendu par month-summary.js (pas une sous-carte) */
+#month-results .month-results {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+/* Bloc "Détails" : explicite que les lignes expliquent le total */
+#month-results .month-details {
+  margin-top: 6px;
+  padding: 10px 12px;
+  border-left: 2px solid rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.025);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: min(100%, 1020px);
+  margin: 6px auto 0;
+}
+
+/* Séparateurs discrets entre les lignes de détail */
+#month-results .month-details .summary-row + .summary-row {
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  padding-top: 10px;
+  margin-top: 6px;
+}
+
+/* Hints sur ligne dédiée (labels + détails) */
+#month-results .summary-result .hint,
+#month-results .month-details .hint {
+  display: block;
+}
+
+#month-results .summary-result .hint {
+  grid-area: hint;
+  margin-top: 0;
+}
+
+/* Hints plus collés sous les labels dans les détails */
+#month-results .month-details .hint {
+  margin-top: 2px;
+}
+
+/* Valeurs en bulle à droite */
+#month-results .month-details .summary-row > span:last-child {
+  justify-self: end;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.85);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+#month-results .month-details__title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: rgba(0, 0, 0, 0.55);
+  letter-spacing: 0.01em;
+}
+
+/* Valeur phare : revenu imposable après abattement */
+#month-results .summary-result {
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  background: rgba(232, 237, 255, 0.80);
+  padding: 12px;
+
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "label value"
+    "hint  value";
+  column-gap: 12px;
+  row-gap: 2px;
+  align-items: center;
+}
+
+#month-results .summary-result__label {
+  grid-area: label;
+  font-weight: 700;
+  margin-bottom: 0;
+}
+
+#month-results .summary-result__value {
+  grid-area: value;
+  justify-self: end;
+  align-self: center;
+
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  background: rgba(255, 255, 255, 0.90);
+
+  font-weight: 900;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+/* Lignes de détails */
+#month-results .summary-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+}
+
+#month-results .summary-row--muted {
+  opacity: 0.85;
+}
+
+#month-results .summary-row > span:first-child strong {
+  font-weight: 700; /* au lieu d’un gras “trop titre” */
+}
+
+/* Responsive */
+@media (max-width: 720px) {
+  #month-results .summary-row {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  #month-results .summary-result {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "label"
+      "hint"
+      "value";
+    row-gap: 6px;
+  }
+
+  #month-results .summary-result__value {
+    justify-self: start;
+  }
+
+  #month-results .month-details .summary-row > span:last-child {
+    justify-self: start;
+  }
+
+  #month-results .summary-result__value {
+    font-size: 20px;
+  }
+}

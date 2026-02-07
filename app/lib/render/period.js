@@ -73,6 +73,8 @@ R.renderPeriodSelector = function renderPeriodSelector(container, state, onPerio
   const effectiveYear = Number.isFinite(Number(state.year)) ? Number(state.year) : currentYear;
   yearSelect.value = String(effectiveYear);
 
+  const isRecapActive = (effectiveMonth === 12);
+
   // Emit function
   const emit = (nextMonthIndex) => {
     const next = {
@@ -100,7 +102,7 @@ R.renderPeriodSelector = function renderPeriodSelector(container, state, onPerio
   U.MONTHS_FR.forEach((name, idx) => {
     const btn = document.createElement("button");
     btn.type = "button";
-    const isActive = (idx === effectiveMonth);
+    const isActive = (!isRecapActive && idx === effectiveMonth);
     btn.className = "month-tab" + (isActive ? " is-active" : "");
     btn.setAttribute("data-month", String(idx));
     btn.setAttribute("aria-label", name);
@@ -110,13 +112,14 @@ R.renderPeriodSelector = function renderPeriodSelector(container, state, onPerio
     tabs.appendChild(btn);
   });
 
-  // Onglet RécaP (pas encore actif)
+  // Onglet RÉCAP (vue annuelle)
   const recapBtn = document.createElement("button");
   recapBtn.type = "button";
-  recapBtn.className = "month-tab month-tab--recap";
+  recapBtn.className = "month-tab month-tab--recap" + (isRecapActive ? " is-active" : "");
   recapBtn.textContent = "RÉCAP";
-  recapBtn.disabled = true;
-  recapBtn.setAttribute("aria-disabled", "true");
+  recapBtn.setAttribute("aria-label", "Récapitulatif annuel");
+
+  recapBtn.addEventListener("click", () => emit(12));
   tabs.appendChild(recapBtn);
 
   // Assemble elements

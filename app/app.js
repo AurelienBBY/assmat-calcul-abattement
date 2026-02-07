@@ -28,7 +28,7 @@
 
     const state = {
         year: null,
-        monthIndex: null,     // 0..11
+        monthIndex: null,     // 0..11 (mois) ; 12 = RÉCAP annuel
         key: null,            // abmat:YYYY-MM
         data: null            // monthData
     };
@@ -349,6 +349,10 @@
         const ctx = document.querySelector('[data-toolbar-context]');
         if (!ctx) return;
         const y = Number(state.year);
+        if (isRecapMode()) {
+            ctx.textContent = `• Récap ${y}`;
+            return;
+        }
         const m = getMonthLabelFR(state.monthIndex);
         ctx.textContent = `• ${m} ${y}`;
     }
@@ -493,6 +497,15 @@
 
     // --- Rendu global ---------------------------------------------------------
 
+        function setElVisible(el, visible) {
+        if (!el) return;
+        el.style.display = visible ? "" : "none";
+    }
+
+    function isRecapMode() {
+        return Number(state.monthIndex) === 12;
+    }
+
     function renderAll(initialRender) {
         const periodEl = U.safeEl("period-selector");
         const explainEl = U.safeEl("explain");
@@ -505,20 +518,58 @@
         // Toolbar : met à jour le texte mois/année (si présent)
         updateToolbarContextText();
 
-        // Titres dynamiques des sections (mois / année)
-        const monthLabel = getMonthLabelFR(state.monthIndex);
-        const yearLabel = state.year;
+        const recapMode = isRecapMode();
 
         const payslipSection = document.getElementById("payslip-section");
-        if (payslipSection) {
-            const h2 = payslipSection.querySelector("h2");
-            if (h2) h2.textContent = `Déclaration du mois — ${monthLabel} ${yearLabel}`;
-        }
-
         const resultsSection = document.getElementById("month-results-section");
+        const tableSection = document.getElementById("month-table-section");
+        const tableRoot = document.getElementById("month-table");
+
+        // Affichage : en mode RÉCAP on masque les éléments mensuels.
+        setElVisible(payslipSection, !recapMode);
+        setElVisible(tableSection, !recapMode);
+        // Fallback si le conteneur section n'existe pas
+        setElVisible(tableRoot, !recapMode);
+
+    if (recapMode) {
+        // Titres dynamiques : RÉCAP
         if (resultsSection) {
             const h2 = resultsSection.querySelector("h2");
-            if (h2) h2.textContent = `Résultats du mois — ${monthLabel} ${yearLabel}`;
+            if (h2) h2.textContent = `Récap annuel — ${state.year}`;
+        }
+
+        // RÉCAP annuel — rendu avec les données réelles (compute)
+        const resultsEl = document.getElementById("month-results");
+        const Compute = window.ABMAT && window.ABMAT.compute;
+
+        if (!resultsEl) {
+            // rien
+        } else if (typeof R.renderYearRecap !== "function") {
+            resultsEl.textContent = "Erreur : renderYearRecap() non chargé (vérifie l’ordre des scripts).";
+        } else if (!Compute || typeof Compute.computeYearRecap !== "function") {
+            resultsEl.textContent = "Erreur : computeYearRecap() non chargé (vérifie l’ordre des scripts).";
+        } else {
+            const recap = Compute.computeYearRecap(state.year);
+
+            R.renderYearRecap(resultsEl, recap, (monthIdx) => {
+                state.monthIndex = Number(monthIdx);
+                loadAndRenderMonth(true);
+            });
+        }
+    } else {
+            // Titres dynamiques : mensuel
+            const monthLabel = getMonthLabelFR(state.monthIndex);
+            const yearLabel = state.year;
+
+            if (payslipSection) {
+                const h2 = payslipSection.querySelector("h2");
+                if (h2) h2.textContent = `Déclaration du mois — ${monthLabel} ${yearLabel}`;
+            }
+
+            if (resultsSection) {
+                const h2 = resultsSection.querySelector("h2");
+                if (h2) h2.textContent = `Résultats du mois — ${monthLabel} ${yearLabel}`;
+            }
         }
 
         // 1bis) Explication (non interactif)
@@ -553,11 +604,14 @@
         );
 
         // 3) Tableau
-        R.renderMonthTable(tableEl, { year: state.year, monthIndex: state.monthIndex }, onTimeChange);
+        if (!isRecapMode()) {
+            R.renderMonthTable(tableEl, { year: state.year, monthIndex: state.monthIndex }, onTimeChange);
+        }
 
         // 4) Déclaration du mois (fiche de paie)
-        const payslipEl = document.getElementById("payslip-inputs");
-        if (payslipEl && typeof R.renderPayslipInputs === "function") {
+        if (!isRecapMode()) {
+            const payslipEl = document.getElementById("payslip-inputs");
+            if (payslipEl && typeof R.renderPayslipInputs === "function") {
             R.renderPayslipInputs(
                 payslipEl,
                 {
@@ -566,28 +620,31 @@
                 },
                 onMoneyChange
             );
+            }
         }
 
         // 5) Résultats du mois (calculés)
-        const resultsEl = document.getElementById("month-results");
-        if (resultsEl && typeof R.renderMonthSummary === "function") {
-            R.renderMonthSummary(
-                resultsEl,
-                {
-                    year: state.year,
-                    monthIndex: state.monthIndex
-                }
-            );
-        }
+        if (!isRecapMode()) {
+            const resultsEl = document.getElementById("month-results");
+            if (resultsEl && typeof R.renderMonthSummary === "function") {
+                R.renderMonthSummary(
+                    resultsEl,
+                    {
+                        year: state.year,
+                        monthIndex: state.monthIndex
+                    }
+                );
+            }
 
-        // 5) Actions : branchées sur la toolbar sticky (export / import / print)
-        if (typeof R.renderActions === "function") {
-            R.renderActions(null, { year: state.year, monthIndex: state.monthIndex }, onPrint, onExport, onImportRequest);
-        }
+            // 5) Actions : branchées sur la toolbar sticky (export / import / print)
+            if (typeof R.renderActions === "function") {
+                R.renderActions(null, { year: state.year, monthIndex: state.monthIndex }, onPrint, onExport, onImportRequest);
+            }
 
-        // 6) Date d’édition
-        if (typeof R.renderGeneratedDate === "function") {
-            R.renderGeneratedDate();
+            // 6) Date d’édition
+            if (typeof R.renderGeneratedDate === "function") {
+                R.renderGeneratedDate();
+            }
         }
 
         if (initialRender) {
@@ -600,6 +657,13 @@
     // --- Chargement mois ------------------------------------------------------
 
     function loadAndRenderMonth(initialRender) {
+        if (Number(state.monthIndex) === 12) {
+            state.key = null;
+            state.data = null;
+            renderAll(!!initialRender);
+            return;
+        }
+
         const loaded = S.loadMonth(state.year, state.monthIndex);
         state.key = loaded.key;
         state.data = loaded.data;
