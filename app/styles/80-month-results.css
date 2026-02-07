@@ -1,0 +1,75 @@
+/* ============================================================================
+   80-month-results.css — Résultats du mois (calculés)
+   ----------------------------------------------------------------------------
+   Styles pour #month-results-section, #month-results et le bloc de résultats
+   ========================================================================== */
+
+#month-results-section {
+  margin-top: 16px;
+}
+
+#month-results .summary-section {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(248, 250, 255, 0.95);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+#month-results .summary-section__title {
+  margin: 0 0 8px;
+}
+
+#month-results .summary-help {
+  margin: 0 0 10px;
+}
+
+#month-results .summary-row {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(140px, 190px);
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+}
+
+#month-results .summary-row .inline-label {
+  margin: 0;
+}
+
+#month-results .summary-row--muted {
+  opacity: 0.85;
+}
+
+#month-results .summary-result {
+  margin-top: 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(232, 237, 255, 0.8);
+  padding: 10px;
+}
+
+#month-results .summary-result__label {
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+#month-results .summary-result__value {
+  font-weight: 900;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+}
+
+/* Responsive */
+@media (max-width: 720px) {
+  #month-results .summary-row {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  #month-results .summary-row input[type="number"] {
+    height: 40px;
+  }
+
+  #month-results .summary-result__value {
+    font-size: 20px;
+  }
+}

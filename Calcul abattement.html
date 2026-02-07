@@ -18,7 +18,8 @@
 
   <link rel="stylesheet" href="app/styles/60-tuto.css" />
   <link rel="stylesheet" href="app/styles/70-modal.css" />
-  <link rel="stylesheet" href="app/styles/80-summary.css" />
+  <link rel="stylesheet" href="app/styles/75-payslip-inputs.css" />
+  <link rel="stylesheet" href="app/styles/80-month-results.css" />
 
   <link rel="stylesheet" href="app/styles/90-print.css" />
 
@@ -166,19 +167,31 @@
   </main>
 
   <!-- =========================================================
-       RÉCAPITULATIF MENSUEL & RAPPROCHEMENT PAIE
+       DÉCLARATION DU MOIS (FICHE DE PAIE)
        ========================================================= -->
-  <section id="summary-section">
-    <h2>Récapitulatif</h2>
+  <section id="payslip-section">
+    <h2>Déclaration du mois</h2>
 
-    <!--
-      Cette zone contient :
-      - total de l’abattement du mois
-      - saisie du revenu net imposable
-      - saisie des indemnités de frais (IRF)
-      - calcul du revenu imposable final
-    -->
-    <div id="summary">
+    <p class="hint">
+      Renseignez ici les montants de votre fiche de paie (net imposable et IRF).
+    </p>
+
+    <div id="payslip-inputs">
+      <!-- Généré dynamiquement par app.js -->
+    </div>
+  </section>
+
+  <!-- =========================================================
+       RÉSULTATS DU MOIS (CALCULÉS)
+       ========================================================= -->
+  <section id="month-results-section">
+    <h2>Résultats du mois</h2>
+
+    <p class="hint">
+      Résumé des montants calculés (abattement total et montant à déclarer).
+    </p>
+
+    <div id="month-results">
       <!-- Généré dynamiquement par app.js -->
     </div>
   </section>
@@ -247,6 +260,7 @@
   <script src="app/lib/render/period.js"></script>
   <script src="app/lib/render/year-abattement.js"></script>
   <script src="app/lib/render/month-table.js"></script>
+  <script src="app/lib/render/payslip-inputs.js"></script>
   <script src="app/lib/render/month-summary.js"></script>
   <script src="app/lib/render/toolbar-actions.js"></script>
   <script src="app/lib/render/footer.js"></script>

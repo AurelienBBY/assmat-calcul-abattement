@@ -202,8 +202,8 @@
     }
 
     function updateSummary(monthAbatt) {
-        const summaryEl = document.getElementById("summary");
-        if (!summaryEl || !state.data) return;
+        const resultsEl = document.getElementById("month-results");
+        if (!resultsEl || !state.data) return;
 
         const net = Number.isFinite(Number(state.data.netImposable)) ? Number(state.data.netImposable) : 0;
         const irf = Number.isFinite(Number(state.data.irf)) ? Number(state.data.irf) : 0;
@@ -212,7 +212,7 @@
         const imposable = Math.max(0, U.round2(percu - (monthAbatt || 0)));
 
         if (typeof R.updateMonthSummaryComputed === "function") {
-            R.updateMonthSummaryComputed(summaryEl, {
+            R.updateMonthSummaryComputed(resultsEl, {
                 abatt: monthAbatt || 0,
                 percu,
                 imposable
@@ -498,7 +498,6 @@
         const explainEl = U.safeEl("explain");
         const yearParamsEl = U.safeEl("year-params");
         const tableEl = U.safeEl("month-table");
-        const summaryEl = U.safeEl("summary");
 
         // 1) Sélecteurs (on peut re-render, c’est léger)
         R.renderPeriodSelector(periodEl, { year: state.year, monthIndex: state.monthIndex }, onPeriodChange);
@@ -540,17 +539,28 @@
         // 3) Tableau
         R.renderMonthTable(tableEl, { year: state.year, monthIndex: state.monthIndex }, onTimeChange);
 
-        // 4) Récap (mensuel)
-        if (typeof R.renderMonthSummary === "function") {
-            R.renderMonthSummary(
-                summaryEl,
+        // 4) Déclaration du mois (fiche de paie)
+        const payslipEl = document.getElementById("payslip-inputs");
+        if (payslipEl && typeof R.renderPayslipInputs === "function") {
+            R.renderPayslipInputs(
+                payslipEl,
                 {
-                    year: state.year,
-                    monthIndex: state.monthIndex,
                     netImposable: state.data ? state.data.netImposable : 0,
                     irf: state.data ? state.data.irf : 0
                 },
                 onMoneyChange
+            );
+        }
+
+        // 5) Résultats du mois (calculés)
+        const resultsEl = document.getElementById("month-results");
+        if (resultsEl && typeof R.renderMonthSummary === "function") {
+            R.renderMonthSummary(
+                resultsEl,
+                {
+                    year: state.year,
+                    monthIndex: state.monthIndex
+                }
             );
         }
 

@@ -1,11 +1,8 @@
 /* ============================================================================
-   render/month-summary.js — Récapitulatif du mois (fiche de paie + résultats)
+   render/month-summary.js — Résultats du mois (calculés)
    ----------------------------------------------------------------------------
    Rôle :
-   - Affiche 2 boxes :
-     1) "À renseigner (fiche de paie)" : net imposable + IRF
-     2) "Résultats (calculés)" : total perçu, abattement, montant à déclarer
-   - Émet les changements de saisie via onMoneyChange
+   - Affiche la box "Résultats (calculés)" : total perçu, abattement, montant à déclarer
    - Met à jour les montants calculés via updateMonthSummaryComputed
 
    Dépendances :
@@ -30,73 +27,15 @@
   // Helpers
   // ---------------------------------------------------------------------------
 
-  function numOrNull(v) {
-    if (typeof v === "number" && Number.isFinite(v)) return v;
-    if (typeof v === "string") {
-      const s = v.trim().replace(",", ".");
-      if (!s) return null;
-      const n = Number.parseFloat(s);
-      return Number.isFinite(n) ? n : null;
-    }
-    return null;
-  }
-
   function safeFmtEuro(v) {
     if (U && typeof U.fmtEuro === "function") return U.fmtEuro(v || 0);
     // Fallback minimal
     return `${(v || 0).toFixed(2)} €`;
   }
 
-  function initialMoneyFromState(state) {
-    const net =
-      (state && (state.monthNet ?? state.netImposable ?? state.net ?? state.payslipNetImposable)) ??
-      0;
-    const irf =
-      (state && (state.monthIrf ?? state.irf ?? state.payslipIrf)) ??
-      0;
-    return {
-      net: (typeof net === "number" && Number.isFinite(net)) ? net : 0,
-      irf: (typeof irf === "number" && Number.isFinite(irf)) ? irf : 0,
-    };
-  }
-
   // ---------------------------------------------------------------------------
   // 4) Récapitulatif du mois (mensuel)
   // ---------------------------------------------------------------------------
-
-  /**
-   * Rendu de la box "À renseigner (fiche de paie)".
-   * @param {Object} state
-   * @returns {HTMLDivElement}
-   */
-  R.renderMonthSummaryInputsBox = function renderMonthSummaryInputsBox(state) {
-    const box = document.createElement("div");
-    box.className = "summary-section summary-section--input";
-
-    box.innerHTML =
-      `<div class="summary-section__title"><strong>À renseigner (fiche de paie)</strong></div>` +
-      `<p class="hint summary-help">Ces montants ne viennent pas du tableau : saisissez-les tels qu’ils apparaissent sur votre fiche de paie.</p>` +
-      `<div class="year-param-row summary-row">` +
-      `  <label class="inline-label" for="abmat-net">Revenu net imposable :</label>` +
-      `  <input id="abmat-net" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0,00" />` +
-      `  <div class="hint summary-sub">Montant "net imposable" du mois.</div>` +
-      `</div>` +
-      `<div class="year-param-row summary-row">` +
-      `  <label class="inline-label" for="abmat-irf">Indemnités représentatives de frais (IRF) :</label>` +
-      `  <input id="abmat-irf" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0,00" />` +
-      `  <div class="hint summary-sub">Si vous n’en avez pas, laissez 0.</div>` +
-      `</div>` +
-      `<div class="summary-warning hint" data-summary-warning style="display:none"></div>`;
-
-    // Pré-remplit si on a déjà des valeurs
-    const money = initialMoneyFromState(state);
-    const netEl = box.querySelector("#abmat-net");
-    const irfEl = box.querySelector("#abmat-irf");
-    if (netEl) netEl.value = String(money.net || 0);
-    if (irfEl) irfEl.value = String(money.irf || 0);
-
-    return box;
-  };
 
   /**
    * Rendu de la box "Résultats (calculés)".
@@ -149,34 +88,9 @@
     }
     container.appendChild(title);
 
-    // Deux box distinctes
-    const inputsBox = R.renderMonthSummaryInputsBox(state);
+    // Box unique : résultats calculés
     const resultsBox = R.renderMonthSummaryResultsBox();
-    container.appendChild(inputsBox);
     container.appendChild(resultsBox);
-
-    const netEl = inputsBox.querySelector("#abmat-net");
-    const irfEl = inputsBox.querySelector("#abmat-irf");
-
-    const emit = () => {
-      const net = numOrNull(netEl ? netEl.value : "") ?? 0;
-      const irf = numOrNull(irfEl ? irfEl.value : "") ?? 0;
-
-      if (typeof onMoneyChange === "function") {
-        // Compat: certains handlers attendent (net, irf), d'autres un objet
-        if (onMoneyChange.length >= 2) onMoneyChange(net, irf);
-        else onMoneyChange({ net, irf });
-      }
-    };
-
-    if (netEl) {
-      netEl.addEventListener("change", emit);
-      netEl.addEventListener("blur", emit);
-    }
-    if (irfEl) {
-      irfEl.addEventListener("change", emit);
-      irfEl.addEventListener("blur", emit);
-    }
   };
 
   /**
