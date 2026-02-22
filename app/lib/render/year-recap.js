@@ -90,10 +90,10 @@
       `    </div>` +
       `    <div class="month-details" aria-label="Détails annuels">` +
       `      <div class="month-details__title">Détails</div>` +
-      `      <div class="year-param-row summary-row"><span><strong>Total NET imposable</strong><span class="hint">Somme des montants saisis (NET).</span></span><span data-year-net>${fmtEuro(totals.net)}</span></div>` +
-      `      <div class="year-param-row summary-row"><span><strong>Total IRF</strong><span class="hint">Somme des montants saisis (IRF).</span></span><span data-year-irf>${fmtEuro(totals.irf)}</span></div>` +
-      `      <div class="year-param-row summary-row"><span><strong>Total perçu</strong><span class="hint">NET + IRF (avant abattement).</span></span><span data-year-percu>${fmtEuro(totals.percu)}</span></div>` +
-      `      <div class="year-param-row summary-row"><span><strong>Abattement total</strong><span class="hint">Somme des abattements calculés sur l’année.</span></span><span data-year-abatt>${fmtEuro(totals.abatt)}</span></div>` +
+      `      <div class="year-param-row summary-row"><span><strong>TOTAL REVENUS NET IMPOSABLES</strong><span class="hint">Somme des revenus net imposables perçus en tant qu'assistante maternelle.</span></span><span data-year-net>${fmtEuro(totals.net)}</span></div>` +
+      `      <div class="year-param-row summary-row"><span><strong>TOTAL IRF</strong><span class="hint">Somme de toutes les Indemnités Représentatives de Frais (IRF) perçues sur l'année.</span></span><span data-year-irf>${fmtEuro(totals.irf)}</span></div>` +
+      `      <div class="year-param-row summary-row"><span><strong>TOTAL PERÇU</strong><span class="hint">Somme des revenus NET + IRF perçus sur l'année.</span></span><span data-year-percu>${fmtEuro(totals.percu)}</span></div>` +
+      `      <div class="year-param-row summary-row"><span><strong>ABATTEMENT</strong><span class="hint">Abattement total sur l'année, calculé en fonction des informations renseignées.</span></span><span data-year-abatt>${fmtEuro(totals.abatt)}</span></div>` +
       `      <div class="year-param-row summary-row"><span><strong>Total jours &lt; 8h</strong></span><span data-year-jlt8>${fmtInt(totals.j_lt8)}</span></div>` +
       `      <div class="year-param-row summary-row"><span><strong>Total jours ≥ 8h</strong></span><span data-year-jge8>${fmtInt(totals.j_ge8)}</span></div>` +
       `    </div>` +
