@@ -169,3 +169,33 @@
     font-size: 20px;
   }
 }
+
+/* ============================================================================
+   RÉCAP annuel — colonnes opérateurs (+, =, −) dans le tableau
+   ========================================================================== */
+
+/* En-têtes opérateurs : centrés, étroits, discrets */
+.year-recap__opcol{
+  width: 44px;
+  min-width: 44px;
+  max-width: 44px;
+  text-align: center;
+  font-weight: 900;
+  color: rgba(0, 0, 0, 0.55);
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* Les cellules opérateurs du body restent vides mais gardent l’alignement */
+.year-recap__table-wrap td.year-recap__opcol{
+  font-weight: 900;
+  color: rgba(0, 0, 0, 0.18);
+}
+
+@media (max-width: 720px){
+  .year-recap__opcol{
+    width: 34px;
+    min-width: 34px;
+    max-width: 34px;
+  }
+}

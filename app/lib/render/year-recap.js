@@ -1,5 +1,3 @@
-
-
 (function () {
   "use strict";
 
@@ -109,9 +107,13 @@
       `          <tr>` +
       `            <th>Mois</th>` +
       `            <th>NET</th>` +
+      `            <th class="year-recap__opcol" aria-hidden="true">+</th>` +
       `            <th>IRF</th>` +
+      `            <th class="year-recap__opcol" aria-hidden="true">=</th>` +
       `            <th>Total perçu</th>` +
+      `            <th class="year-recap__opcol" aria-hidden="true">−</th>` +
       `            <th>Abattement</th>` +
+      `            <th class="year-recap__opcol" aria-hidden="true">=</th>` +
       `            <th>Imposable</th>` +
       `            <th>Statut</th>` +
       `          </tr>` +
@@ -161,9 +163,13 @@
         `  ${daysSub}` +
         `</td>` +
         `<td>${net}</td>` +
+        `<td class="year-recap__opcol" aria-hidden="true"></td>` +
         `<td>${irf}</td>` +
+        `<td class="year-recap__opcol" aria-hidden="true"></td>` +
         `<td>${percu}</td>` +
+        `<td class="year-recap__opcol" aria-hidden="true"></td>` +
         `<td>${abatt}</td>` +
+        `<td class="year-recap__opcol" aria-hidden="true"></td>` +
         `<td>${imposable}</td>` +
         `<td>${statusChip(m.status)}</td>`;
 
