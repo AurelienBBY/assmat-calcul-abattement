@@ -40,7 +40,9 @@ window.ABMAT.render      app/lib/render/*.js        rendu DOM + événements (1 
 (orchestration)          app/app.js                 état, callbacks, cycle load→render→calc→save
 ```
 
-CSS découpé par zone dans `app/styles/` (préfixes numériques = ordre de chargement) ; `90-print.css` porte toute la mise en page PDF/impression. Le tutoriel est une page séparée (`app/modals/tuto.html`) chargée en iframe.
+CSS découpé par zone dans `app/styles/` (préfixes numériques = ordre de chargement). Le tutoriel est une page séparée (`app/modals/tuto.html`) chargée en iframe.
+
+**Impression** : on n'imprime jamais l'écran. `app.js` (`buildPrintDoc`, déclenché par le bouton Imprimer et par `beforeprint`) génère un document dans `#print-doc` — relevé mensuel (`compute/month-print.js` → `render/print-month.js`) ou récap annuel (`computeYearRecap` → `render/print-year.js`) selon la vue. `90-print.css` masque tout sauf `#print-doc` à l'impression (`body > :not(#print-doc)`) et le style en document serif. Socle commun `render/print-common.js` (en-tête d'identité lisant `abmat:profile`, règles, pied de page) — données via `textContent` uniquement.
 
 ### Invariant : une seule source de calcul
 

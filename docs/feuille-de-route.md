@@ -46,13 +46,11 @@ Cible de distribution : **GitHub Pages + PWA** (lot 6) — elle a un raccourci, 
 
 **Méthode** : maquette HTML d'abord (artifact), validée par l'utilisatrice finale avant de toucher au code.
 
-## Lot 4 — PDF
+## Lot 4 — PDF — ✅ fait le 2026-07-19
 
-**Pourquoi** : l'impression actuelle aplatit l'écran (champs de formulaire, pas d'identité). Un justificatif doit ressembler à un document.
-
-- **Gabarit d'impression dédié** : section print-only générée en JS ; l'app est masquée à l'impression. Pas de lib PDF (cohérent zéro dépendance).
-- **Deux documents** : fiche mensuelle (archive) et récap annuel (le document déclaration), avec en-tête identité (nom, CCAS, période, enfants), encadré des règles appliquées, totaux, date d'édition, mention « aide au calcul, sans valeur justificative ».
-- **Choix du mois/année à imprimer (décision 2026-07-19)** : pas de sélecteur d'impression dédié — **on imprime ce qu'on regarde** (vue mensuelle → relevé du mois affiché ; vue RÉCAP → récap de l'année affichée). La navigation existante suffit. Option ultérieure : « Imprimer le dossier complet de l'année » depuis le RÉCAP (les 12 relevés + le récap en un seul document, sauts de page entre relevés) pour le classeur de déclaration.
+- ✅ **Gabarit dédié** `#print-doc` généré en JS (bouton Imprimer + `beforeprint` pour Cmd+P) ; l'app entière est masquée à l'impression. Pas de lib PDF.
+- ✅ **Deux documents** : relevé mensuel (semaines → enfants → créneaux « 8h30 – 17h30 », absences motivées, fériés, sous-totaux, synthèse + règles) et récap annuel (encadré **case 1AJ** en tête, 12 mois, mémo, mention « conservez les relevés en annexe »). En-tête d'identité branché sur `abmat:profile` (fallback générique tant que le lot 5 n'est pas fait). Modèle mensuel testé (`compute/month-print.js`).
+- ✅ **On imprime ce qu'on regarde** (décision 2026-07-19) : vue mensuelle → relevé du mois, vue RÉCAP → récap de l'année. Option ultérieure conservée : « Imprimer le dossier complet de l'année » (12 relevés + récap, sauts de page).
 
 ## Lot 5 — Parcours utilisateur
 
