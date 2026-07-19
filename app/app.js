@@ -435,7 +435,7 @@
 
     function attachToolbarShrinkObserver() {
         const bar = document.getElementById("app-toolbar");
-        const sentinel = document.getElementById("toolbar-sentinel");
+        const sentinel = document.getElementById("period-sentinel");
         if (!bar || !sentinel || typeof IntersectionObserver !== "function") return;
 
         const obs = new IntersectionObserver(
@@ -584,11 +584,7 @@
         const coeff = getCoefficient();
         const forfaitJour = computeForfaitJour();
 
-        const renderYearRulesFn = (typeof R.renderYearRules === "function")
-            ? R.renderYearRules
-            : R.renderYearParams;
-
-        renderYearRulesFn(
+        R.renderYearRules(
             yearParamsEl,
             {
                 year: state.year,

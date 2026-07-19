@@ -97,7 +97,7 @@
     // Récap des règles (écran + PDF)
     const recapTitle = document.createElement("p");
     recapTitle.className = "year-params-subtitle";
-    recapTitle.textContent = `Somme forfaitaire à déduire pour en année ${year}`;
+    recapTitle.textContent = `Somme forfaitaire à déduire pour l'année ${year}`;
     container.appendChild(recapTitle);
 
     const recap = document.createElement("div");
@@ -116,7 +116,4 @@
 
     container.appendChild(recap);
   };
-
-  // Backward-compat : tant que app.js appelle encore renderYearParams
-  R.renderYearParams = R.renderYearParams || R.renderYearRules;
 })();

@@ -19,12 +19,8 @@
   // Convenience alias (for debugging in console)
   window.R = window.ABMAT.render;
 
-  // Guard: Utils must be loaded before renderers
-  if (!window.U) {
-    // Non-fatal: some pages/tests may load renderers without the full app.
-    // But in the main app this should never happen.
-    console.warn(
-      "ABMAT: Utils (window.U) not found. Ensure app/lib/utils.js is loaded before render/*.js"
-    );
+  // Garde : utils doit être chargé avant les renderers
+  if (!window.ABMAT.utils) {
+    throw new Error("ABMAT.utils est requis avant les renderers (charger utils.js en premier).");
   }
 })();
