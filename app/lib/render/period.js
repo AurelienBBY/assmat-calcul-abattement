@@ -126,6 +126,16 @@ R.renderPeriodSelector = function renderPeriodSelector(container, state, onPerio
   recapBtn.addEventListener("click", () => emit(12));
   tabs.appendChild(recapBtn);
 
+  // Onglet MES INFOS (profil : identité, enfants, semaines types)
+  const infosBtn = document.createElement("button");
+  infosBtn.type = "button";
+  infosBtn.className = "month-tab month-tab--recap" + (effectiveMonth === 13 ? " is-active" : "");
+  infosBtn.textContent = "MES INFOS";
+  infosBtn.setAttribute("aria-label", "Mes informations");
+
+  infosBtn.addEventListener("click", () => emit(13));
+  tabs.appendChild(infosBtn);
+
   // Assemble elements
   yearWrap.appendChild(yearLabel);
   yearWrap.appendChild(yearTabs);

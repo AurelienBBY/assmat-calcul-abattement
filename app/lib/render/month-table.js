@@ -102,6 +102,25 @@
     heading.textContent = `Mois : ${U.MONTHS_FR[monthIndex]} ${year} (jours ouvrés)`;
     container.appendChild(heading);
 
+    // Mois vide + semaines types disponibles : proposer le pré-remplissage.
+    if (state.prefillAvailable && typeof handlers.onPrefill === "function") {
+      const banner = document.createElement("div");
+      banner.className = "prefill-banner";
+
+      const text = document.createElement("span");
+      text.textContent = "Ce mois est vide — remplissez-le en un clic avec les semaines types de vos enfants (fériés exclus).";
+      banner.appendChild(text);
+
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "prefill-banner__btn";
+      btn.textContent = "Pré-remplir le mois";
+      btn.addEventListener("click", () => handlers.onPrefill());
+      banner.appendChild(btn);
+
+      container.appendChild(banner);
+    }
+
     const table = document.createElement("table");
     table.className = "abmat-table";
     table.setAttribute("data-month", `${year}-${U.pad2(monthIndex + 1)}`);

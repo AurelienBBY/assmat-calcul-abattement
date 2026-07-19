@@ -127,10 +127,15 @@
     if (percuEl) percuEl.textContent = safeFmtEuro(percu);
     if (imposableEl) imposableEl.textContent = safeFmtEuro(imposable);
     if (noteEl) {
-      // La comparaison ne parle que si un abattement réduit réellement le perçu.
-      noteEl.textContent = (percu > 0 && imposable < percu)
-        ? `au lieu de ${safeFmtEuro(percu)} perçus`
-        : "";
+      if (percu > 0 && imposable < percu) {
+        // La comparaison ne parle que si un abattement réduit réellement le perçu.
+        noteEl.textContent = `au lieu de ${safeFmtEuro(percu)} perçus`;
+      } else if (percu === 0 && abatt > 0) {
+        // Des jours saisis mais pas de fiche de paie : un 0 € serait trompeur.
+        noteEl.textContent = "Renseignez votre fiche de paie pour obtenir le montant à déclarer.";
+      } else {
+        noteEl.textContent = "";
+      }
     }
   };
 })();

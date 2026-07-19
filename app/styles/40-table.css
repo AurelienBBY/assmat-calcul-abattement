@@ -328,3 +328,33 @@ tr.is-ferie td{ background: #f7f3e8; }
   vertical-align: middle;
 }
 .day-total-pill{ font-weight: 700; white-space: nowrap; }
+
+/* --- Bandeau de pré-remplissage (mois vide + semaines types) -------------- */
+
+.prefill-banner{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  border: 1px dashed var(--accent);
+  background: var(--accent-pale);
+  color: var(--accent-dark);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 14px;
+  font-weight: 600;
+}
+
+.prefill-banner__btn{
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 999px;
+  padding: 8px 16px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.prefill-banner__btn:hover{ background: var(--accent-dark); }

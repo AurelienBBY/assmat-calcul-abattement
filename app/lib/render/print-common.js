@@ -42,10 +42,13 @@
   };
 
   P.childName = function childName(profile, key) {
-    const names = (profile && profile.children && typeof profile.children === "object")
+    const children = (profile && profile.children && typeof profile.children === "object")
       ? profile.children
       : null;
-    const n = (names && typeof names[key] === "string") ? names[key].trim() : "";
+    const entry = children ? children[key] : null;
+    const n = (typeof entry === "string")
+      ? entry.trim()
+      : (entry && typeof entry.name === "string") ? entry.name.trim() : "";
     return n || `Enfant ${key}`;
   };
 
