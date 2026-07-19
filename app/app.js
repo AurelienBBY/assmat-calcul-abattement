@@ -81,8 +81,8 @@
 
     // --- Données --------------------------------------------------------------
 
-    // Garantit la structure v2 du jour : children "1".."3" avec au moins un créneau.
-    function ensureDayObj(isoDate) {
+    // Garantit la structure v2 d'un enfant précis d'un jour, et la retourne.
+    function ensureChild(isoDate, childKey) {
         if (!state.data.days[isoDate] || typeof state.data.days[isoDate] !== "object") {
             state.data.days[isoDate] = { children: {} };
         }
@@ -90,17 +90,48 @@
         if (!day.children || typeof day.children !== "object") {
             day.children = {};
         }
-        for (let c = 1; c <= 3; c++) {
-            const k = String(c);
-            if (!day.children[k] || typeof day.children[k] !== "object") {
-                day.children[k] = { absent: false, motif: "", slots: [] };
-            }
-            const child = day.children[k];
-            if (typeof child.absent !== "boolean") child.absent = false;
-            if (typeof child.motif !== "string") child.motif = "";
-            if (!Array.isArray(child.slots)) child.slots = [];
-            if (child.slots.length === 0) child.slots.push({ in: "", out: "" });
+        if (!day.children[childKey] || typeof day.children[childKey] !== "object") {
+            day.children[childKey] = { absent: false, motif: "", slots: [] };
         }
+        const child = day.children[childKey];
+        if (typeof child.absent !== "boolean") child.absent = false;
+        if (typeof child.motif !== "string") child.motif = "";
+        if (!Array.isArray(child.slots)) child.slots = [];
+        return child;
+    }
+
+    function dayHasData(dayObj) {
+        const children = (dayObj && dayObj.children) ? dayObj.children : {};
+        return ["1", "2", "3"].some((k) => {
+            const c = children[k];
+            if (!c) return false;
+            if (c.absent === true) return true;
+            const slots = Array.isArray(c.slots) ? c.slots : [];
+            return slots.some((s) => s && ((s.in && s.in !== "") || (s.out && s.out !== "")));
+        });
+    }
+
+    function isoToDate(iso) {
+        const parts = String(iso).split("-").map(Number);
+        return new Date(parts[0], parts[1] - 1, parts[2]);
+    }
+
+    function shiftIso(iso, deltaDays) {
+        const d = isoToDate(iso);
+        d.setDate(d.getDate() + deltaDays);
+        return U.toIsoDate(d);
+    }
+
+    function listWorkingDays(startIso, endIso) {
+        const out = [];
+        let d = isoToDate(startIso);
+        const end = isoToDate(endIso);
+        while (d <= end) {
+            if (!U.isWeekend(d)) out.push(U.toIsoDate(d));
+            d = new Date(d);
+            d.setDate(d.getDate() + 1);
+        }
+        return out;
     }
 
     function saveNow() {
@@ -108,24 +139,7 @@
         S.saveMonth(state.key, state.data);
     }
 
-    // --- UI: remplissage + recalculs -----------------------------------------
-
-    function fillTableFromData() {
-        const table = document.querySelector(".abmat-table");
-        if (!table || !state.data) return;
-
-        const inputs = Array.from(table.querySelectorAll('input[type="time"][data-date][data-slot][data-time]'));
-        inputs.forEach((inp) => {
-            const iso = inp.getAttribute("data-date");
-            const slot = inp.getAttribute("data-slot"); // 1..3 = enfant
-            const kind = inp.getAttribute("data-time"); // in/out
-            const day = state.data.days[iso];
-            const child = (day && day.children) ? day.children[slot] : null;
-            const creneau = (child && Array.isArray(child.slots) && child.slots[0]) ? child.slots[0] : null;
-            const val = creneau ? creneau[kind] : "";
-            inp.value = (typeof val === "string") ? val : "";
-        });
-    }
+    // --- UI: recalculs (le DOM affiche, l'état calcule) ----------------------
 
     // IMPORTANT : les calculs partent toujours de state.data (source de vérité) ;
     // le DOM n'est jamais lu pour calculer — il ne fait qu'afficher.
@@ -137,12 +151,12 @@
         const forfaitJour = computeForfaitJour();
         const day = C.computeDayTotal(state.data.days[isoDate], forfaitJour);
 
-        for (let slot = 1; slot <= 3; slot++) {
-            const hoursEl = table.querySelector(`[data-hours][data-date="${isoDate}"][data-slot="${slot}"]`);
-            const abattEl = table.querySelector(`[data-abatt][data-date="${isoDate}"][data-slot="${slot}"]`);
+        for (let child = 1; child <= 3; child++) {
+            const hoursEl = table.querySelector(`[data-hours][data-date="${isoDate}"][data-child="${child}"]`);
+            const abattEl = table.querySelector(`[data-abatt][data-date="${isoDate}"][data-child="${child}"]`);
             if (!hoursEl || !abattEl) continue;
 
-            const r = day.perChild[String(slot)];
+            const r = day.perChild[String(child)];
             if (r.status === "empty") {
                 hoursEl.textContent = "—";
                 abattEl.textContent = "—";
@@ -173,8 +187,8 @@
         const forfaitJour = computeForfaitJour();
         const month = C.computeMonthTotal(state.data.days, forfaitJour);
 
-        // Rafraîchit l'affichage de chaque jour (une ligne "slot=1" par jour).
-        const rows = Array.from(table.querySelectorAll('tbody tr[data-date][data-slot="1"]'));
+        // Rafraîchit l'affichage de chaque jour (l'enfant 1 est toujours visible).
+        const rows = Array.from(table.querySelectorAll('tbody tr[data-date][data-child="1"]'));
         rows.forEach((tr) => updateDayRow(tr.getAttribute("data-date")));
 
         // Totaux par semaine, depuis le détail par jour du calcul.
@@ -230,31 +244,131 @@
 
         // Le forfait change => recalcul table + récap
         renderAll(false);
-        fillTableFromData();
         const monthAbatt = computeMonthTotalAbattAndRefreshTable();
         updateSummary(monthAbatt);
         saveNow();
     }
 
+    // Re-render structurel du tableau (créneaux ajoutés/retirés, absences…)
+    // puis recalcul complet. Utilisé par tous les handlers qui changent la forme.
+    function rerenderTableAndRecalc() {
+        const tableEl = document.getElementById("month-table");
+        if (tableEl && !isRecapMode()) {
+            R.renderMonthTable(
+                tableEl,
+                { year: state.year, monthIndex: state.monthIndex, data: state.data },
+                tableHandlers
+            );
+        }
+        const monthAbatt = computeMonthTotalAbattAndRefreshTable();
+        updateSummary(monthAbatt);
+    }
+
     function onTimeChange(chg) {
         if (!state.data) return;
 
-        ensureDayObj(chg.isoDate);
-        // data-slot 1..3 = enfant ; l'UI actuelle édite son premier créneau.
-        const child = state.data.days[chg.isoDate].children[String(chg.slot)];
-        child.slots[0][chg.kind] = chg.value || "";
+        const child = ensureChild(chg.isoDate, String(chg.child));
+        while (child.slots.length <= chg.slotIndex) {
+            child.slots.push({ in: "", out: "" });
+        }
+        child.slots[chg.slotIndex][chg.kind] = chg.value || "";
 
         saveNow();
-
-        const monthAbatt = (function () {
-            // recalcul uniquement la ligne modifiée + total mois (sans recalc complet, mais simple et fiable)
-            updateDayRow(chg.isoDate);
-            return computeMonthTotalAbattAndRefreshTable();
-        })();
-
+        updateDayRow(chg.isoDate);
+        const monthAbatt = computeMonthTotalAbattAndRefreshTable();
         updateSummary(monthAbatt);
         saveNow();
     }
+
+    function onSlotAdd(chg) {
+        if (!state.data) return;
+        const child = ensureChild(chg.isoDate, String(chg.child));
+        // Le créneau affiché sans données n'existe pas encore dans l'état :
+        // on le matérialise avant d'en ajouter un second.
+        if (child.slots.length === 0) child.slots.push({ in: "", out: "" });
+        if (child.slots.length < 3) child.slots.push({ in: "", out: "" });
+        saveNow();
+        rerenderTableAndRecalc();
+    }
+
+    function onSlotRemove(chg) {
+        if (!state.data) return;
+        const child = ensureChild(chg.isoDate, String(chg.child));
+        if (chg.slotIndex >= 0 && chg.slotIndex < child.slots.length) {
+            child.slots.splice(chg.slotIndex, 1);
+        }
+        saveNow();
+        rerenderTableAndRecalc();
+    }
+
+    function onAbsentToggle(chg) {
+        if (!state.data) return;
+        const child = ensureChild(chg.isoDate, String(chg.child));
+        child.absent = (chg.absent === true);
+        if (!child.absent) child.motif = "";
+        saveNow();
+        rerenderTableAndRecalc();
+    }
+
+    function onMotifChange(chg) {
+        if (!state.data) return;
+        const child = ensureChild(chg.isoDate, String(chg.child));
+        child.motif = String(chg.motif || "");
+        saveNow();
+    }
+
+    function onChildAdd(chg) {
+        if (!state.data) return;
+        // Révèle le premier enfant encore sans données (créneau vide matérialisé
+        // pour qu'il reste visible pendant la session).
+        for (let k = 1; k <= 3; k++) {
+            const key = String(k);
+            const day = state.data.days[chg.isoDate];
+            const c = (day && day.children) ? day.children[key] : null;
+            const visible = (key === "1") || (c && (c.absent === true || (Array.isArray(c.slots) && c.slots.length > 0)));
+            if (!visible) {
+                ensureChild(chg.isoDate, key).slots.push({ in: "", out: "" });
+                break;
+            }
+        }
+        saveNow();
+        rerenderTableAndRecalc();
+    }
+
+    function onWeekCopy(chg) {
+        if (!state.data || !chg.startIso || !chg.endIso) return;
+
+        const targets = listWorkingDays(chg.startIso, chg.endIso);
+        const hasExisting = targets.some((iso) => dayHasData(state.data.days[iso]));
+        if (hasExisting && !confirm(
+            "Remplacer les horaires de cette semaine par ceux de la semaine précédente ?"
+        )) {
+            return;
+        }
+
+        targets.forEach((iso) => {
+            const srcIso = shiftIso(iso, -7);
+            const srcDay = state.data.days[srcIso];
+            if (srcDay) {
+                state.data.days[iso] = JSON.parse(JSON.stringify(srcDay));
+            } else {
+                delete state.data.days[iso];
+            }
+        });
+
+        saveNow();
+        rerenderTableAndRecalc();
+    }
+
+    const tableHandlers = {
+        onTimeChange,
+        onSlotAdd,
+        onSlotRemove,
+        onAbsentToggle,
+        onMotifChange,
+        onChildAdd,
+        onWeekCopy
+    };
 
     function onMoneyChange(chg) {
         if (!state.data) return;
@@ -348,9 +462,8 @@
             state.data = res.data;
             saveNow();
 
-            // Re-render complet + refill + recalcul
+            // Re-render complet + recalcul
             renderAll(false);
-            fillTableFromData();
             const monthAbatt = computeMonthTotalAbattAndRefreshTable();
             updateSummary(monthAbatt);
             saveNow();
@@ -625,9 +738,13 @@
             onSmicOverrideChange
         );
 
-        // 3) Tableau
+        // 3) Tableau (les valeurs sont remplies depuis state.data par le renderer)
         if (!isRecapMode()) {
-            R.renderMonthTable(tableEl, { year: state.year, monthIndex: state.monthIndex }, onTimeChange);
+            R.renderMonthTable(
+                tableEl,
+                { year: state.year, monthIndex: state.monthIndex, data: state.data },
+                tableHandlers
+            );
         }
 
         // 4) Déclaration du mois (fiche de paie)
@@ -691,7 +808,6 @@
         state.data = loaded.data;
 
         renderAll(!!initialRender);
-        fillTableFromData();
 
         const monthAbatt = computeMonthTotalAbattAndRefreshTable();
         updateSummary(monthAbatt);

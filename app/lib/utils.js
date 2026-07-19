@@ -49,6 +49,52 @@
     return day === 0 || day === 6;
   };
 
+  U.toIsoDate = function toIsoDate(d) {
+    // Date -> "YYYY-MM-DD"
+    return `${d.getFullYear()}-${U.pad2(d.getMonth() + 1)}-${U.pad2(d.getDate())}`;
+  };
+
+  /**
+   * Jours fériés français d'une année : map "YYYY-MM-DD" -> nom.
+   * Fixes + fêtes mobiles dérivées de Pâques (algorithme de Meeus/Butcher).
+   */
+  U.getFrenchHolidays = function getFrenchHolidays(year) {
+    const y = Number(year);
+
+    // Dimanche de Pâques
+    const a = y % 19, b = Math.floor(y / 100), c = y % 100;
+    const d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25);
+    const g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30;
+    const i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7;
+    const m = Math.floor((a + 11 * h + 22 * l) / 451);
+    const month = Math.floor((h + l - 7 * m + 114) / 31);
+    const day = ((h + l - 7 * m + 114) % 31) + 1;
+    const easter = new Date(y, month - 1, day);
+
+    const shift = (base, days) => {
+      const out = new Date(base);
+      out.setDate(out.getDate() + days);
+      return out;
+    };
+
+    const map = {};
+    const add = (date, name) => { map[U.toIsoDate(date)] = name; };
+
+    add(new Date(y, 0, 1), "Jour de l'an");
+    add(new Date(y, 4, 1), "Fête du Travail");
+    add(new Date(y, 4, 8), "Victoire 1945");
+    add(new Date(y, 6, 14), "Fête nationale");
+    add(new Date(y, 7, 15), "Assomption");
+    add(new Date(y, 10, 1), "Toussaint");
+    add(new Date(y, 10, 11), "Armistice 1918");
+    add(new Date(y, 11, 25), "Noël");
+    add(shift(easter, 1), "Lundi de Pâques");
+    add(shift(easter, 39), "Ascension");
+    add(shift(easter, 50), "Lundi de Pentecôte");
+
+    return map;
+  };
+
   U.safeEl = function safeEl(id) {
     const el = document.getElementById(id);
     if (!el) {

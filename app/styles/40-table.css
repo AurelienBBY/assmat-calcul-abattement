@@ -253,3 +253,78 @@
     position: static;
   }
 }
+/* --- Saisie v2 : enfants, créneaux, absences, fériés ---------------------- */
+
+.col-horaires{ min-width: 250px; }
+
+.creneau{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 2px 0;
+}
+.creneau-sep{ color: var(--muted); }
+
+.mt-add{
+  border: 1px dashed #cfcfc8;
+  background: none;
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  margin-top: 4px;
+}
+.mt-add:hover{ color: #111; border-color: #9a9a92; }
+
+.mt-remove{
+  border: none;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 2px 4px;
+}
+.mt-remove:hover{ color: #b3261e; }
+
+.child-name{ font-weight: 600; display: block; }
+
+.absent-toggle{
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+tr.is-ferie td{ background: #f7f3e8; }
+.ferie-badge{
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #8a5a00;
+  background: #f7ecd4;
+  border-radius: 5px;
+  padding: 1px 6px;
+}
+
+.week-copy{
+  float: right;
+  border: 1px solid #d6d6d0;
+  background: #fff;
+  color: #333;
+  border-radius: 7px;
+  padding: 2px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.week-copy:hover{ border-color: #999; }
+
+.col-daytotal{
+  text-align: right;
+  vertical-align: middle;
+}
+.day-total-pill{ font-weight: 700; white-space: nowrap; }
