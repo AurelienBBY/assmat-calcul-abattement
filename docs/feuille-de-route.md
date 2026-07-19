@@ -74,13 +74,14 @@ Périmètre d'origine :
 - **Décision d'architecture (2026-07-19)** : pas d'app native (Electron/Tauri) — la signature/notarisation, la distribution et les mises à jour coûteraient sans rien apporter que la File System API ne donne déjà.
 - **Appareils de l'utilisatrice (confirmés 2026-07-19)** : PC **Windows** (Chrome/Edge → auto-sauvegarde complète, dossier **OneDrive** recommandé — il a une app iPhone et fait le pont) + **iPhone** (PWA installable, hors-ligne, mais **pas d'écriture automatique de fichiers sur iOS**).
 
-### Multi-appareils (décision 2026-07-19)
+### Multi-appareils : saisie libre PC ↔ iPhone (décision finale 2026-07-19)
 
-Pas de synchronisation automatique sans serveur : deux appareils qui saisissent = risque de fusion/écrasement silencieux. Trois modèles évalués :
+**Principe retenu : le fichier OneDrive est le point de rencontre, et l'import est une FUSION par mois horodatés** (remplace les anciens modèles A/B). Chaque mois et le profil portent un `updatedAt` posé à chaque modification ; à la lecture d'un fichier, la version la plus récente gagne **mois par mois** — un oubli de synchronisation ne détruit plus rien. Seul conflit restant : le même mois modifié sur les deux appareils sans synchro intermédiaire → **question explicite** (« garder la version du téléphone ou de l'ordinateur ? », avec dates), jamais d'écrasement silencieux.
 
-- **Modèle A — retenu pour le lot 6** : le **PC est l'appareil de saisie** (auto-sauvegarde OneDrive sans geste) ; l'**iPhone consulte** (PWA + ouverture du fichier d'année depuis OneDrive/Fichiers pour voir récap et relevés). Zéro conflit, zéro complexité. Hypothèse à valider à l'usage : avec semaines types + fiche papier, la saisie mobile n'est probablement pas nécessaire.
-- **Modèle B — en réserve, sur besoin constaté** : saisie aussi sur iPhone, transfert manuel simple (bouton « Envoyer ma saisie » via partage iOS → OneDrive/mail, import sur PC) **avec garde anti-conflit** : horodatage `exportedAt` comparé aux données locales à l'import, alerte « cet appareil contient des données plus récentes » au lieu d'écraser.
-- **Modèle C — rejeté** : serveur de synchronisation (même minime) — contraire à la promesse « rien ne sort », et coûts d'exploitation d'un produit.
+- **PC (Chrome/Edge)** : invisible — lecture + fusion du fichier OneDrive à l'ouverture, écriture à chaque modification (File System Access API).
+- **iPhone (PWA)** : deux gestes guidés, incompressibles sur iOS — « Reprendre la dernière sauvegarde » (sélecteur de fichiers → OneDrive, fusion) à l'arrivée, « Envoyer ma saisie » (feuille de partage → remplacer le fichier OneDrive) en partant. Rappels dans l'UI : synchro ancienne à l'ouverture, modifications non envoyées en quittant.
+- La fusion horodatée sert aussi le mono-appareil (une restauration ne peut plus régresser des données) → **à construire d'office au lot 6**, logique de fusion pure et testée.
+- **Serveur de synchronisation toujours rejeté** ; ne serait rediscuté (mini-API chiffrée sur mesure, jamais un CMS) que si la friction des 2 gestes iPhone se révélait bloquante à l'usage réel.
 
 ## Lot 7 — Pièces justificatives (décidé le 2026-07-19, à faire après le lot 6)
 
