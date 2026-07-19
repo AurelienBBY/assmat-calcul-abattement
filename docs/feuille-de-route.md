@@ -31,7 +31,7 @@ Cible de distribution : **GitHub Pages + PWA** (lot 6) — elle a un raccourci, 
 
 ## Lot 3 — Interface (après maquette validée) — étape 1/3 ✅ le 2026-07-19
 
-Découpage en trois étapes sûres : **1)** schéma v2 + moteur (✅ — multi-créneaux, absences, migration auto, 24 tests ; l'UI actuelle reste fonctionnelle sur le premier créneau), **2)** nouveau tableau de saisie, **3)** thème et chrome. Les étapes 2–3 attendent la vérification navigateur de l'existant et les retours maquette.
+Découpage en trois étapes sûres : **1)** schéma v2 + moteur (✅ — multi-créneaux, absences, migration auto), **2)** nouveau tableau de saisie (✅ — enfants visibles, + créneau, absence + motif, fériés, recopie de semaine, total du jour ; valeurs remplies depuis l'état, jamais d'innerHTML sur les données), **3)** thème et chrome (accent, héros, « ✓ Enregistré », tuto replié, années fixes) — reste à faire, après vérification navigateur des étapes 1–2.
 
 **Pourquoi** : la page met la pédagogie avant la tâche, le tableau affiche 3 lignes/jour même pour 1 enfant, et l'autosave est invisible (angoisse pour une non-technicienne).
 

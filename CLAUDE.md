@@ -82,7 +82,7 @@ Une entrée localStorage par mois, clé `abmat:YYYY-MM`. Le bouton Sauvegarder e
 
 **Lot 2 fait le 2026-07-19** : calculs mensuels depuis `state.data` (le DOM n'est plus lu), export/import de l'année complète (corrige l'export « null » depuis le RÉCAP), suite `node --test`.
 
-**Lot 3 en cours — étape 1/3 faite le 2026-07-19** : schéma v2 (multi-créneaux + absences, migration auto) livré côté moteur, storage et récap, 24 tests verts. L'UI actuelle n'expose pas encore ces capacités (elle édite le premier créneau de chaque enfant) — étapes restantes : le nouveau tableau (une ligne par jour, « + créneau », absence avec motif, fériés, recopie de semaine), puis le thème (accent, héros, « ✓ Enregistré », tuto replié, années fixes).
+**Lot 3 en cours — étapes 1/3 et 2/3 faites le 2026-07-19** : schéma v2 (multi-créneaux + absences, migration auto) puis nouveau tableau de saisie (`render/day-rows.js` + `render/month-table.js` : enfants visibles + « + enfant », « + créneau »/✕, absence avec motif, fériés calculés `U.getFrenchHolidays`, « Recopier la semaine précédente », total du jour). Le renderer remplit les valeurs depuis `state.data` via `createElement` — **jamais de donnée dans innerHTML** (anti-XSS sur les imports). 29 tests verts, mais **le tableau n'a pas encore été vérifié dans un navigateur**. Étape restante : le thème (accent, héros, « ✓ Enregistré », tuto replié, années fixes).
 
 Copies **obsolètes** à ne jamais éditer : `~/Downloads/assmat-refacto*` et le dossier « Assmat - copie archivee 2026-04 » sur le Bureau.
 
