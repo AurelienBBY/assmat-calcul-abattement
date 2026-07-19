@@ -35,7 +35,8 @@ window.ABMAT_CONFIG      app/config.js              SMIC par année, coefficient
 window.ABMAT.utils       app/lib/utils.js           dates, parsing HH:MM, formats FR
 window.ABMAT.calc        app/lib/calc.js            calculs purs (sans DOM) — testable
 window.ABMAT.storage     app/lib/storage.js         localStorage + export/import JSON
-window.ABMAT.compute     app/lib/compute/           agrégats (récap annuel)
+window.ABMAT.compute     app/lib/compute/           agrégats (récap, print, prefill)
+window.ABMAT.autosave    app/lib/autosave.js        dossier d'auto-sauvegarde (FS Access API)
 window.ABMAT.render      app/lib/render/*.js        rendu DOM + événements (1 fichier = 1 zone)
 (orchestration)          app/app.js                 état, callbacks, cycle load→render→calc→save
 ```
