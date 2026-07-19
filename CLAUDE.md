@@ -50,7 +50,7 @@ Depuis le lot 2, **le DOM n'est jamais lu pour calculer** : `state.data` (mensue
 
 ## Données & stockage
 
-Une entrée localStorage par mois, clé `abmat:YYYY-MM`. Le bouton Sauvegarder exporte **l'année complète** (`abattement-assmat-AAAA.json`, format `abmat-year` : enveloppe `{format, version, year, months}` où chaque mois garde la structure ci-dessous, mois vides exclus). L'import accepte ce format **et** les anciens fichiers de mois. Structure mensuelle, normalisée par `storage.js` :
+Une entrée localStorage par mois, clé `abmat:YYYY-MM`. Le bouton Sauvegarder exporte **l'année complète** (`abattement-assmat-AAAA.json`, format `abmat-year` : enveloppe `{format, version, year, months, profile}`, mois vides exclus). **L'import d'un fichier d'année est une FUSION** (`mergeYearFromJsonText`) : chaque mois porte un `updatedAt` posé par `saveMonth` **uniquement quand le contenu change** — la version la plus récente gagne mois par mois, et un mois modifié des deux côtés depuis `abmat:lastMergedAt` déclenche un arbitrage explicite (callback `resolveConflict`), jamais un écrasement silencieux. Ne jamais réintroduire d'import-remplacement ni de tampon d'horodatage à la consultation. Les anciens fichiers de mois restent importables. Structure mensuelle, normalisée par `storage.js` :
 
 ```json
 {
