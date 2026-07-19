@@ -13,6 +13,18 @@
   /* Cache les zones non imprimables */
   .no-print{ display: none !important; }
 
+  /* Masque la navigation de période (année + mois) à l’impression */
+  .period-controls,
+  #year-params,
+  #period-section,
+  .period-section,
+  .months-nav,
+  .month-selector,
+  .month-tabs,
+  .year-params{
+    display: none !important;
+  }
+
   /* Neutralise les effets “écran” */
   *{
     color: #000 !important;
@@ -25,12 +37,28 @@
     background: #fff;
   }
 
-  /* Supprime les “cartes” et repasse en flux A4 */
+  /* Mise en page print : flux A4 + espacements verticaux */
   header, section, main, footer{
     max-width: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
     border-radius: 0 !important;
+  }
+
+  /* On garde un minimum d’air entre les blocs */
+  header, section, main, footer{
+    margin: 0 0 10px 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Les cartes deviennent des blocs imprimables simples */
+  .card{
+    border: 1px solid #000 !important;
+    padding: 8px 10px !important;
+    margin: 0 0 10px 0 !important;
+    background: transparent !important;
+  }
+
+  .card__title{
+    margin: 0 0 6px 0 !important;
   }
 
   h1{
@@ -43,8 +71,17 @@
     margin: 10px 0 6px 0;
   }
 
+  h3{
+    font-size: 12px;
+    margin: 8px 0 6px 0;
+  }
+
+  /* On ne gaspille pas de place avec les aides à l’impression */
+  .hint{
+    display: none !important;
+  }
+
   .intro,
-  .hint,
   .footer-note,
   .footer-date{
     font-size: 10px;
@@ -54,29 +91,115 @@
   /* Les conteneurs JS ne doivent pas créer de sous-cadres */
   .period-controls,
   #year-params,
-  #summary{
+  #payslip-inputs,
+  #month-results,
+  #month-table{
     border: 0 !important;
     background: transparent !important;
     padding: 0 !important;
   }
 
+  /* Gestion des sauts de page */
+  .abmat-table,
+  #month-results-section,
+  #payslip-section{
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .abmat-table thead{
+    display: table-header-group;
+  }
+
+  .abmat-table tfoot{
+    display: table-footer-group;
+  }
+
+  .abmat-table tr{
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
   /* Tableau compact, lisible */
   .abmat-table{
     border: 1px solid #000 !important;
+    width: 100% !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
   }
 
   .abmat-table thead th{
     background: #fff !important;
     border-bottom: 1px solid #000 !important;
     font-size: 10px;
-    padding: 6px 5px;
+    padding: 4px 4px;
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  /* Largeurs de colonnes (Date plus étroite) */
+  .abmat-table thead th:nth-child(1),
+  .abmat-table tbody td:nth-child(1){
+    width: 10% !important;
+  }
+  .abmat-table thead th:nth-child(2),
+  .abmat-table tbody td:nth-child(2){
+    width: 18% !important;
+  }
+  .abmat-table thead th:nth-child(3),
+  .abmat-table tbody td:nth-child(3){
+    width: 16% !important;
+  }
+  .abmat-table thead th:nth-child(4),
+  .abmat-table tbody td:nth-child(4){
+    width: 16% !important;
+  }
+  .abmat-table thead th:nth-child(5),
+  .abmat-table tbody td:nth-child(5){
+    width: 22% !important;
+  }
+  .abmat-table thead th:nth-child(6),
+  .abmat-table tbody td:nth-child(6){
+    width: 18% !important;
+  }
+
+  /* Colonne Date : compacte */
+  .abmat-table thead th:nth-child(1){
+    white-space: nowrap;
+  }
+  .abmat-table tbody td:nth-child(1){
+    text-align: center;
+    vertical-align: middle;
+    padding: 3px 2px !important;
+    font-size: 9px;
   }
 
   .abmat-table tbody td{
     border-top: 1px solid #000 !important;
     font-size: 10px;
-    padding: 6px 5px;
+    padding: 4px 4px;
+    vertical-align: middle;
   }
+
+  /* En impression, on force un rendu "table" classique :
+     certaines règles responsive peuvent injecter des libellés via td::before (ex: "Date"). */
+  .abmat-table td::before,
+  .abmat-table td::after{
+    content: none !important;
+    display: none !important;
+  }
+
+  /* On neutralise aussi d’éventuels styles responsive qui passeraient les cellules en block */
+  .abmat-table,
+  .abmat-table thead,
+  .abmat-table tbody,
+  .abmat-table tfoot{
+    display: table !important;
+    width: 100% !important;
+  }
+  .abmat-table tr{ display: table-row !important; }
+  .abmat-table th,
+  .abmat-table td{ display: table-cell !important; }
 
   .week-total td{
     text-align: right;
@@ -92,7 +215,17 @@
   /* Champs horaires compacts */
   input[type="time"]{
     min-width: auto !important;
-    width: 70px;
+    width: 64px;
+  }
+
+  /* Pas de spinners en impression */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button{
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"]{
+    -moz-appearance: textfield;
   }
 
   /* Format page */
