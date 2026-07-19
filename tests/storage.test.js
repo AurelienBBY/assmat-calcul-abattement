@@ -20,8 +20,45 @@ test("import mois : champs malformés normalisés sans casser", () => {
   assert.equal(res.data.netImposable, 0);
   assert.equal(res.data.irf, 0);
   assert.equal(res.data.smicOverride, null);
-  assert.equal(res.data.days["2026-01-05"].slots["1"].in, "");   // nombre → chaîne vide
-  assert.equal(res.data.days["2026-01-05"].slots["1"].out, "17:00");
+  const c1 = res.data.days["2026-01-05"].children["1"];
+  assert.equal(c1.slots[0].in, "");    // nombre → chaîne vide
+  assert.equal(c1.slots[0].out, "17:00");
+});
+
+test("migration v1 → v2 : les anciens slots deviennent des enfants à un créneau", () => {
+  const text = JSON.stringify({
+    version: 1, year: 2026, monthIndex: 0, netImposable: 500, irf: 0,
+    days: { "2026-01-05": { slots: {
+      "1": { in: "08:30", out: "17:30" },
+      "2": { in: "", out: "" },
+      "3": { in: "09:00", out: "12:00" }
+    } } }
+  });
+
+  const res = S.importMonthFromJsonText(text, 2026, 0, false);
+  assert.equal(res.data.version, 2);
+  const children = res.data.days["2026-01-05"].children;
+  assert.deepEqual(children["1"], { absent: false, motif: "", slots: [{ in: "08:30", out: "17:30" }] });
+  assert.deepEqual(children["2"].slots, []); // enfant vide → aucun créneau
+  assert.deepEqual(children["3"].slots, [{ in: "09:00", out: "12:00" }]);
+});
+
+test("normalisation v2 : absences conservées, créneaux vides purgés, plafond 3 créneaux", () => {
+  const text = JSON.stringify({
+    version: 2, year: 2026, monthIndex: 0, netImposable: 0, irf: 0,
+    days: { "2026-01-06": { children: {
+      "1": { absent: true, motif: "malade", slots: [{ in: "", out: "" }] },
+      "2": { slots: [
+        { in: "08:00", out: "10:00" }, { in: "", out: "" },
+        { in: "11:00", out: "12:00" }, { in: "13:00", out: "14:00" }, { in: "15:00", out: "16:00" }
+      ] }
+    } } }
+  });
+
+  const res = S.importMonthFromJsonText(text, 2026, 0, false);
+  const children = res.data.days["2026-01-06"].children;
+  assert.deepEqual(children["1"], { absent: true, motif: "malade", slots: [] });
+  assert.equal(children["2"].slots.length, 3); // vide purgé, plafonné à 3
 });
 
 test("import mois : mismatch refusé sans autorisation, adapté avec", () => {
@@ -41,7 +78,7 @@ test("export année : seuls les mois non vides sont inclus", () => {
   S.saveMonth(S.monthKey(2026, 0), jan);
 
   const mai = S.blankMonthData(2026, 4);
-  mai.days["2026-05-04"] = { slots: { "1": { in: "08:30", out: "17:30" }, "2": {}, "3": {} } };
+  mai.days["2026-05-04"] = { children: { "1": { absent: false, motif: "", slots: [{ in: "08:30", out: "17:30" }] } } };
   S.saveMonth(S.monthKey(2026, 4), mai);
 
   S.saveMonth(S.monthKey(2026, 7), S.blankMonthData(2026, 7)); // août vide → exclu
@@ -62,7 +99,7 @@ test("import année : aller-retour complet vers le localStorage", () => {
   const res = S.importYearFromJsonText(text);
   assert.deepEqual(res, { year: 2026, count: 2 });
   assert.equal(S.loadMonth(2026, 0).data.netImposable, 1200);
-  assert.equal(S.loadMonth(2026, 4).data.days["2026-05-04"].slots["1"].out, "17:30");
+  assert.equal(S.loadMonth(2026, 4).data.days["2026-05-04"].children["1"].slots[0].out, "17:30");
 });
 
 test("import année : format inconnu ou année invalide → erreur explicite", () => {

@@ -27,19 +27,25 @@
   }
 
   /**
-   * Structure de données sauvegardée (par mois) :
+   * Structure de données sauvegardée (par mois), schéma v2 :
    * {
-   *   version: 1,
-   *   year: 2025,
+   *   version: 2,
+   *   year: 2026,
    *   monthIndex: 0,
    *   smicOverride: 12.02 | null,
    *   netImposable: 0,
    *   irf: 0,
    *   days: {
-   *     "2025-01-02": { slots: { "1": {in:"08:00", out:"17:00"}, "2": {...}, "3": {...} } },
-   *     ...
+   *     "2026-01-05": {
+   *       children: {
+   *         "1": { absent: false, motif: "", slots: [ {in:"08:00", out:"17:00"}, ... ] },
+   *         "2": { ... }, "3": { ... }
+   *       }
+   *     }
    *   }
    * }
+   * Migration v1 → v2 automatique : l'ancien { slots: {"1":{in,out}} } devient
+   * un enfant avec un seul créneau.
    */
 
   S.monthKey = function monthKey(year, monthIndex) {
@@ -48,7 +54,7 @@
 
   S.blankMonthData = function blankMonthData(year, monthIndex) {
     return {
-      version: 1,
+      version: 2,
       year: Number(year),
       monthIndex: Number(monthIndex),
       smicOverride: null,
@@ -66,22 +72,46 @@
     };
   }
 
+  function isEmptySlot(s) {
+    return s.in === "" && s.out === "";
+  }
+
+  function normalizeChildObj(childObj) {
+    const c = childObj && typeof childObj === "object" ? childObj : {};
+    const slotsIn = Array.isArray(c.slots) ? c.slots : [];
+    const slots = slotsIn.map(normalizeSlotObj).filter((s) => !isEmptySlot(s)).slice(0, 3);
+    return {
+      absent: c.absent === true,
+      motif: (typeof c.motif === "string") ? c.motif : "",
+      slots
+    };
+  }
+
   function normalizeDayObj(dayObj) {
     const d = dayObj && typeof dayObj === "object" ? dayObj : {};
-    const slots = (d.slots && typeof d.slots === "object") ? d.slots : {};
-    return {
-      slots: {
-        "1": normalizeSlotObj(slots["1"]),
-        "2": normalizeSlotObj(slots["2"]),
-        "3": normalizeSlotObj(slots["3"])
+
+    // Migration v1 : { slots: {"1":{in,out}, ...} } → un créneau par enfant.
+    if (d.slots && typeof d.slots === "object" && !d.children) {
+      const children = {};
+      for (let i = 1; i <= 3; i++) {
+        const s = normalizeSlotObj(d.slots[String(i)]);
+        children[String(i)] = { absent: false, motif: "", slots: isEmptySlot(s) ? [] : [s] };
       }
-    };
+      return { children };
+    }
+
+    const childrenIn = (d.children && typeof d.children === "object") ? d.children : {};
+    const children = {};
+    for (let i = 1; i <= 3; i++) {
+      children[String(i)] = normalizeChildObj(childrenIn[String(i)]);
+    }
+    return { children };
   }
 
   function normalizeData(data, year, monthIndex) {
     const out = (data && typeof data === "object") ? data : S.blankMonthData(year, monthIndex);
 
-    out.version = 1;
+    out.version = 2;
     out.year = Number(out.year);
     out.monthIndex = Number(out.monthIndex);
 
@@ -175,10 +205,12 @@
 
     const days = (data.days && typeof data.days === "object") ? data.days : {};
     return !Object.keys(days).some((iso) => {
-      const slots = (days[iso] && days[iso].slots) ? days[iso].slots : {};
+      const children = (days[iso] && days[iso].children) ? days[iso].children : {};
       return ["1", "2", "3"].some((k) => {
-        const s = slots[k] || {};
-        return (typeof s.in === "string" && s.in !== "") || (typeof s.out === "string" && s.out !== "");
+        const c = children[k] || {};
+        if (c.absent === true) return true; // une absence notée est une donnée
+        const slots = Array.isArray(c.slots) ? c.slots : [];
+        return slots.some((s) => (s && ((s.in && s.in !== "") || (s.out && s.out !== ""))));
       });
     });
   }

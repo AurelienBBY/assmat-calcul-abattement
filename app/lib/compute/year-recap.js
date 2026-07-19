@@ -47,10 +47,10 @@
   }
 
   /**
-   * Compte les jours-enfant du mois (un créneau valide = un jour-enfant),
-   * ventilés < 8 h / ≥ 8 h.
+   * Compte les jours-enfant du mois (un enfant présent un jour = un jour-enfant,
+   * quel que soit son nombre de créneaux), ventilés < 8 h / ≥ 8 h.
    *
-   * @param {Object} days - map "YYYY-MM-DD" -> { slots }
+   * @param {Object} days - map "YYYY-MM-DD" -> { children }
    * @returns {{j_lt8:number, j_ge8:number}}
    */
   function countChildDays(days) {
@@ -59,10 +59,9 @@
 
     const d = (days && typeof days === "object") ? days : {};
     Object.keys(d).forEach((isoDate) => {
-      const slots = (d[isoDate] && d[isoDate].slots) ? d[isoDate].slots : {};
+      const children = (d[isoDate] && d[isoDate].children) ? d[isoDate].children : {};
       for (let i = 1; i <= 3; i++) {
-        const slot = slots[String(i)] || {};
-        const r = C.computeHoursAndAbattForSlot(slot.in || "", slot.out || "", 0);
+        const r = C.computeChildDay(children[String(i)], 0);
         if (r.status !== "ok") continue;
         if (r.hours >= 8) j_ge8 += 1;
         else j_lt8 += 1;

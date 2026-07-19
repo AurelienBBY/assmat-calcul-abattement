@@ -81,21 +81,25 @@
 
     // --- Données --------------------------------------------------------------
 
+    // Garantit la structure v2 du jour : children "1".."3" avec au moins un créneau.
     function ensureDayObj(isoDate) {
-        if (!state.data.days[isoDate]) {
-            state.data.days[isoDate] = { slots: { "1": { in: "", out: "" }, "2": { in: "", out: "" }, "3": { in: "", out: "" } } };
-            return;
+        if (!state.data.days[isoDate] || typeof state.data.days[isoDate] !== "object") {
+            state.data.days[isoDate] = { children: {} };
         }
-        if (!state.data.days[isoDate].slots || typeof state.data.days[isoDate].slots !== "object") {
-            state.data.days[isoDate].slots = { "1": {}, "2": {}, "3": {} };
+        const day = state.data.days[isoDate];
+        if (!day.children || typeof day.children !== "object") {
+            day.children = {};
         }
-        for (let s = 1; s <= 3; s++) {
-            const k = String(s);
-            if (!state.data.days[isoDate].slots[k] || typeof state.data.days[isoDate].slots[k] !== "object") {
-                state.data.days[isoDate].slots[k] = {};
+        for (let c = 1; c <= 3; c++) {
+            const k = String(c);
+            if (!day.children[k] || typeof day.children[k] !== "object") {
+                day.children[k] = { absent: false, motif: "", slots: [] };
             }
-            if (typeof state.data.days[isoDate].slots[k].in !== "string") state.data.days[isoDate].slots[k].in = "";
-            if (typeof state.data.days[isoDate].slots[k].out !== "string") state.data.days[isoDate].slots[k].out = "";
+            const child = day.children[k];
+            if (typeof child.absent !== "boolean") child.absent = false;
+            if (typeof child.motif !== "string") child.motif = "";
+            if (!Array.isArray(child.slots)) child.slots = [];
+            if (child.slots.length === 0) child.slots.push({ in: "", out: "" });
         }
     }
 
@@ -113,10 +117,12 @@
         const inputs = Array.from(table.querySelectorAll('input[type="time"][data-date][data-slot][data-time]'));
         inputs.forEach((inp) => {
             const iso = inp.getAttribute("data-date");
-            const slot = inp.getAttribute("data-slot");
+            const slot = inp.getAttribute("data-slot"); // 1..3 = enfant
             const kind = inp.getAttribute("data-time"); // in/out
             const day = state.data.days[iso];
-            const val = day && day.slots && day.slots[slot] ? day.slots[slot][kind] : "";
+            const child = (day && day.children) ? day.children[slot] : null;
+            const creneau = (child && Array.isArray(child.slots) && child.slots[0]) ? child.slots[0] : null;
+            const val = creneau ? creneau[kind] : "";
             inp.value = (typeof val === "string") ? val : "";
         });
     }
@@ -129,17 +135,19 @@
         if (!table || !state.data) return 0;
 
         const forfaitJour = computeForfaitJour();
-        const dayObj = state.data.days[isoDate];
-        const day = C.computeDayTotal(dayObj ? dayObj.slots : {}, forfaitJour);
+        const day = C.computeDayTotal(state.data.days[isoDate], forfaitJour);
 
         for (let slot = 1; slot <= 3; slot++) {
             const hoursEl = table.querySelector(`[data-hours][data-date="${isoDate}"][data-slot="${slot}"]`);
             const abattEl = table.querySelector(`[data-abatt][data-date="${isoDate}"][data-slot="${slot}"]`);
             if (!hoursEl || !abattEl) continue;
 
-            const r = day.perSlot[String(slot)];
+            const r = day.perChild[String(slot)];
             if (r.status === "empty") {
                 hoursEl.textContent = "—";
+                abattEl.textContent = "—";
+            } else if (r.status === "absent") {
+                hoursEl.textContent = "Absent";
                 abattEl.textContent = "—";
             } else if (r.status === "invalid") {
                 hoursEl.textContent = "⚠︎";
@@ -232,8 +240,9 @@
         if (!state.data) return;
 
         ensureDayObj(chg.isoDate);
-        const slotKey = String(chg.slot);
-        state.data.days[chg.isoDate].slots[slotKey][chg.kind] = chg.value || "";
+        // data-slot 1..3 = enfant ; l'UI actuelle édite son premier créneau.
+        const child = state.data.days[chg.isoDate].children[String(chg.slot)];
+        child.slots[0][chg.kind] = chg.value || "";
 
         saveNow();
 

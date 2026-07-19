@@ -1,4 +1,4 @@
-/* Tests de calc.js — bornes 8 h, prorata, créneaux invalides, agrégats. */
+/* Tests de calc.js (schéma v2) — bornes 8 h, prorata, multi-créneaux, absences. */
 
 "use strict";
 
@@ -11,61 +11,83 @@ const C = ABMAT.calc;
 
 const FORFAIT = 36.06; // 3 × 12,02 (SMIC 2026)
 
-test("créneau entièrement vide → empty, 0 €", () => {
-  assert.deepEqual(C.computeHoursAndAbattForSlot("", "", FORFAIT), { status: "empty", hours: 0, abatt: 0 });
+function child(slots, absent, motif) {
+  return { absent: absent === true, motif: motif || "", slots: slots || [] };
+}
+
+test("créneau vide → empty ; imparsable des deux côtés → empty (historique)", () => {
+  assert.deepEqual(C.computeSlotHours("", ""), { status: "empty", hours: 0 });
+  assert.equal(C.computeSlotHours("25:00", "26:00").status, "empty");
 });
 
-test("créneau incomplet (entrée seule) → invalid", () => {
-  assert.equal(C.computeHoursAndAbattForSlot("08:30", "", FORFAIT).status, "invalid");
+test("créneau incomplet ou incohérent → invalid", () => {
+  assert.equal(C.computeSlotHours("08:30", "").status, "invalid");
+  assert.equal(C.computeSlotHours("17:00", "08:00").status, "invalid");
+  assert.equal(C.computeSlotHours("08:00", "08:00").status, "invalid");
+  assert.equal(C.computeSlotHours("8h30", "17:00").status, "invalid");
 });
 
-test("sortie avant ou égale à l'entrée → invalid", () => {
-  assert.equal(C.computeHoursAndAbattForSlot("17:00", "08:00", FORFAIT).status, "invalid");
-  assert.equal(C.computeHoursAndAbattForSlot("08:00", "08:00", FORFAIT).status, "invalid");
-});
-
-test("format non HH:MM d'un côté → invalid", () => {
-  assert.equal(C.computeHoursAndAbattForSlot("8h30", "17:00", FORFAIT).status, "invalid");
-});
-
-test("deux horaires imparsables → empty (comportement historique : équivaut à une case vide)", () => {
-  assert.equal(C.computeHoursAndAbattForSlot("25:00", "26:00", FORFAIT).status, "empty");
-});
-
-test("garde ≥ 8 h → forfait entier", () => {
-  const r = C.computeHoursAndAbattForSlot("08:30", "17:30", FORFAIT);
+test("enfant : garde ≥ 8 h en un créneau → forfait entier", () => {
+  const r = C.computeChildDay(child([{ in: "08:30", out: "17:30" }]), FORFAIT);
   assert.deepEqual(r, { status: "ok", hours: 9, abatt: 36.06 });
 });
 
-test("garde exactement 8 h → forfait entier (borne incluse)", () => {
-  assert.equal(C.computeHoursAndAbattForSlot("08:00", "16:00", FORFAIT).abatt, 36.06);
+test("enfant : exactement 8 h → forfait entier (borne incluse)", () => {
+  assert.equal(C.computeChildDay(child([{ in: "08:00", out: "16:00" }]), FORFAIT).abatt, 36.06);
 });
 
-test("garde juste sous 8 h → prorata, pas le forfait", () => {
-  const r = C.computeHoursAndAbattForSlot("08:00", "15:59", FORFAIT);
-  assert.ok(r.abatt < 36.06);
+test("enfant : < 8 h → prorata (forfait ÷ 8 × heures)", () => {
+  assert.equal(C.computeChildDay(child([{ in: "08:00", out: "12:00" }]), FORFAIT).abatt, 18.03);   // 4 h
+  assert.equal(C.computeChildDay(child([{ in: "08:30", out: "16:00" }]), FORFAIT).abatt, 33.81);   // 7 h 30
 });
 
-test("garde < 8 h → prorata (forfait ÷ 8 × heures)", () => {
-  assert.equal(C.computeHoursAndAbattForSlot("08:00", "12:00", FORFAIT).abatt, 18.03); // 4 h
-  assert.equal(C.computeHoursAndAbattForSlot("08:30", "16:00", FORFAIT).abatt, 33.81); // 7 h 30
+test("multi-créneaux : les heures s'additionnent avant la règle (médecin entre deux)", () => {
+  // 8h30→11h00 (2 h 30) + 14h00→16h30 (2 h 30) = 5 h → prorata, pas le forfait
+  const r = C.computeChildDay(child([
+    { in: "08:30", out: "11:00" },
+    { in: "14:00", out: "16:30" }
+  ]), FORFAIT);
+  assert.equal(r.hours, 5);
+  assert.equal(r.abatt, 22.54); // 36,06 ÷ 8 × 5
 });
 
-test("computeDayTotal additionne les enfants et ignore les invalides", () => {
-  const r = C.computeDayTotal({
-    "1": { in: "08:30", out: "17:30" },  // 36,06
-    "2": { in: "08:30", out: "16:00" },  // 33,81
-    "3": { in: "10:00", out: "09:00" }   // invalide → ignoré
-  }, FORFAIT);
+test("multi-créneaux : le cumul peut atteindre 8 h → forfait entier", () => {
+  const r = C.computeChildDay(child([
+    { in: "07:00", out: "11:00" },   // 4 h
+    { in: "13:30", out: "18:00" }    // 4 h 30
+  ]), FORFAIT);
+  assert.equal(r.hours, 8.5);
+  assert.equal(r.abatt, 36.06);
+});
+
+test("un créneau invalide rend l'enfant-jour invalide (pas d'abattement partiel)", () => {
+  const r = C.computeChildDay(child([
+    { in: "08:00", out: "12:00" },
+    { in: "16:00", out: "14:00" }    // incohérent
+  ]), FORFAIT);
+  assert.deepEqual(r, { status: "invalid", hours: 0, abatt: 0 });
+});
+
+test("enfant absent → status absent, 0 € même avec des créneaux résiduels", () => {
+  const r = C.computeChildDay(child([{ in: "08:00", out: "17:00" }], true, "malade"), FORFAIT);
+  assert.deepEqual(r, { status: "absent", hours: 0, abatt: 0 });
+});
+
+test("computeDayTotal additionne les enfants et ignore invalides/absents", () => {
+  const r = C.computeDayTotal({ children: {
+    "1": child([{ in: "08:30", out: "17:30" }]),                  // 36,06
+    "2": child([{ in: "08:30", out: "16:00" }]),                  // 33,81
+    "3": child([{ in: "10:00", out: "09:00" }])                   // invalide → ignoré
+  } }, FORFAIT);
 
   assert.equal(r.dayTotal, 69.87);
-  assert.equal(r.perSlot["3"].status, "invalid");
+  assert.equal(r.perChild["3"].status, "invalid");
 });
 
 test("computeMonthTotal somme les jours et détaille perDay", () => {
   const r = C.computeMonthTotal({
-    "2026-01-05": { slots: { "1": { in: "08:30", out: "17:30" } } },
-    "2026-01-06": { slots: { "1": { in: "08:00", out: "12:00" } } }
+    "2026-01-05": { children: { "1": child([{ in: "08:30", out: "17:30" }]) } },
+    "2026-01-06": { children: { "1": child([{ in: "08:00", out: "12:00" }]) } }
   }, FORFAIT);
 
   assert.equal(r.monthTotal, 54.09); // 36,06 + 18,03
