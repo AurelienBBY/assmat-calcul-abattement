@@ -78,9 +78,20 @@
     const totals = (recap && recap.totals) || {};
     const months = (recap && Array.isArray(recap.months) && recap.months) || [];
 
-    // Main structure: 2 cards (annual totals + monthly breakdown)
+    const totalsImposable = fmtEuro(totals.imposable);
+    const totalsNet = fmtEuro(totals.net);
+    const abattWins = Number(totals.imposable) <= Number(totals.net);
+
+    // Structure : encart 1AJ + 2 cartes (totaux, détail) + comparaison des régimes
     container.innerHTML =
       `<div class="year-recap" aria-label="Récapitulatif annuel">` +
+      `  <div class="year-declare">` +
+      `    <div class="year-declare__case">Case 1AJ</div>` +
+      `    <p class="year-declare__text">Au printemps ${Number.isFinite(year) ? year + 1 : ""}, reportez ` +
+      `<strong class="year-declare__amount">${totalsImposable}</strong> dans la case ` +
+      `<strong>« Traitements et salaires » (1AJ)</strong> de votre déclaration, ` +
+      `<strong>à la place du montant prérempli</strong> — celui-ci ne tient pas compte de l'abattement.</p>` +
+      `  </div>` +
       `  <section class="card year-recap__annual" aria-label="Résultats annuels">` +
       `    <h3 class="card__title">Résultats annuels — ${Number.isFinite(year) ? year : ""}</h3>` +
       `    <div class="summary-result" role="status" aria-live="polite">` +
@@ -120,6 +131,24 @@
       `        </thead>` +
       `        <tbody data-year-months></tbody>` +
       `      </table>` +
+      `    </div>` +
+      `  </section>` +
+      `  <section class="card year-compare" aria-label="Comparaison des régimes">` +
+      `    <h3 class="card__title">L'abattement vous est-il favorable cette année ?</h3>` +
+      `    <div class="hint">Comparaison indicative — la structure des indemnités en CCAS est à vérifier sur les bulletins.</div>` +
+      `    <div class="year-compare__grid">` +
+      `      <div class="regime${abattWins ? " regime--win" : ""}">` +
+      `        ${abattWins ? `<div class="regime__win-tag">Option gagnante</div>` : ``}` +
+      `        <div class="regime__name">Tout déclarer + abattement</div>` +
+      `        <div class="regime__value">${totalsImposable}</div>` +
+      `        <p class="hint">Salaires + indemnités déclarés, puis abattement forfaitaire déduit.</p>` +
+      `      </div>` +
+      `      <div class="regime${!abattWins ? " regime--win" : ""}">` +
+      `        ${!abattWins ? `<div class="regime__win-tag">Option gagnante</div>` : ``}` +
+      `        <div class="regime__name">Salaires seuls, sans abattement</div>` +
+      `        <div class="regime__value">${totalsNet}</div>` +
+      `        <p class="hint">Régime de droit commun : net imposable déclaré tel quel, sans les indemnités.</p>` +
+      `      </div>` +
       `    </div>` +
       `  </section>` +
       `</div>`;
