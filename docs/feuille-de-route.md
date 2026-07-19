@@ -63,9 +63,12 @@ Périmètre d'origine :
 - **Comparaison des deux régimes** (salaires seuls vs tout + abattement) : vérifie chaque année que l'option est gagnante. Prudence : structure des indemnités en CCAS à valider sur ses fiches de paie.
 - Rappel d'export en fin d'année ; statut « Vide » non alarmant pour un mois de congés.
 
-## Lot 6 — Distribution
+## Lot 6 — Distribution & vraie sauvegarde
 
 - Publier sur **GitHub Pages** (repo existant) ; ajouter manifest + service worker (**PWA**) : raccourci bureau/téléphone, hors-ligne conservé, mises à jour automatiques, données jamais en ligne.
+- **`navigator.storage.persist()`** : stockage local déclaré persistant (plus de risque d'éviction navigateur).
+- **Auto-sauvegarde (décision 2026-07-19)** : via la **File System Access API** (Chrome/Edge), l'outil demande une fois un dossier de sauvegarde puis y écrit `abattement-assmat-AAAA.json` automatiquement à chaque modification. Si le dossier est synchronisé (iCloud Drive / Google Drive), la copie hors machine est assurée **par l'OS** — notre code ne touche jamais au réseau. Repli Safari/Firefox : export manuel actuel + rappel périodique. Le JSON reste LE format de sauvegarde (ouvert, ré-importable, pérenne) — c'est le *geste* qui devient automatique, pas le format qui change.
+- **Décision d'architecture (2026-07-19)** : pas d'app native (Electron/Tauri) — la signature/notarisation, la distribution et les mises à jour coûteraient sans rien apporter que la File System API ne donne déjà. À vérifier : le navigateur réellement utilisé par l'utilisatrice (Chrome → auto-sauvegarde complète ; Safari → repli manuel).
 
 ## Lot 7 — Pièces justificatives (décidé le 2026-07-19, à faire après le lot 6)
 
