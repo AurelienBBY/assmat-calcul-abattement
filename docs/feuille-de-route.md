@@ -52,7 +52,11 @@ Cible de distribution : **GitHub Pages + PWA** (lot 6) — elle a un raccourci, 
 - ✅ **Deux documents** : relevé mensuel (semaines → enfants → créneaux « 8h30 – 17h30 », absences motivées, fériés, sous-totaux, synthèse + règles) et récap annuel (encadré **case 1AJ** en tête, 12 mois, mémo, mention « conservez les relevés en annexe »). En-tête d'identité branché sur `abmat:profile` (fallback générique tant que le lot 5 n'est pas fait). Modèle mensuel testé (`compute/month-print.js`).
 - ✅ **On imprime ce qu'on regarde** (décision 2026-07-19) : vue mensuelle → relevé du mois, vue RÉCAP → récap de l'année. Option ultérieure conservée : « Imprimer le dossier complet de l'année » (12 relevés + récap, sauts de page).
 
-## Lot 5 — Parcours utilisateur
+## Lot 5 — Parcours utilisateur — ✅ cœur fait le 2026-07-19
+
+Livré : onglet **MES INFOS** (identité + enfants avec prénoms/désactivation + **semaine type par enfant**, un créneau par jour), **pré-remplissage d'un mois vide** en un clic (volontaire, fériés/week-ends exclus, `compute/prefill.js` testé), profil dans l'export/import d'année, **encart « Case 1AJ »** et **comparaison des régimes** à l'écran du RÉCAP, ⚠︎ expliqué au survol, héros signalant une fiche de paie manquante. Reste du lot (différé) : rappel d'export en fin d'année, annulation (« toast Annuler ») après recopie/pré-remplissage/import, état vide guidé vers MES INFOS, statut « Congés ? » au récap.
+
+Périmètre d'origine :
 
 - **« Mes informations »** (saisie unique) : son nom, le CCAS, prénoms des enfants — personnalise saisie et PDF. **Décisions (2026-07-19)** : ce n'est pas une « page de paramétrage » technique mais une petite fiche (3 champs + liste des enfants avec possibilité de désactiver un enfant parti). Stockage dans une clé dédiée `abmat:profile`, incluse dans l'export annuel. La table des SMIC reste dans `config.js` (mise à jour par le mainteneur, 1×/an) — l'override manuel ne sert que si l'année manque.
 - **Encart « Ma déclaration »** dans le récap annuel : le montant et la case exacte (traitements et salaires, 1AJ), avec la consigne de remplacer le montant prérempli.

@@ -84,6 +84,8 @@ Une entrée localStorage par mois, clé `abmat:YYYY-MM`. Le bouton Sauvegarder e
 
 **Lot 2 fait le 2026-07-19** : calculs mensuels depuis `state.data` (le DOM n'est plus lu), export/import de l'année complète (corrige l'export « null » depuis le RÉCAP), suite `node --test`.
 
+**Lot 5 (cœur) fait le 2026-07-19** : onglet MES INFOS (mode `monthIndex === 13`) — profil `abmat:profile` (identité, enfants `{name, active, week}`, semaine type lun→ven un créneau/jour), pré-remplissage d'un mois vide (`compute/prefill.js`, action volontaire — jamais automatique), profil embarqué dans l'export d'année, prénoms dans tableau et PDF, encart 1AJ + comparaison des régimes au RÉCAP. Modes de vue : 0-11 = mois, 12 = RÉCAP, 13 = Infos (les deux derniers sans `state.data`).
+
 **Lot 3 fait le 2026-07-19** (3 étapes) : schéma v2 (multi-créneaux + absences, migration auto) ; nouveau tableau de saisie (`render/day-rows.js` + `render/month-table.js` : enfants visibles + « + enfant », « + créneau »/✕, absence avec motif, fériés calculés `U.getFrenchHolidays`, « Recopier la semaine précédente », total du jour — valeurs remplies depuis `state.data` via `createElement`, **jamais de donnée dans innerHTML**) ; thème (accent unique `--accent` #23458c, base 17 px, héros du résultat avec note « au lieu de X € perçus », pilules toolbar « ✓ Enregistré » + total du mois, tuto/explication en `<details>` repliés après première visite — flag `abmat:ui:visited` —, années en pastilles fixes 2023 → courante). 29 tests verts. ⚠️ **Les étapes DOM (tableau + thème) n'ont pas encore été vérifiées dans un navigateur.**
 
 Copies **obsolètes** à ne jamais éditer : `~/Downloads/assmat-refacto*` et le dossier « Assmat - copie archivee 2026-04 » sur le Bureau.
