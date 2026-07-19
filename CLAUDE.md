@@ -52,19 +52,25 @@ Une entrée localStorage par mois, clé `abmat:YYYY-MM`. Le bouton Sauvegarder e
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "year": 2026,
   "monthIndex": 0,
   "smicOverride": null,
   "netImposable": 0,
   "irf": 0,
   "days": {
-    "2026-01-05": { "slots": { "1": { "in": "08:00", "out": "17:00" }, "2": {}, "3": {} } }
+    "2026-01-05": {
+      "children": {
+        "1": { "absent": false, "motif": "", "slots": [ { "in": "08:00", "out": "17:00" } ] },
+        "2": { "absent": true, "motif": "malade", "slots": [] },
+        "3": { "absent": false, "motif": "", "slots": [] }
+      }
+    }
   }
 }
 ```
 
-⚠️ **`days` est un objet indexé par date ISO, pas un tableau** (le bug historique du récap annuel venait d'un `Array.isArray` sur cette structure). `slots` = enfants 1 à 3. Champ modifié → incrémenter `version` et gérer la migration dans `normalizeData()`.
+⚠️ **`days` est un objet indexé par date ISO, pas un tableau** (le bug historique du récap annuel venait d'un `Array.isArray` sur cette structure). `children` = enfants 1 à 3 ; chaque enfant porte une **liste de créneaux** (max 3, les heures s'additionnent sur la journée avant la règle ≥ 8 h) et un éventuel marquage d'absence. La **migration v1 → v2** (ancien `slots: {"1":{in,out}}`) est automatique dans `normalizeData()` — tout nouveau changement de schéma incrémente `version` et ajoute sa migration au même endroit.
 
 ## Documentation (docs/)
 
@@ -74,11 +80,9 @@ Une entrée localStorage par mois, clé `abmat:YYYY-MM`. Le bouton Sauvegarder e
 
 **Corrigés (lot 1)** : récap annuel réécrit (`compute/year-recap.js` recalcule via `S.loadMonth` + `C.computeMonthTotal`, avec le `smicOverride` du mois — abattement, jours-enfant et statuts réels) ; SMIC 2023 corrigé à 11,27 ; sentinel toolbar (`#period-sentinel`) ; garde utils réelle dans `render/index.js`. Côté renderers, l'audit initial s'était trompé de sens : c'était **`rules.js` qui n'était pas chargé** (le `<script>` pointait encore sur `year-abattement.js`, provoquant un affichage en double de l'explication). Le HTML charge désormais `rules.js` ; `year-abattement.js` est supprimé. Vérification hors navigateur : harnais node sur les vrais fichiers (15 assertions).
 
-**Lot 2 fait le 2026-07-19** : calculs mensuels depuis `state.data` (le DOM n'est plus lu), export/import de l'année complète (corrige l'export « null » depuis le RÉCAP), suite `node --test` (21 tests).
+**Lot 2 fait le 2026-07-19** : calculs mensuels depuis `state.data` (le DOM n'est plus lu), export/import de l'année complète (corrige l'export « null » depuis le RÉCAP), suite `node --test`.
 
-Reste connu, à traiter dans son lot :
-
-- **Lot 3 — Une seule plage horaire par enfant/jour** : une garde en deux fois saisie en une plage englobante donne le forfait complet à tort → multi-créneaux décidés (schéma de données v2 + migration).
+**Lot 3 en cours — étape 1/3 faite le 2026-07-19** : schéma v2 (multi-créneaux + absences, migration auto) livré côté moteur, storage et récap, 24 tests verts. L'UI actuelle n'expose pas encore ces capacités (elle édite le premier créneau de chaque enfant) — étapes restantes : le nouveau tableau (une ligne par jour, « + créneau », absence avec motif, fériés, recopie de semaine), puis le thème (accent, héros, « ✓ Enregistré », tuto replié, années fixes).
 
 Copies **obsolètes** à ne jamais éditer : `~/Downloads/assmat-refacto*` et le dossier « Assmat - copie archivee 2026-04 » sur le Bureau.
 

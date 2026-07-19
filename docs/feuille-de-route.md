@@ -29,7 +29,9 @@ Cible de distribution : **GitHub Pages + PWA** (lot 6) — elle a un raccourci, 
 - ✅ Export/import **annuel** : format `abmat-year`, un fichier par année (`abattement-assmat-2026.json`), mois vides exclus ; l'import accepte aussi les anciens fichiers de mois (depuis le RÉCAP, bascule sur le mois du fichier). Le **profil** (« Mes informations », lot 5) sera ajouté à cette enveloppe. Rappel décisions : JSON = format machine, PDF = format humain ; ~30 Ko/an, aucune limite pratique.
 - ✅ Bouton Sauvegarder en mode RÉCAP corrigé (il exporte l'année affichée, plus un fichier `null`).
 
-## Lot 3 — Interface (après maquette validée)
+## Lot 3 — Interface (après maquette validée) — étape 1/3 ✅ le 2026-07-19
+
+Découpage en trois étapes sûres : **1)** schéma v2 + moteur (✅ — multi-créneaux, absences, migration auto, 24 tests ; l'UI actuelle reste fonctionnelle sur le premier créneau), **2)** nouveau tableau de saisie, **3)** thème et chrome. Les étapes 2–3 attendent la vérification navigateur de l'existant et les retours maquette.
 
 **Pourquoi** : la page met la pédagogie avant la tâche, le tableau affiche 3 lignes/jour même pour 1 enfant, et l'autosave est invisible (angoisse pour une non-technicienne).
 
