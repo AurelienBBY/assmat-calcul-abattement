@@ -168,10 +168,83 @@
         el.hidden = false;
     }
 
+    // --- Sauvegarde automatique (dossier via File System Access API) --------
+
+    let autosaveTimer = null;
+    const mergedYears = {}; // années déjà fusionnées depuis le dossier (par session)
+
+    function updateAutosaveIndicator(status) {
+        const el = document.querySelector("[data-autosave]");
+        if (!el) return;
+        if (status === "unsupported") {
+            el.hidden = true;
+            return;
+        }
+        el.hidden = false;
+        el.classList.remove("is-ok", "is-warn");
+        if (status === "ok" || status === "ready") {
+            el.classList.add("is-ok");
+            el.textContent = (status === "ok") ? "Fichier à jour ✓" : "Sauvegarde auto activée";
+            el.title = "La sauvegarde s'écrit automatiquement dans votre dossier. Cliquez pour changer de dossier.";
+        } else {
+            el.classList.add("is-warn");
+            el.textContent = (status === "permission") ? "⚠ Réactiver la sauvegarde auto" : "⚠ Activer la sauvegarde auto";
+            el.title = "Cliquez pour choisir le dossier de sauvegarde automatique (ex. OneDrive).";
+        }
+    }
+
+    function scheduleAutosave() {
+        const A = window.ABMAT.autosave;
+        if (!A || !A.isSupported()) return;
+        clearTimeout(autosaveTimer);
+        autosaveTimer = setTimeout(() => {
+            A.writeYear(state.year, S.buildYearExport(state.year)).then((res) => {
+                if (res.status === "ok") S.setLastMergedAt(new Date().toISOString());
+                updateAutosaveIndicator(res.status);
+            });
+        }, 600);
+    }
+
+    // Arbitrage d'un conflit de fusion (même mois modifié sur deux appareils).
+    function makeConflictResolver(year) {
+        return (monthIdx, fileAt, localAt) => {
+            const okFile = confirm(
+                `Le mois de ${getMonthLabelFR(monthIdx)} ${year} a été modifié sur deux appareils.\n\n` +
+                `OK : garder la version du fichier (${new Date(fileAt).toLocaleString("fr-FR")})\n` +
+                `Annuler : garder celle de cet appareil (${new Date(localAt).toLocaleString("fr-FR")})`
+            );
+            return okFile ? "file" : "local";
+        };
+    }
+
+    // Relit le fichier du dossier et fusionne (récupère la saisie d'un autre
+    // appareil). Une fois par année et par session.
+    function mergeFromFolder(year) {
+        const A = window.ABMAT.autosave;
+        if (!A || !A.isSupported() || mergedYears[year]) return;
+        mergedYears[year] = true;
+
+        A.readYear(year).then((text) => {
+            if (!text) return;
+            try {
+                const res = S.mergeYearFromJsonText(text, {
+                    lastMergedAt: S.getLastMergedAt(),
+                    resolveConflict: makeConflictResolver(year)
+                });
+                if (res.applied > 0 && Number(state.year) === Number(year)) {
+                    loadAndRenderMonth(false); // affiche ce qui vient d'un autre appareil
+                }
+            } catch (e) {
+                console.warn("Fusion du fichier de sauvegarde impossible :", e);
+            }
+        });
+    }
+
     function saveNow() {
         if (!state.key || !state.data) return;
         if (S.saveMonth(state.key, state.data)) {
             updateSavedIndicator();
+            scheduleAutosave();
         }
     }
 
@@ -485,6 +558,21 @@
 
     function onExport() {
         saveNow();
+
+        // Sur iPhone/iPad : feuille de partage (→ « Enregistrer dans Fichiers »
+        // / OneDrive) plutôt qu'un téléchargement peu visible sur iOS.
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        if (isIOS && typeof navigator.canShare === "function") {
+            const json = JSON.stringify(S.buildYearExport(state.year), null, 2);
+            const shareFile = new File([json], `abattement-assmat-${state.year}.json`, { type: "application/json" });
+            if (navigator.canShare({ files: [shareFile] })) {
+                navigator.share({ files: [shareFile] })
+                    .then(() => S.setLastMergedAt(new Date().toISOString()))
+                    .catch(() => { /* partage annulé : rien à faire */ });
+                return;
+            }
+        }
+
         // La sauvegarde de référence est l'année complète (fonctionne aussi depuis le RÉCAP).
         S.exportYearToJsonFile(state.year);
     }
@@ -515,18 +603,13 @@
 
                 const res = S.mergeYearFromJsonText(text, {
                     lastMergedAt: S.getLastMergedAt(),
-                    resolveConflict: (monthIdx, fileAt, localAt) => {
-                        const okFile = confirm(
-                            `Le mois de ${getMonthLabelFR(monthIdx)} ${y} a été modifié sur deux appareils.\n\n` +
-                            `OK : garder la version du fichier (${new Date(fileAt).toLocaleString("fr-FR")})\n` +
-                            `Annuler : garder celle de cet appareil (${new Date(localAt).toLocaleString("fr-FR")})`
-                        );
-                        return okFile ? "file" : "local";
-                    }
+                    resolveConflict: makeConflictResolver(y)
                 });
                 state.year = res.year;
                 state.monthIndex = 12; // vue RÉCAP : montre d'un coup le résultat de la fusion
                 loadAndRenderMonth(false);
+                hideRestoreBanner();
+                scheduleAutosave();
                 setToolbarLoadUI("loaded", file.name);
                 return;
             }
@@ -567,6 +650,7 @@
             const monthAbatt = computeMonthTotalAbattAndRefreshTable();
             updateSummary(monthAbatt);
             saveNow();
+            hideRestoreBanner();
             setToolbarLoadUI("loaded", file && file.name ? file.name : "");
         } catch (e) {
             setToolbarLoadUI("error", file && file.name ? file.name : "");
@@ -937,9 +1021,48 @@
         }
     }
 
+    // --- Écran de restauration (appareil sans données) ------------------------
+
+    function initRestoreBanner() {
+        const el = document.getElementById("restore-banner");
+        if (!el) return;
+
+        let hasMonth = false;
+        try {
+            for (let i = 0; i < localStorage.length; i++) {
+                if (/^abmat:\d{4}-\d{2}$/.test(localStorage.key(i) || "")) {
+                    hasMonth = true;
+                    break;
+                }
+            }
+        } catch (e) {
+            hasMonth = true; // stockage illisible : ne pas insister
+        }
+        if (hasMonth) return;
+
+        el.hidden = false;
+        const importBtn = el.querySelector("[data-restore-import]");
+        const closeBtn = el.querySelector("[data-restore-dismiss]");
+        if (importBtn) {
+            importBtn.addEventListener("click", () => {
+                const fileInput = document.getElementById("abmat-action-file");
+                if (fileInput) fileInput.click();
+            });
+        }
+        if (closeBtn) {
+            closeBtn.addEventListener("click", () => { el.hidden = true; });
+        }
+    }
+
+    function hideRestoreBanner() {
+        const el = document.getElementById("restore-banner");
+        if (el) el.hidden = true;
+    }
+
     // --- Chargement mois ------------------------------------------------------
 
     function loadAndRenderMonth(initialRender) {
+        mergeFromFolder(state.year); // reprend l'éventuelle saisie d'un autre appareil
         if (isRecapMode() || isInfosMode()) {
             state.key = null;
             state.data = null;
@@ -984,8 +1107,36 @@
         initToolbarSticky();
         attachToolbarShrinkObserver();
         setToolbarLoadUI("idle", "");
+
+        // AVANT le premier rendu (qui enregistre un mois vierge) : proposer la
+        // restauration si l'appareil n'a aucune donnée.
+        initRestoreBanner();
+
         loadAndRenderMonth(true);
         if (typeof window.initTutoModal === "function") window.initTutoModal();
+
+        // Sauvegarde automatique : état initial + activation au clic.
+        const A = window.ABMAT.autosave;
+        if (A && A.isSupported()) {
+            A.getStatus().then(updateAutosaveIndicator);
+            const autosaveEl = document.querySelector("[data-autosave]");
+            if (autosaveEl) {
+                autosaveEl.addEventListener("click", async () => {
+                    try {
+                        if (await A.ensureReady()) {
+                            updateAutosaveIndicator("ready");
+                            mergedYears[state.year] = false; // relit le dossier fraîchement accordé
+                            mergeFromFolder(state.year);
+                            scheduleAutosave();
+                        }
+                    } catch (e) {
+                        // sélection de dossier annulée : rien à faire
+                    }
+                });
+            }
+        } else {
+            updateAutosaveIndicator("unsupported");
+        }
 
         // PWA : service worker (uniquement en http/https — pas en double-clic
         // local) + stockage déclaré persistant (protège de l'éviction

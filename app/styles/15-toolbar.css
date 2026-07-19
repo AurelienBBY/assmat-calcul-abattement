@@ -334,3 +334,29 @@
   border-color: var(--accent-dark);
   color: #fff;
 }
+
+/* --- Pilule-bouton : sauvegarde automatique (dossier) --------------------- */
+
+.toolbar-autosave{
+  flex: 0 0 auto;
+  border: none;
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1;
+  border-radius: 999px;
+  padding: 5px 11px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.toolbar-autosave.is-ok{
+  color: var(--ok);
+  background: var(--ok-pale);
+}
+
+.toolbar-autosave.is-warn{
+  color: #8a5a00;
+  background: #f7ecd4;
+}
+
+.toolbar-autosave:hover{ filter: brightness(0.96); }

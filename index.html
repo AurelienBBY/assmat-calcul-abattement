@@ -48,6 +48,7 @@
         <div class="app-toolbar__context" data-toolbar-context aria-live="polite"></div>
         <span class="toolbar-total" data-toolbar-total hidden></span>
         <span class="toolbar-saved" data-saved-indicator aria-live="polite" hidden></span>
+        <button type="button" class="toolbar-autosave" data-autosave hidden></button>
       </div>
 
       <p class="intro">Outil de calcul pour la déclaration des revenus avec abattement forfaitaire.</p>
@@ -78,6 +79,19 @@
       </button>
     </div>
   </header>
+
+  <!-- Restauration : proposé au démarrage quand l'appareil n'a aucune donnée -->
+  <div id="restore-banner" class="restore-banner no-print" hidden>
+    <span>
+      Vos données ne sont pas sur cet appareil. Si vous avez une sauvegarde
+      (fichier <strong>abattement-assmat-….json</strong>), importez-la —
+      sinon, commencez simplement à saisir.
+    </span>
+    <span class="restore-banner__actions">
+      <button type="button" class="restore-banner__btn" data-restore-import>Importer ma sauvegarde</button>
+      <button type="button" class="restore-banner__close" data-restore-dismiss aria-label="Fermer">✕</button>
+    </span>
+  </div>
 
   <!-- =========================================================
      TUTO (APERÇU + MODALE DÉTAILLÉE)
@@ -264,6 +278,7 @@
   <script src="app/lib/utils.js"></script>
   <script src="app/lib/calc.js"></script>
   <script src="app/lib/storage.js"></script>
+  <script src="app/lib/autosave.js"></script>
 
   <script src="app/lib/compute/year-recap.js"></script>
   <script src="app/lib/compute/month-print.js"></script>
