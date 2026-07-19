@@ -31,7 +31,8 @@ function loadApp() {
     "app/lib/utils.js",
     "app/lib/calc.js",
     "app/lib/storage.js",
-    "app/lib/compute/year-recap.js"
+    "app/lib/compute/year-recap.js",
+    "app/lib/compute/month-print.js"
   ].forEach((rel) => {
     vm.runInThisContext(fs.readFileSync(path.join(ROOT, rel), "utf8"), { filename: rel });
   });

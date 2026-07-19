@@ -407,9 +407,44 @@
         saveNow();
     }
 
+    // --- Impression : gabarit dédié (#print-doc), seul visible à l'impression
+
+    function buildRulesLabels() {
+        const info = getSmicInfo();
+        const smic = Number.isFinite(Number(info.smicEffective)) ? Number(info.smicEffective) : null;
+        return {
+            year: state.year,
+            smicLabel: (smic !== null) ? U.fmtEuro(smic) : "non renseigné",
+            forfaitLabel: U.fmtEuro(computeForfaitJour())
+        };
+    }
+
+    function buildPrintDoc() {
+        const root = document.getElementById("print-doc");
+        if (!root) return;
+
+        const Compute = window.ABMAT.compute;
+
+        if (isRecapMode()) {
+            R.renderPrintYear(root, Compute.computeYearRecap(state.year), buildRulesLabels());
+            return;
+        }
+
+        if (!state.data) return;
+        const model = Compute.buildMonthPrintModel(
+            state.year, state.monthIndex, state.data, computeForfaitJour()
+        );
+        model.rules = buildRulesLabels();
+        R.renderPrintMonth(root, model);
+    }
+
     function onPrint() {
+        buildPrintDoc();
         window.print();
     }
+
+    // Cmd/Ctrl+P sans passer par le bouton : on construit le document au vol.
+    window.addEventListener("beforeprint", buildPrintDoc);
 
     function onExport() {
         saveNow();

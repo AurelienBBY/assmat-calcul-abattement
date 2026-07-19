@@ -230,6 +230,12 @@
 </div>
 
   <!-- =========================================================
+       GABARIT D'IMPRESSION (seul contenu visible à l'impression,
+       généré par app.js au moment d'imprimer)
+       ========================================================= -->
+  <div id="print-doc" aria-hidden="true"></div>
+
+  <!-- =========================================================
        SCRIPTS
        ========================================================= -->
 
@@ -253,6 +259,7 @@
   <script src="app/lib/storage.js"></script>
 
   <script src="app/lib/compute/year-recap.js"></script>
+  <script src="app/lib/compute/month-print.js"></script>
 
   <!-- Renderers (ordre important) -->
   <script src="app/lib/render/index.js"></script>
@@ -264,6 +271,9 @@
   <script src="app/lib/render/payslip-inputs.js"></script>
   <script src="app/lib/render/month-summary.js"></script>
   <script src="app/lib/render/year-recap.js"></script>
+  <script src="app/lib/render/print-common.js"></script>
+  <script src="app/lib/render/print-month.js"></script>
+  <script src="app/lib/render/print-year.js"></script>
   <script src="app/lib/render/toolbar-actions.js"></script>
   <script src="app/lib/render/footer.js"></script>
 

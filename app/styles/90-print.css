@@ -1,236 +1,205 @@
 /* ============================================================================
    90-print.css — Impression / PDF
    ----------------------------------------------------------------------------
-   Contient uniquement :
-   - .no-print (zones masquées à l’impression)
-   - règles @media print (mise en page A4, table compacte)
+   Principe : on n'imprime plus l'écran. app.js génère un document dédié dans
+   #print-doc (relevé mensuel ou récap annuel selon la vue), seul contenu
+   visible à l'impression. À l'écran, #print-doc est masqué.
    ========================================================================== */
 
-/* Visible à l’écran, masqué à l’impression */
-.no-print{ display: block; }
+/* Écran : le gabarit n'existe qu'à l'impression */
+#print-doc{ display: none; }
 
 @media print{
-  /* Cache les zones non imprimables */
-  .no-print{ display: none !important; }
 
-  /* Masque la navigation de période (année + mois) à l’impression */
-  .period-controls,
-  #year-params,
-  #period-section,
-  .period-section,
-  .months-nav,
-  .month-selector,
-  .month-tabs,
-  .year-params{
-    display: none !important;
+  @page{
+    size: A4;
+    margin: 14mm 12mm;
   }
 
-  /* Neutralise les effets “écran” */
-  *{
-    color: #000 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    text-shadow: none !important;
-  }
+  /* Toute l'application disparaît ; seul le document reste */
+  body > :not(#print-doc){ display: none !important; }
+  #print-doc{ display: block !important; }
 
   html, body{
     background: #fff;
+    font-size: 12.5px;
   }
 
-  /* Mise en page print : flux A4 + espacements verticaux */
-  header, section, main, footer{
-    max-width: none !important;
-    border-radius: 0 !important;
-  }
+  /* --- Feuille ------------------------------------------------------------ */
 
-  /* On garde un minimum d’air entre les blocs */
-  header, section, main, footer{
-    margin: 0 0 10px 0 !important;
-    padding: 0 !important;
-  }
-
-  /* Les cartes deviennent des blocs imprimables simples */
-  .card{
-    border: 1px solid #000 !important;
-    padding: 8px 10px !important;
-    margin: 0 0 10px 0 !important;
-    background: transparent !important;
-  }
-
-  .card__title{
-    margin: 0 0 6px 0 !important;
-  }
-
-  h1{
-    font-size: 16px;
-    margin: 0 0 6px 0;
-  }
-
-  h2{
-    font-size: 13px;
-    margin: 10px 0 6px 0;
-  }
-
-  h3{
-    font-size: 12px;
-    margin: 8px 0 6px 0;
-  }
-
-  /* On ne gaspille pas de place avec les aides à l’impression */
-  .hint{
-    display: none !important;
-  }
-
-  .intro,
-  .footer-note,
-  .footer-date{
-    font-size: 10px;
+  #print-doc .sheet{
+    font-family: Charter, Georgia, "Times New Roman", serif;
+    font-size: 12.5px;
+    line-height: 1.45;
     color: #111;
   }
 
-  /* Les conteneurs JS ne doivent pas créer de sous-cadres */
-  .period-controls,
-  #year-params,
-  #payslip-inputs,
-  #month-results,
-  #month-table{
-    border: 0 !important;
-    background: transparent !important;
-    padding: 0 !important;
+  #print-doc .num{ font-variant-numeric: tabular-nums; }
+
+  /* --- En-tête d'identité ------------------------------------------------- */
+
+  #print-doc .doc-head{
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    border-bottom: 3px double #111;
+    padding-bottom: 12px;
+    margin-bottom: 16px;
   }
 
-  /* Gestion des sauts de page */
-  .abmat-table,
-  #month-results-section,
-  #payslip-section{
-    break-inside: avoid;
-    page-break-inside: avoid;
+  #print-doc .doc-who strong{ display: block; font-size: 15px; }
+  #print-doc .doc-who span{ display: block; font-size: 11.5px; }
+
+  #print-doc .doc-what{ text-align: right; }
+  #print-doc .doc-type{
+    font-family: system-ui, sans-serif;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+  #print-doc .doc-period{ font-size: 17px; font-weight: 700; }
+
+  /* --- Tableau document --------------------------------------------------- */
+
+  #print-doc .doc-table{
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
   }
 
-  .abmat-table thead{
-    display: table-header-group;
+  #print-doc .doc-table thead{ display: table-header-group; }
+  #print-doc .doc-table tr{ break-inside: avoid; page-break-inside: avoid; }
+
+  #print-doc .doc-table th{
+    border-bottom: 1.5px solid #111;
+    text-align: left;
+    padding: 4px 6px;
+    font-family: system-ui, sans-serif;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
   }
 
-  .abmat-table tfoot{
-    display: table-footer-group;
+  #print-doc .doc-table td{
+    border-bottom: 1px solid #c9c9c4;
+    padding: 4px 6px;
+    vertical-align: top;
   }
 
-  .abmat-table tr{
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
-
-  /* Tableau compact, lisible */
-  .abmat-table{
-    border: 1px solid #000 !important;
-    width: 100% !important;
-    table-layout: fixed !important;
-    border-collapse: collapse !important;
-  }
-
-  .abmat-table thead th{
-    background: #fff !important;
-    border-bottom: 1px solid #000 !important;
-    font-size: 10px;
-    padding: 4px 4px;
-    text-align: center;
-    vertical-align: middle;
-  }
-
-  /* Largeurs de colonnes (Date plus étroite) */
-  .abmat-table thead th:nth-child(1),
-  .abmat-table tbody td:nth-child(1){
-    width: 10% !important;
-  }
-  .abmat-table thead th:nth-child(2),
-  .abmat-table tbody td:nth-child(2){
-    width: 18% !important;
-  }
-  .abmat-table thead th:nth-child(3),
-  .abmat-table tbody td:nth-child(3){
-    width: 16% !important;
-  }
-  .abmat-table thead th:nth-child(4),
-  .abmat-table tbody td:nth-child(4){
-    width: 16% !important;
-  }
-  .abmat-table thead th:nth-child(5),
-  .abmat-table tbody td:nth-child(5){
-    width: 22% !important;
-  }
-  .abmat-table thead th:nth-child(6),
-  .abmat-table tbody td:nth-child(6){
-    width: 18% !important;
-  }
-
-  /* Colonne Date : compacte */
-  .abmat-table thead th:nth-child(1){
-    white-space: nowrap;
-  }
-  .abmat-table tbody td:nth-child(1){
-    text-align: center;
-    vertical-align: middle;
-    padding: 3px 2px !important;
-    font-size: 9px;
-  }
-
-  .abmat-table tbody td{
-    border-top: 1px solid #000 !important;
-    font-size: 10px;
-    padding: 4px 4px;
-    vertical-align: middle;
-  }
-
-  /* En impression, on force un rendu "table" classique :
-     certaines règles responsive peuvent injecter des libellés via td::before (ex: "Date"). */
-  .abmat-table td::before,
-  .abmat-table td::after{
-    content: none !important;
-    display: none !important;
-  }
-
-  /* On neutralise aussi d’éventuels styles responsive qui passeraient les cellules en block */
-  .abmat-table,
-  .abmat-table thead,
-  .abmat-table tbody,
-  .abmat-table tfoot{
-    display: table !important;
-    width: 100% !important;
-  }
-  .abmat-table tr{ display: table-row !important; }
-  .abmat-table th,
-  .abmat-table td{ display: table-cell !important; }
-
-  .week-total td{
+  #print-doc .doc-table th.r,
+  #print-doc .doc-table td.r{
     text-align: right;
-    padding-right: 12px;
+    font-variant-numeric: tabular-nums;
   }
 
-  input, select{
-    border: 0 !important;
-    padding: 0 !important;
-    background: transparent !important;
+  #print-doc td.doc-day{ white-space: nowrap; }
+
+  #print-doc tr.doc-week td{
+    font-family: system-ui, sans-serif;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    border-bottom: 1px solid #111;
+    padding-top: 10px;
   }
 
-  /* Champs horaires compacts */
-  input[type="time"]{
-    min-width: auto !important;
-    width: 64px;
+  #print-doc tr.doc-subtotal td{
+    border-top: 1.5px solid #111;
+    border-bottom: none;
+    font-weight: 700;
+    padding-top: 6px;
   }
 
-  /* Pas de spinners en impression */
-  input[type="number"]::-webkit-outer-spin-button,
-  input[type="number"]::-webkit-inner-spin-button{
-    -webkit-appearance: none;
-    margin: 0;
-  }
-  input[type="number"]{
-    -moz-appearance: textfield;
+  #print-doc tr.doc-total td{
+    border-top: 2px solid #111;
+    border-bottom: none;
+    font-weight: 700;
+    padding-top: 8px;
   }
 
-  /* Format page */
-  @page{
-    size: A4;
-    margin: 12mm;
+  /* --- Encadré « case 1AJ » (récap annuel) -------------------------------- */
+
+  #print-doc .doc-declare{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    border: 2px solid #111;
+    padding: 12px 16px;
+    margin: 0 0 16px 0;
+    break-inside: avoid;
+  }
+
+  #print-doc .doc-declare .lab{ font-size: 12px; max-width: 62%; }
+  #print-doc .doc-declare .amt{
+    font-size: 22px;
+    font-weight: 800;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* --- Synthèse + règles --------------------------------------------------- */
+
+  #print-doc .doc-grid{
+    display: grid;
+    grid-template-columns: 1.2fr .8fr;
+    gap: 22px;
+    margin-top: 20px;
+    break-inside: avoid;
+  }
+
+  #print-doc .doc-synth h3{
+    margin: 0 0 8px;
+    font-size: 13px;
+  }
+
+  #print-doc .doc-synth .row{
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 3px 0;
+  }
+
+  #print-doc .doc-synth .row.final{
+    border-top: 2px solid #111;
+    margin-top: 6px;
+    padding-top: 7px;
+    font-weight: 700;
+    font-size: 14px;
+  }
+
+  #print-doc .doc-rules{
+    border: 1px solid #111;
+    padding: 10px 12px;
+    font-size: 11px;
+  }
+
+  #print-doc .doc-rules h4{
+    margin: 0 0 6px;
+    font-family: system-ui, sans-serif;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+  }
+
+  #print-doc .doc-rules p{ margin: 0 0 4px; }
+
+  /* --- Divers -------------------------------------------------------------- */
+
+  #print-doc .doc-empty{
+    margin: 20px 0;
+    font-style: italic;
+  }
+
+  #print-doc .doc-foot{
+    margin-top: 22px;
+    padding-top: 8px;
+    border-top: 1px solid #c9c9c4;
+    font-size: 9.5px;
   }
 }
