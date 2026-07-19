@@ -500,21 +500,32 @@
             const text = await file.text();
             const parsed = JSON.parse(text);
 
-            // --- Sauvegarde d'année (format "abmat-year") -------------------
+            // --- Sauvegarde d'année (format "abmat-year") : FUSION ----------
             if (parsed && parsed.format === "abmat-year") {
                 const y = Number(parsed.year);
                 const okGo = confirm(
                     `Ce fichier contient la sauvegarde de l’année ${y}.\n` +
-                    `Les mois déjà enregistrés pour ${y} seront remplacés. Continuer ?`
+                    `La fusionner avec les données de cet appareil ?\n` +
+                    `(pour chaque mois, la version la plus récente est conservée)`
                 );
                 if (!okGo) {
                     setToolbarLoadUI("idle", "");
                     return;
                 }
 
-                const res = S.importYearFromJsonText(text);
+                const res = S.mergeYearFromJsonText(text, {
+                    lastMergedAt: S.getLastMergedAt(),
+                    resolveConflict: (monthIdx, fileAt, localAt) => {
+                        const okFile = confirm(
+                            `Le mois de ${getMonthLabelFR(monthIdx)} ${y} a été modifié sur deux appareils.\n\n` +
+                            `OK : garder la version du fichier (${new Date(fileAt).toLocaleString("fr-FR")})\n` +
+                            `Annuler : garder celle de cet appareil (${new Date(localAt).toLocaleString("fr-FR")})`
+                        );
+                        return okFile ? "file" : "local";
+                    }
+                });
                 state.year = res.year;
-                state.monthIndex = 12; // vue RÉCAP : montre d'un coup ce qui vient d'être importé
+                state.monthIndex = 12; // vue RÉCAP : montre d'un coup le résultat de la fusion
                 loadAndRenderMonth(false);
                 setToolbarLoadUI("loaded", file.name);
                 return;

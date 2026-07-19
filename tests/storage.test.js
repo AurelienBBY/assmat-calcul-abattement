@@ -90,19 +90,21 @@ test("export année : seuls les mois non vides sont inclus", () => {
   assert.deepEqual(Object.keys(exp.months).sort(), ["0", "4"]);
 });
 
-test("import année : aller-retour complet vers le localStorage", () => {
+test("fusion année : restauration complète sur un appareil vide", () => {
   const text = JSON.stringify(S.buildYearExport(2026));
 
   // On repart d'un storage vide pour prouver la restauration.
   Object.keys(store).forEach((k) => delete store[k]);
 
-  const res = S.importYearFromJsonText(text);
-  assert.deepEqual(res, { year: 2026, count: 2 });
+  const res = S.mergeYearFromJsonText(text);
+  assert.equal(res.year, 2026);
+  assert.equal(res.applied, 2);
+  assert.deepEqual(res.conflicts, []);
   assert.equal(S.loadMonth(2026, 0).data.netImposable, 1200);
   assert.equal(S.loadMonth(2026, 4).data.days["2026-05-04"].children["1"].slots[0].out, "17:30");
 });
 
-test("import année : format inconnu ou année invalide → erreur explicite", () => {
-  assert.throws(() => S.importYearFromJsonText(JSON.stringify({ year: 2026 })), /abmat-year/);
-  assert.throws(() => S.importYearFromJsonText(JSON.stringify({ format: "abmat-year", year: "?" })), /invalide/);
+test("fusion année : format inconnu ou année invalide → erreur explicite", () => {
+  assert.throws(() => S.mergeYearFromJsonText(JSON.stringify({ year: 2026 })), /abmat-year/);
+  assert.throws(() => S.mergeYearFromJsonText(JSON.stringify({ format: "abmat-year", year: "?" })), /invalide/);
 });

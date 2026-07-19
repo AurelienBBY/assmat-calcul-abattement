@@ -169,11 +169,15 @@
     }
   };
 
-  /**
-   * Sauvegarde un mois dans localStorage.
-   * @returns {boolean} succès
-   */
-  S.saveMonth = function saveMonth(key, data) {
+  // Comparaison de contenu sans l'horodatage.
+  function strippedJson(obj) {
+    const copy = Object.assign({}, obj);
+    delete copy.updatedAt;
+    return JSON.stringify(copy);
+  }
+
+  // Écriture brute (préserve l'updatedAt fourni — utilisée par la fusion).
+  function writeRaw(key, data) {
     try {
       localStorage.setItem(String(key), JSON.stringify(data));
       return true;
@@ -181,6 +185,26 @@
       console.warn("Impossible de sauvegarder dans localStorage:", e);
       return false;
     }
+  }
+
+  /**
+   * Sauvegarde un mois dans localStorage.
+   * L'horodatage `updatedAt` n'est posé que si le CONTENU change — consulter
+   * un mois sans le modifier ne le marque pas « modifié » (sinon la fusion
+   * multi-appareils verrait des conflits partout).
+   * @returns {boolean} succès
+   */
+  S.saveMonth = function saveMonth(key, data) {
+    try {
+      const existingRaw = localStorage.getItem(String(key));
+      if (existingRaw && strippedJson(JSON.parse(existingRaw)) === strippedJson(data)) {
+        return true; // rien n'a changé : on ne touche ni au stockage ni à l'horodatage
+      }
+    } catch (e) {
+      // stockage illisible : on réécrit proprement ci-dessous
+    }
+    const next = Object.assign({}, data, { updatedAt: new Date().toISOString() });
+    return writeRaw(key, next);
   };
 
   function downloadJson(filename, obj) {
@@ -248,20 +272,55 @@
 
   /**
    * Exporte l'année complète dans un fichier JSON (la sauvegarde de référence).
+   * Le fichier écrit reflète l'état local → on note le point de synchro.
    * @param {number} year
    */
   S.exportYearToJsonFile = function exportYearToJsonFile(year) {
     downloadJson(`abattement-assmat-${Number(year)}.json`, S.buildYearExport(year));
+    S.setLastMergedAt(new Date().toISOString());
   };
 
+  /* --- Fusion multi-appareils ----------------------------------------------
+     Le fichier « abmat-year » est le point de rencontre entre appareils.
+     À l'import, la version LA PLUS RÉCENTE de chaque mois gagne (updatedAt).
+     Conflit = le même mois modifié des deux côtés depuis la dernière synchro
+     (lastMergedAt) → arbitré par le callback resolveConflict, jamais écrasé
+     en silence.                                                              */
+
+  const LAST_MERGED_KEY = "abmat:lastMergedAt";
+
+  S.getLastMergedAt = function getLastMergedAt() {
+    try {
+      return localStorage.getItem(LAST_MERGED_KEY) || null;
+    } catch (e) {
+      return null;
+    }
+  };
+
+  S.setLastMergedAt = function setLastMergedAt(iso) {
+    try {
+      localStorage.setItem(LAST_MERGED_KEY, String(iso));
+    } catch (e) {
+      // non bloquant
+    }
+  };
+
+  function tsOf(obj) {
+    return (obj && typeof obj.updatedAt === "string") ? obj.updatedAt : "";
+  }
+
   /**
-   * Importe une année complète (format « abmat-year ») : chaque mois présent
-   * est normalisé puis écrit dans le localStorage (remplace l'existant).
+   * Fusionne une sauvegarde d'année (format « abmat-year ») avec le stockage
+   * local, mois par mois.
    *
    * @param {string} text
-   * @returns {{year:number, count:number}}
+   * @param {Object} [options]
+   *   - lastMergedAt : ISO de la dernière synchro de CET appareil
+   *   - resolveConflict(monthIndex, fileUpdatedAt, localUpdatedAt) → "file"|"local"
+   * @returns {{year:number, applied:number, kept:number, conflicts:number[]}}
    */
-  S.importYearFromJsonText = function importYearFromJsonText(text) {
+  S.mergeYearFromJsonText = function mergeYearFromJsonText(text, options) {
+    const opts = options || {};
     const parsed = JSON.parse(text);
     if (!parsed || parsed.format !== "abmat-year") {
       throw new Error("Ce fichier n'est pas une sauvegarde d'année (format attendu : abmat-year).");
@@ -271,26 +330,70 @@
       throw new Error("Année absente ou invalide dans le fichier.");
     }
 
-    // Le profil (Mes informations) voyage avec la sauvegarde d'année.
-    if (parsed.profile && typeof parsed.profile === "object") {
-      S.saveProfile(parsed.profile);
-    }
-
+    const lastMergedAt = (typeof opts.lastMergedAt === "string") ? opts.lastMergedAt : null;
     const monthsIn = (parsed.months && typeof parsed.months === "object") ? parsed.months : {};
-    let count = 0;
+    let applied = 0;
+    let kept = 0;
+    const conflicts = [];
 
     for (let m = 0; m < 12; m++) {
       const raw = monthsIn[String(m)];
-      if (!raw) continue;
+      const local = S.loadMonth(y, m).data;
+      const localBlank = isBlankMonth(local);
 
-      const normalized = normalizeData(raw, y, m);
-      normalized.year = y;
-      normalized.monthIndex = m;
-      S.saveMonth(S.monthKey(y, m), normalized);
-      count++;
+      if (!raw) {
+        if (!localBlank) kept++;
+        continue;
+      }
+
+      const fileData = normalizeData(raw, y, m);
+      fileData.year = y;
+      fileData.monthIndex = m;
+
+      if (localBlank) {
+        writeRaw(S.monthKey(y, m), fileData); // préserve l'updatedAt du fichier
+        applied++;
+        continue;
+      }
+
+      const tf = tsOf(fileData);
+      const tl = tsOf(local);
+      if (tf === tl) {
+        kept++;
+        continue;
+      }
+
+      let winner = (tf > tl) ? "file" : "local"; // comparaison ISO lexicographique
+
+      const bothChangedSinceSync = Boolean(
+        lastMergedAt && tf && tl && tf > lastMergedAt && tl > lastMergedAt
+      );
+      if (bothChangedSinceSync) {
+        conflicts.push(m);
+        if (typeof opts.resolveConflict === "function") {
+          winner = (opts.resolveConflict(m, tf, tl) === "file") ? "file" : "local";
+        }
+      }
+
+      if (winner === "file") {
+        writeRaw(S.monthKey(y, m), fileData);
+        applied++;
+      } else {
+        kept++;
+      }
     }
 
-    return { year: y, count };
+    // Profil : la version la plus récente gagne (pas d'arbitrage — rare et bénin).
+    if (parsed.profile && typeof parsed.profile === "object") {
+      const fileProfile = S.normalizeProfile(parsed.profile);
+      const localProfile = S.loadProfile();
+      if (!localProfile || tsOf(fileProfile) > tsOf(localProfile)) {
+        writeRaw(PROFILE_KEY, fileProfile);
+      }
+    }
+
+    S.setLastMergedAt(new Date().toISOString());
+    return { year: y, applied, kept, conflicts };
   };
 
   /**
@@ -371,6 +474,7 @@
       // Compat : accepte l'ancienne forme « nom en chaîne »
       out.children[k] = normalizeProfileChild((typeof c === "string") ? { name: c } : c);
     }
+    if (typeof src.updatedAt === "string") out.updatedAt = src.updatedAt;
     return out;
   };
 
@@ -385,12 +489,16 @@
   };
 
   S.saveProfile = function saveProfile(profile) {
+    const normalized = S.normalizeProfile(profile);
     try {
-      localStorage.setItem(PROFILE_KEY, JSON.stringify(S.normalizeProfile(profile)));
-      return true;
+      const existingRaw = localStorage.getItem(PROFILE_KEY);
+      if (existingRaw && strippedJson(JSON.parse(existingRaw)) === strippedJson(normalized)) {
+        return true; // contenu inchangé : on garde l'horodatage existant
+      }
     } catch (e) {
-      console.warn("Impossible d'enregistrer le profil:", e);
-      return false;
+      // stockage illisible : on réécrit proprement ci-dessous
     }
+    normalized.updatedAt = new Date().toISOString();
+    return writeRaw(PROFILE_KEY, normalized);
   };
 })();

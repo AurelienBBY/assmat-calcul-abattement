@@ -92,9 +92,9 @@ test("le profil voyage avec l'export d'année", () => {
 
   const text = JSON.stringify(S.buildYearExport(2026));
 
-  // Storage vidé (nouvel ordinateur) : l'import restaure mois ET profil.
+  // Storage vidé (nouvel ordinateur) : la fusion restaure mois ET profil.
   Object.keys(store).forEach((k) => delete store[k]);
-  S.importYearFromJsonText(text);
+  S.mergeYearFromJsonText(text);
 
   assert.equal(S.loadMonth(2026, 0).data.netImposable, 100);
   assert.equal(S.loadProfile().children["1"].name, "Lina");
