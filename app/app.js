@@ -121,26 +121,23 @@
         });
     }
 
+    // IMPORTANT : les calculs partent toujours de state.data (source de vérité) ;
+    // le DOM n'est jamais lu pour calculer — il ne fait qu'afficher.
+
     function updateDayRow(isoDate) {
         const table = document.querySelector(".abmat-table");
-        if (!table) return 0;
+        if (!table || !state.data) return 0;
 
         const forfaitJour = computeForfaitJour();
-        let dayTotal = 0;
+        const dayObj = state.data.days[isoDate];
+        const day = C.computeDayTotal(dayObj ? dayObj.slots : {}, forfaitJour);
 
         for (let slot = 1; slot <= 3; slot++) {
-            const inEl = table.querySelector(`input[data-time="in"][data-date="${isoDate}"][data-slot="${slot}"]`);
-            const outEl = table.querySelector(`input[data-time="out"][data-date="${isoDate}"][data-slot="${slot}"]`);
             const hoursEl = table.querySelector(`[data-hours][data-date="${isoDate}"][data-slot="${slot}"]`);
             const abattEl = table.querySelector(`[data-abatt][data-date="${isoDate}"][data-slot="${slot}"]`);
-
-            const inV = inEl ? inEl.value : "";
-            const outV = outEl ? outEl.value : "";
-
-            const r = C.computeHoursAndAbattForSlot(inV, outV, forfaitJour);
-
             if (!hoursEl || !abattEl) continue;
 
+            const r = day.perSlot[String(slot)];
             if (r.status === "empty") {
                 hoursEl.textContent = "—";
                 abattEl.textContent = "—";
@@ -150,39 +147,29 @@
             } else {
                 hoursEl.textContent = U.fmtHoursHM(r.hours);
                 abattEl.textContent = U.fmtEuro(r.abatt);
-                dayTotal += r.abatt;
             }
         }
 
-        dayTotal = U.round2(dayTotal);
-
         const totalEl = table.querySelector(`[data-day-total][data-date="${isoDate}"]`);
         if (totalEl) {
-            totalEl.textContent = (dayTotal > 0) ? U.fmtEuro(dayTotal) : "—";
+            totalEl.textContent = (day.dayTotal > 0) ? U.fmtEuro(day.dayTotal) : "—";
         }
 
-        return dayTotal;
+        return day.dayTotal;
     }
 
     function computeMonthTotalAbattAndRefreshTable() {
         const table = document.querySelector(".abmat-table");
-        if (!table) return 0;
+        if (!table || !state.data) return 0;
 
-        // Nouveau rendu : 3 lignes par jour (slots 1..3).
-        // Pour éviter de compter 3 fois le même jour, on ne parcourt que la ligne "slot=1".
+        const forfaitJour = computeForfaitJour();
+        const month = C.computeMonthTotal(state.data.days, forfaitJour);
+
+        // Rafraîchit l'affichage de chaque jour (une ligne "slot=1" par jour).
         const rows = Array.from(table.querySelectorAll('tbody tr[data-date][data-slot="1"]'));
+        rows.forEach((tr) => updateDayRow(tr.getAttribute("data-date")));
 
-        let total = 0;
-        const dayTotals = new Map(); // isoDate -> total abattement du jour
-
-        rows.forEach((tr) => {
-            const iso = tr.getAttribute("data-date");
-            const dayTotal = updateDayRow(iso);
-            dayTotals.set(iso, dayTotal);
-            total += dayTotal;
-        });
-
-        // Totaux par semaine (lignes "Total abattement semaine du ... au ...")
+        // Totaux par semaine, depuis le détail par jour du calcul.
         const weekSpans = Array.from(table.querySelectorAll("[data-week-total][data-week-start][data-week-end]"));
         weekSpans.forEach((sp) => {
             const start = sp.getAttribute("data-week-start");
@@ -190,15 +177,15 @@
             if (!start || !end) return;
 
             let sum = 0;
-            for (const [iso, v] of dayTotals.entries()) {
+            Object.keys(month.perDay).forEach((iso) => {
                 // Comparaison lexicographique OK pour YYYY-MM-DD
-                if (iso >= start && iso <= end) sum += v;
-            }
+                if (iso >= start && iso <= end) sum += month.perDay[iso];
+            });
 
             sp.textContent = U.fmtEuro(U.round2(sum));
         });
 
-        return U.round2(total);
+        return month.monthTotal;
     }
 
     function updateSummary(monthAbatt) {
