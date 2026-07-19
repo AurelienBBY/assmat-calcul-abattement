@@ -68,7 +68,16 @@ Périmètre d'origine :
 - Publier sur **GitHub Pages** (repo existant) ; ajouter manifest + service worker (**PWA**) : raccourci bureau/téléphone, hors-ligne conservé, mises à jour automatiques, données jamais en ligne.
 - **`navigator.storage.persist()`** : stockage local déclaré persistant (plus de risque d'éviction navigateur).
 - **Auto-sauvegarde (décision 2026-07-19)** : via la **File System Access API** (Chrome/Edge), l'outil demande une fois un dossier de sauvegarde puis y écrit `abattement-assmat-AAAA.json` automatiquement à chaque modification. Si le dossier est synchronisé (iCloud Drive / Google Drive), la copie hors machine est assurée **par l'OS** — notre code ne touche jamais au réseau. Repli Safari/Firefox : export manuel actuel + rappel périodique. Le JSON reste LE format de sauvegarde (ouvert, ré-importable, pérenne) — c'est le *geste* qui devient automatique, pas le format qui change.
-- **Décision d'architecture (2026-07-19)** : pas d'app native (Electron/Tauri) — la signature/notarisation, la distribution et les mises à jour coûteraient sans rien apporter que la File System API ne donne déjà. À vérifier : le navigateur réellement utilisé par l'utilisatrice (Chrome → auto-sauvegarde complète ; Safari → repli manuel).
+- **Décision d'architecture (2026-07-19)** : pas d'app native (Electron/Tauri) — la signature/notarisation, la distribution et les mises à jour coûteraient sans rien apporter que la File System API ne donne déjà.
+- **Appareils de l'utilisatrice (confirmés 2026-07-19)** : PC **Windows** (Chrome/Edge → auto-sauvegarde complète, dossier **OneDrive** recommandé — il a une app iPhone et fait le pont) + **iPhone** (PWA installable, hors-ligne, mais **pas d'écriture automatique de fichiers sur iOS**).
+
+### Multi-appareils (décision 2026-07-19)
+
+Pas de synchronisation automatique sans serveur : deux appareils qui saisissent = risque de fusion/écrasement silencieux. Trois modèles évalués :
+
+- **Modèle A — retenu pour le lot 6** : le **PC est l'appareil de saisie** (auto-sauvegarde OneDrive sans geste) ; l'**iPhone consulte** (PWA + ouverture du fichier d'année depuis OneDrive/Fichiers pour voir récap et relevés). Zéro conflit, zéro complexité. Hypothèse à valider à l'usage : avec semaines types + fiche papier, la saisie mobile n'est probablement pas nécessaire.
+- **Modèle B — en réserve, sur besoin constaté** : saisie aussi sur iPhone, transfert manuel simple (bouton « Envoyer ma saisie » via partage iOS → OneDrive/mail, import sur PC) **avec garde anti-conflit** : horodatage `exportedAt` comparé aux données locales à l'import, alerte « cet appareil contient des données plus récentes » au lieu d'écraser.
+- **Modèle C — rejeté** : serveur de synchronisation (même minime) — contraire à la promesse « rien ne sort », et coûts d'exploitation d'un produit.
 
 ## Lot 7 — Pièces justificatives (décidé le 2026-07-19, à faire après le lot 6)
 
