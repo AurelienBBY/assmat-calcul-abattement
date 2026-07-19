@@ -273,7 +273,8 @@
 
     function onExport() {
         saveNow();
-        S.exportMonthToJsonFile(state.key, state.data);
+        // La sauvegarde de référence est l'année complète (fonctionne aussi depuis le RÉCAP).
+        S.exportYearToJsonFile(state.year);
     }
 
     async function onImportRequest(file) {
@@ -285,24 +286,53 @@
 
         try {
             const text = await file.text();
+            const parsed = JSON.parse(text);
+
+            // --- Sauvegarde d'année (format "abmat-year") -------------------
+            if (parsed && parsed.format === "abmat-year") {
+                const y = Number(parsed.year);
+                const okGo = confirm(
+                    `Ce fichier contient la sauvegarde de l’année ${y}.\n` +
+                    `Les mois déjà enregistrés pour ${y} seront remplacés. Continuer ?`
+                );
+                if (!okGo) {
+                    setToolbarLoadUI("idle", "");
+                    return;
+                }
+
+                const res = S.importYearFromJsonText(text);
+                state.year = res.year;
+                state.monthIndex = 12; // vue RÉCAP : montre d'un coup ce qui vient d'être importé
+                loadAndRenderMonth(false);
+                setToolbarLoadUI("loaded", file.name);
+                return;
+            }
+
+            // --- Fichier "mois" (ancien format) -----------------------------
+            // Depuis le RÉCAP, on bascule d'abord sur le mois du fichier.
+            if (isRecapMode()) {
+                const my = Number(parsed.year);
+                const mi = Number(parsed.monthIndex);
+                if (!Number.isFinite(my) || !Number.isFinite(mi) || mi < 0 || mi > 11) {
+                    throw new Error("Fichier de mois invalide (année/mois manquants).");
+                }
+                state.year = my;
+                state.monthIndex = mi;
+                loadAndRenderMonth(false);
+            }
 
             // Si mismatch : on demande confirmation, puis on autorise l’adaptation
             let allowMismatch = false;
-            try {
-                const parsed = JSON.parse(text);
-                const mismatch = (Number(parsed.year) !== Number(state.year)) || (Number(parsed.monthIndex) !== Number(state.monthIndex));
-                if (mismatch) {
-                    allowMismatch = confirm(
-                        "Ce fichier ne correspond pas au mois/année actuellement sélectionné.\n" +
-                        "Voulez-vous quand même l’importer dans le mois affiché ?"
-                    );
-                    if (!allowMismatch) {
-                        setToolbarLoadUI("idle", "");
-                        return;
-                    }
+            const mismatch = (Number(parsed.year) !== Number(state.year)) || (Number(parsed.monthIndex) !== Number(state.monthIndex));
+            if (mismatch) {
+                allowMismatch = confirm(
+                    "Ce fichier ne correspond pas au mois/année actuellement sélectionné.\n" +
+                    "Voulez-vous quand même l’importer dans le mois affiché ?"
+                );
+                if (!allowMismatch) {
+                    setToolbarLoadUI("idle", "");
+                    return;
                 }
-            } catch (e) {
-                // on laisse importMonthFromJsonText gérer l’erreur
             }
 
             const res = S.importMonthFromJsonText(text, state.year, state.monthIndex, allowMismatch);

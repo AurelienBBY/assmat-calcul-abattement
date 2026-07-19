@@ -5,8 +5,8 @@
    ----------------------------------------------------------------------------
    Objectif :
    - Sauvegarde automatique par mois dans localStorage
-   - Export manuel en fichier JSON (backup iCloud/clé USB)
-   - Import depuis un JSON exporté précédemment
+   - Export manuel de l'année complète en fichier JSON (backup iCloud/clé USB)
+   - Import depuis un JSON exporté précédemment (année, ou ancien fichier mois)
    ----------------------------------------------------------------------------
    Remarques :
    - localStorage est lié au navigateur + machine (effacement possible).
@@ -166,14 +166,93 @@
   }
 
   /**
-   * Exporte le mois (clé + data) dans un fichier JSON.
-   * @param {string} key
-   * @param {Object} data
+   * Un mois est « vide » s'il n'a ni montants, ni override SMIC, ni horaire saisi.
    */
-  S.exportMonthToJsonFile = function exportMonthToJsonFile(key, data) {
-    const m = String(key).replace(/^abmat:/, ""); // "YYYY-MM"
-    const filename = `abattement-assmat-${m}.json`;
-    downloadJson(filename, data);
+  function isBlankMonth(data) {
+    if (!data) return true;
+    if (Number(data.netImposable) > 0 || Number(data.irf) > 0) return false;
+    if (data.smicOverride !== null && data.smicOverride !== undefined) return false;
+
+    const days = (data.days && typeof data.days === "object") ? data.days : {};
+    return !Object.keys(days).some((iso) => {
+      const slots = (days[iso] && days[iso].slots) ? days[iso].slots : {};
+      return ["1", "2", "3"].some((k) => {
+        const s = slots[k] || {};
+        return (typeof s.in === "string" && s.in !== "") || (typeof s.out === "string" && s.out !== "");
+      });
+    });
+  }
+
+  /**
+   * Construit l'objet d'export d'une année complète (seuls les mois non vides).
+   * Format « abmat-year » : enveloppe { year, months } où chaque mois garde
+   * exactement la structure mensuelle du storage.
+   *
+   * @param {number} year
+   * @returns {Object}
+   */
+  S.buildYearExport = function buildYearExport(year) {
+    const y = Number(year);
+    const months = {};
+    let count = 0;
+
+    for (let m = 0; m < 12; m++) {
+      const data = S.loadMonth(y, m).data;
+      if (isBlankMonth(data)) continue;
+      months[String(m)] = data;
+      count++;
+    }
+
+    return {
+      format: "abmat-year",
+      version: 1,
+      year: y,
+      exportedAt: new Date().toISOString(),
+      monthsCount: count,
+      months
+    };
+  };
+
+  /**
+   * Exporte l'année complète dans un fichier JSON (la sauvegarde de référence).
+   * @param {number} year
+   */
+  S.exportYearToJsonFile = function exportYearToJsonFile(year) {
+    downloadJson(`abattement-assmat-${Number(year)}.json`, S.buildYearExport(year));
+  };
+
+  /**
+   * Importe une année complète (format « abmat-year ») : chaque mois présent
+   * est normalisé puis écrit dans le localStorage (remplace l'existant).
+   *
+   * @param {string} text
+   * @returns {{year:number, count:number}}
+   */
+  S.importYearFromJsonText = function importYearFromJsonText(text) {
+    const parsed = JSON.parse(text);
+    if (!parsed || parsed.format !== "abmat-year") {
+      throw new Error("Ce fichier n'est pas une sauvegarde d'année (format attendu : abmat-year).");
+    }
+    const y = Number(parsed.year);
+    if (!Number.isFinite(y)) {
+      throw new Error("Année absente ou invalide dans le fichier.");
+    }
+
+    const monthsIn = (parsed.months && typeof parsed.months === "object") ? parsed.months : {};
+    let count = 0;
+
+    for (let m = 0; m < 12; m++) {
+      const raw = monthsIn[String(m)];
+      if (!raw) continue;
+
+      const normalized = normalizeData(raw, y, m);
+      normalized.year = y;
+      normalized.monthIndex = m;
+      S.saveMonth(S.monthKey(y, m), normalized);
+      count++;
+    }
+
+    return { year: y, count };
   };
 
   /**

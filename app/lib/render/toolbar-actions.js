@@ -100,10 +100,8 @@
 
     // (Optionnel) expose le nom de fichier attendu via title sur le bouton Charger
     // sans polluer l’UI.
-    if (btnLoad && state && Number.isFinite(Number(state.year)) && Number.isFinite(Number(state.monthIndex))) {
-      const y = state.year;
-      const m = U.pad2(state.monthIndex + 1);
-      btnLoad.title = `Importer un fichier JSON (ex: abattement-assmat-${y}-${m}.json)`;
+    if (btnLoad && state && Number.isFinite(Number(state.year))) {
+      btnLoad.title = `Importer un fichier JSON (ex: abattement-assmat-${state.year}.json)`;
     }
   };
 
