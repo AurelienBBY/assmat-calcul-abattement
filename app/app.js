@@ -975,6 +975,18 @@
         setToolbarLoadUI("idle", "");
         loadAndRenderMonth(true);
         if (typeof window.initTutoModal === "function") window.initTutoModal();
+
+        // PWA : service worker (uniquement en http/https — pas en double-clic
+        // local) + stockage déclaré persistant (protège de l'éviction
+        // automatique du navigateur ; pas d'un nettoyage volontaire).
+        if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+            navigator.serviceWorker.register("./sw.js").catch((e) => {
+                console.warn("Service worker non enregistré :", e);
+            });
+        }
+        if (navigator.storage && typeof navigator.storage.persist === "function") {
+            navigator.storage.persist();
+        }
     });
 })();
 

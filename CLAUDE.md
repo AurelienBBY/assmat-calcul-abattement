@@ -12,7 +12,7 @@ Application **100 % statique et hors-ligne** : un fichier HTML + JS/CSS vanilla,
 
 ## Lancement
 
-Double-clic sur `Calcul abattement.html` (ou `open "Calcul abattement.html"`). Il n'y a ni build ni installation. Toute modification JS/CSS est visible au rechargement de la page.
+Double-clic sur `index.html` (ou `open index.html`). Il n'y a ni build ni installation. Toute modification JS/CSS est visible au rechargement de la page. En production, l'outil est servi par **GitHub Pages** (déploiement automatique à chaque push sur `main`) en PWA — le service worker (`sw.js`, réseau d'abord / cache en secours) ne s'active qu'en http(s), jamais en ouverture locale.
 
 **Vérification manuelle minimale après toute modification** : ouvrir la page, saisir des heures sur un mois (cas ≥ 8h et < 8h), renseigner net + IRF, vérifier le résultat mensuel, ouvrir l'onglet RÉCAP, puis tester l'aperçu d'impression (Cmd+P).
 
@@ -28,7 +28,7 @@ Double-clic sur `Calcul abattement.html` (ou `open "Calcul abattement.html"`). I
 
 ## Architecture
 
-Pas de modules ES : **l'ordre des `<script>` dans le HTML fait office de système de modules**. Chaque fichier est une IIFE qui augmente un namespace global. Toute nouvelle lib doit être insérée au bon endroit dans `Calcul abattement.html`.
+Pas de modules ES : **l'ordre des `<script>` dans le HTML fait office de système de modules**. Chaque fichier est une IIFE qui augmente un namespace global. Toute nouvelle lib doit être insérée au bon endroit dans `index.html`.
 
 ```
 window.ABMAT_CONFIG      app/config.js              SMIC par année, coefficient, forfait
