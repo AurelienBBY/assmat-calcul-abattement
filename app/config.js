@@ -36,7 +36,7 @@ window.ABMAT_CONFIG = {
    * - conserver les anciennes années (utile pour justificatifs / archives)
    */
   smic_horaire_brut: {
-    2023: 11.52,
+    2023: 11.27,
     2024: 11.65,
     2025: 11.88,
     2026: 12.02
