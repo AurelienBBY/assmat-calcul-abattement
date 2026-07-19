@@ -1,4 +1,11 @@
-
+/* ============================================================================
+   compute/year-recap.js — Agrégats du récapitulatif annuel
+   ----------------------------------------------------------------------------
+   Relit les 12 mois depuis le storage et recalcule avec calc.js :
+   - abattement réel du mois (forfait de l'année, smicOverride du mois)
+   - compteurs de jours-enfant (< 8 h / ≥ 8 h)
+   - statut du mois (vide / incomplet / ok)
+   ========================================================================== */
 
 (function () {
   "use strict";
@@ -7,197 +14,126 @@
   window.ABMAT.compute = window.ABMAT.compute || {};
 
   const Compute = window.ABMAT.compute;
-  const S = window.ABMAT.storage;
+  const U = window.ABMAT.utils;
   const C = window.ABMAT.calc;
+  const S = window.ABMAT.storage;
 
-  function num(v) {
-    const n = Number(v);
-    return Number.isFinite(n) ? n : 0;
-  }
-
-  function pick(obj, keys) {
-    if (!obj) return undefined;
-    for (const k of keys) {
-      if (obj[k] !== undefined && obj[k] !== null) return obj[k];
-    }
-    return undefined;
-  }
-
-  function safeLoadMonth(storage, year, monthIndex) {
-    if (!storage) return { key: null, data: null };
-
-    // Preferred: same API used by app.js
-    if (typeof storage.loadMonth === "function") {
-      try {
-        return storage.loadMonth(year, monthIndex) || { key: null, data: null };
-      } catch (e) {
-        return { key: null, data: null };
-      }
-    }
-
-    // Fallback: getMonth(year, monthIndex) returning data
-    if (typeof storage.getMonth === "function") {
-      try {
-        const data = storage.getMonth(year, monthIndex) || null;
-        return { key: null, data };
-      } catch (e) {
-        return { key: null, data: null };
-      }
-    }
-
-    return { key: null, data: null };
-  }
-
-  function extractDayRows(data) {
-    const arr =
-      pick(data, ["days", "rows", "table", "entries", "lines"]) ||
-      [];
-    return Array.isArray(arr) ? arr : [];
-  }
-
-  function extractHours(row) {
-    if (!row) return null;
-    const v = pick(row, ["hours", "heures", "h", "duration", "duree", "durationHours"]);
-    const n = Number(v);
-    return Number.isFinite(n) ? n : null;
-  }
-
-  function computeAbattementForMonth(year, monthIndex, data) {
-    if (!C) return 0;
-
-    // Try multiple signatures to avoid coupling
-    const candidates = [
-      () => (typeof C.computeMonthAbattement === "function" ? C.computeMonthAbattement({ year, monthIndex, data }) : undefined),
-      () => (typeof C.computeMonthAbattement === "function" ? C.computeMonthAbattement(data, year, monthIndex) : undefined),
-      () => (typeof C.computeAbattementMonth === "function" ? C.computeAbattementMonth(data, year, monthIndex) : undefined),
-      () => (typeof C.computeAbattement === "function" ? C.computeAbattement(data, year, monthIndex) : undefined),
-    ];
-
-    for (const fn of candidates) {
-      try {
-        const out = fn();
-        if (out === undefined || out === null) continue;
-
-        // Allow both numeric or object result
-        if (typeof out === "number") return num(out);
-        if (typeof out === "object") {
-          // Common keys
-          return num(pick(out, ["abattement", "abatt", "totalAbattement", "total_abattement"]));
-        }
-      } catch (e) {
-        // continue
-      }
-    }
-
-    return 0;
-  }
-
-  function computeDayCounts(data) {
-    const rows = extractDayRows(data);
-    let j_lt8 = 0;
-    let j_ge8 = 0;
-
-    for (const r of rows) {
-      const h = extractHours(r);
-      if (h === null) continue;
-      if (h >= 8) j_ge8 += 1;
-      else j_lt8 += 1;
-    }
-
-    return { j_lt8, j_ge8, daysCount: j_lt8 + j_ge8 };
-  }
-
-  function computeMoney(data) {
-    const net = num(pick(data, ["netImposable", "net_imposable", "net", "netMonthly"]));
-    const irf = num(pick(data, ["irf", "IRF", "indemnites", "indemnitesRepas", "irfAmount"]));
-    return { net, irf, percu: net + irf };
-  }
-
-  function computeStatus(hasMoney, hasDays) {
-    if (hasMoney && hasDays) return "ok";
-    if (hasMoney || hasDays) return "incomplet";
-    return "vide";
+  if (!U || !C || !S) {
+    throw new Error("ABMAT.compute : utils, calc et storage doivent être chargés avant compute/year-recap.js.");
   }
 
   /**
-   * Compute recap for a single month.
-   * Returns an object compatible with the year recap renderer.
+   * Forfait journalier applicable à un mois :
+   * smicOverride du mois s'il existe, sinon SMIC de l'année (config).
+   * Retourne 0 si aucun SMIC n'est connu (année absente du barème, pas d'override).
+   *
+   * @param {number} year
+   * @param {Object} data - données du mois (storage)
+   * @returns {number}
    */
-  Compute.computeMonthRecap = function computeMonthRecap(year, monthIndex) {
-    const loaded = safeLoadMonth(S, year, monthIndex);
-    const data = loaded && loaded.data ? loaded.data : null;
-
-    if (!data) {
-      return {
-        monthIndex,
-        net: 0,
-        irf: 0,
-        percu: 0,
-        abatt: 0,
-        imposable: 0,
-        j_lt8: 0,
-        j_ge8: 0,
-        status: "vide",
-      };
+  function forfaitJourForMonth(year, data) {
+    const CFG = window.ABMAT_CONFIG;
+    if (!CFG) {
+      throw new Error("ABMAT.compute : ABMAT_CONFIG est requis (charger config.js en premier).");
     }
 
-    const money = computeMoney(data);
-    const days = computeDayCounts(data);
+    const override = (data && typeof data.smicOverride === "number" && Number.isFinite(data.smicOverride))
+      ? data.smicOverride
+      : null;
+    const smic = (override !== null) ? override : CFG.getSmicHoraireBrut(year);
+    if (typeof smic !== "number" || !Number.isFinite(smic)) return 0;
 
-    const abatt = computeAbattementForMonth(year, monthIndex, data);
-    const imposable = Math.max(0, money.percu - abatt);
+    return CFG.computeForfaitJourFromSmic(smic, CFG.coefficient);
+  }
 
-    const hasMoney = (money.net > 0) || (money.irf > 0);
-    const hasDays = (days.daysCount > 0);
+  /**
+   * Compte les jours-enfant du mois (un créneau valide = un jour-enfant),
+   * ventilés < 8 h / ≥ 8 h.
+   *
+   * @param {Object} days - map "YYYY-MM-DD" -> { slots }
+   * @returns {{j_lt8:number, j_ge8:number}}
+   */
+  function countChildDays(days) {
+    let j_lt8 = 0;
+    let j_ge8 = 0;
+
+    const d = (days && typeof days === "object") ? days : {};
+    Object.keys(d).forEach((isoDate) => {
+      const slots = (d[isoDate] && d[isoDate].slots) ? d[isoDate].slots : {};
+      for (let i = 1; i <= 3; i++) {
+        const slot = slots[String(i)] || {};
+        const r = C.computeHoursAndAbattForSlot(slot.in || "", slot.out || "", 0);
+        if (r.status !== "ok") continue;
+        if (r.hours >= 8) j_ge8 += 1;
+        else j_lt8 += 1;
+      }
+    });
+
+    return { j_lt8, j_ge8 };
+  }
+
+  /**
+   * Récap d'un mois : montants saisis, abattement recalculé, jours, statut.
+   *
+   * @param {number} year
+   * @param {number} monthIndex - 0..11
+   */
+  Compute.computeMonthRecap = function computeMonthRecap(year, monthIndex) {
+    const data = S.loadMonth(year, monthIndex).data;
+
+    const net = Number.isFinite(Number(data.netImposable)) ? Number(data.netImposable) : 0;
+    const irf = Number.isFinite(Number(data.irf)) ? Number(data.irf) : 0;
+    const percu = U.round2(net + irf);
+
+    const forfaitJour = forfaitJourForMonth(year, data);
+    const abatt = C.computeMonthTotal(data.days, forfaitJour).monthTotal;
+    const imposable = Math.max(0, U.round2(percu - abatt));
+
+    const days = countChildDays(data.days);
+    const hasMoney = (net > 0) || (irf > 0);
+    const hasDays = (days.j_lt8 + days.j_ge8) > 0;
+
+    let status = "vide";
+    if (hasMoney && hasDays) status = "ok";
+    else if (hasMoney || hasDays) status = "incomplet";
 
     return {
       monthIndex,
-      net: money.net,
-      irf: money.irf,
-      percu: money.percu,
+      net,
+      irf,
+      percu,
       abatt,
       imposable,
       j_lt8: days.j_lt8,
       j_ge8: days.j_ge8,
-      status: computeStatus(hasMoney, hasDays),
+      status
     };
   };
 
   /**
-   * Compute recap for the whole year (12 months).
-   * Returns: { year, totals: {...}, months: [...] }
+   * Récap des 12 mois d'une année + totaux.
+   *
+   * @param {number} year
+   * @returns {{year:number, totals:Object, months:Array}}
    */
   Compute.computeYearRecap = function computeYearRecap(year) {
     const y = Number(year);
-
     const months = [];
-    const totals = {
-      net: 0,
-      irf: 0,
-      percu: 0,
-      abatt: 0,
-      imposable: 0,
-      j_lt8: 0,
-      j_ge8: 0,
-    };
+    const totals = { net: 0, irf: 0, percu: 0, abatt: 0, imposable: 0, j_lt8: 0, j_ge8: 0 };
 
     for (let m = 0; m < 12; m++) {
       const rec = Compute.computeMonthRecap(y, m);
       months.push(rec);
 
-      totals.net += num(rec.net);
-      totals.irf += num(rec.irf);
-      totals.percu += num(rec.percu);
-      totals.abatt += num(rec.abatt);
-      totals.imposable += num(rec.imposable);
-      totals.j_lt8 += num(rec.j_lt8);
-      totals.j_ge8 += num(rec.j_ge8);
+      totals.net = U.round2(totals.net + rec.net);
+      totals.irf = U.round2(totals.irf + rec.irf);
+      totals.percu = U.round2(totals.percu + rec.percu);
+      totals.abatt = U.round2(totals.abatt + rec.abatt);
+      totals.imposable = U.round2(totals.imposable + rec.imposable);
+      totals.j_lt8 += rec.j_lt8;
+      totals.j_ge8 += rec.j_ge8;
     }
 
-    return {
-      year: y,
-      totals,
-      months,
-    };
+    return { year: y, totals, months };
   };
 })();
