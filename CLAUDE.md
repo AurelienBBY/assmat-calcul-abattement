@@ -73,17 +73,16 @@ Une entrée localStorage par mois, clé `abmat:YYYY-MM`. L'export JSON (bouton S
 
 - `docs/feuille-de-route.md` — **où on va et pourquoi** : cap produit, lots 1 à 6 (fiabilité → moteur unifié → UI → PDF → parcours → distribution PWA), décisions en attente. À mettre à jour quand un lot avance ou qu'une décision est prise.
 
-## État connu (audit du 2026-07-19)
+## État connu (audit du 2026-07-19, lot 1 corrigé le même jour)
 
-Bugs identifiés, à corriger avant toute nouvelle fonctionnalité (détail et priorisation dans `docs/feuille-de-route.md`, lot 1) :
+**Corrigés (lot 1)** : récap annuel réécrit (`compute/year-recap.js` recalcule via `S.loadMonth` + `C.computeMonthTotal`, avec le `smicOverride` du mois — abattement, jours-enfant et statuts réels) ; SMIC 2023 corrigé à 11,27 ; sentinel toolbar (`#period-sentinel`) ; garde utils réelle dans `render/index.js`. Côté renderers, l'audit initial s'était trompé de sens : c'était **`rules.js` qui n'était pas chargé** (le `<script>` pointait encore sur `year-abattement.js`, provoquant un affichage en double de l'explication). Le HTML charge désormais `rules.js` ; `year-abattement.js` est supprimé. Vérification hors navigateur : harnais node sur les vrais fichiers (15 assertions).
 
-- **P0 — Récap annuel : abattement toujours 0 €.** `app/lib/compute/year-recap.js` appelle des fonctions inexistantes (`computeMonthAbattement`…) dont les échecs sont avalés par try/catch. À réécrire simplement autour de `S.loadMonth` + `C.computeMonthTotal`.
-- **P0 — Récap annuel : compteurs J<8h / J≥8h toujours 0** (`extractDayRows` attend un tableau, `days` est un objet) → statuts Vide/Incomplet faux.
-- **P0 — `config.js` : SMIC 2023 = 11,52 au lieu de 11,27** (11,52 est la valeur du 01/05/2023, pas du 1er janvier).
-- **P1 — Une seule plage horaire par enfant/jour** : une garde en deux fois (périscolaire) saisie en une plage donne le forfait complet à tort.
-- **P2 — Nettoyage** : `render/year-abattement.js` est du code mort (doublon divergent de `rules.js`) ; sentinel `#toolbar-sentinel` vs `#period-sentinel` (mode compact jamais actif) ; `render/index.js` teste `window.U` jamais défini (warning console) ; typo « pour en année » dans `rules.js`.
+Restent connus, à traiter dans leurs lots :
 
-Copies **obsolètes** à ne jamais éditer : `~/Downloads/assmat-refacto*` et le dossier « Assmat - Calcul abattement copy » (à sortir du dépôt).
+- **Lot 2 — Bouton Sauvegarder en mode RÉCAP** : exporte un fichier `abattement-assmat-null.json` vide (`state.key` est null dans ce mode).
+- **Lot 3 — Une seule plage horaire par enfant/jour** : une garde en deux fois saisie en une plage englobante donne le forfait complet à tort → multi-créneaux décidés (schéma de données v2 + migration).
+
+Copies **obsolètes** à ne jamais éditer : `~/Downloads/assmat-refacto*` et le dossier « Assmat - copie archivee 2026-04 » sur le Bureau.
 
 ## Tests
 
