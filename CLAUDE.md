@@ -42,16 +42,13 @@ window.ABMAT.render      app/lib/render/*.js        rendu DOM + événements (1 
 
 CSS découpé par zone dans `app/styles/` (préfixes numériques = ordre de chargement) ; `90-print.css` porte toute la mise en page PDF/impression. Le tutoriel est une page séparée (`app/modals/tuto.html`) chargée en iframe.
 
-### Piège : deux chemins de calcul distincts
+### Invariant : une seule source de calcul
 
-- **Vue mensuelle** : app.js lit les `<input type="time">` du DOM et appelle `calc.js` ligne par ligne.
-- **Vue RÉCAP annuelle** : `compute/year-recap.js` relit les 12 mois depuis **localStorage** et doit recalculer avec `C.computeMonthTotal(data.days, forfaitJour)` — en utilisant le forfait de l'année **et le `smicOverride` propre à chaque mois**.
-
-Toute évolution du calcul doit être répercutée sur **les deux** chemins.
+Depuis le lot 2, **le DOM n'est jamais lu pour calculer** : `state.data` (mensuel) et le localStorage (récap annuel) alimentent `calc.js`, et le DOM ne fait qu'afficher. Ne jamais réintroduire de lecture d'`<input>` dans un calcul — c'est la divergence entre les deux anciens chemins qui avait produit le bug « abattement annuel = 0 € ». Le récap annuel utilise le forfait de l'année **et le `smicOverride` propre à chaque mois**.
 
 ## Données & stockage
 
-Une entrée localStorage par mois, clé `abmat:YYYY-MM`. L'export JSON (bouton Sauvegarder) et l'import utilisent exactement la même structure, normalisée par `storage.js` :
+Une entrée localStorage par mois, clé `abmat:YYYY-MM`. Le bouton Sauvegarder exporte **l'année complète** (`abattement-assmat-AAAA.json`, format `abmat-year` : enveloppe `{format, version, year, months}` où chaque mois garde la structure ci-dessous, mois vides exclus). L'import accepte ce format **et** les anciens fichiers de mois. Structure mensuelle, normalisée par `storage.js` :
 
 ```json
 {
@@ -77,16 +74,25 @@ Une entrée localStorage par mois, clé `abmat:YYYY-MM`. L'export JSON (bouton S
 
 **Corrigés (lot 1)** : récap annuel réécrit (`compute/year-recap.js` recalcule via `S.loadMonth` + `C.computeMonthTotal`, avec le `smicOverride` du mois — abattement, jours-enfant et statuts réels) ; SMIC 2023 corrigé à 11,27 ; sentinel toolbar (`#period-sentinel`) ; garde utils réelle dans `render/index.js`. Côté renderers, l'audit initial s'était trompé de sens : c'était **`rules.js` qui n'était pas chargé** (le `<script>` pointait encore sur `year-abattement.js`, provoquant un affichage en double de l'explication). Le HTML charge désormais `rules.js` ; `year-abattement.js` est supprimé. Vérification hors navigateur : harnais node sur les vrais fichiers (15 assertions).
 
-Restent connus, à traiter dans leurs lots :
+**Lot 2 fait le 2026-07-19** : calculs mensuels depuis `state.data` (le DOM n'est plus lu), export/import de l'année complète (corrige l'export « null » depuis le RÉCAP), suite `node --test` (21 tests).
 
-- **Lot 2 — Bouton Sauvegarder en mode RÉCAP** : exporte un fichier `abattement-assmat-null.json` vide (`state.key` est null dans ce mode).
+Reste connu, à traiter dans son lot :
+
 - **Lot 3 — Une seule plage horaire par enfant/jour** : une garde en deux fois saisie en une plage englobante donne le forfait complet à tort → multi-créneaux décidés (schéma de données v2 + migration).
 
 Copies **obsolètes** à ne jamais éditer : `~/Downloads/assmat-refacto*` et le dossier « Assmat - copie archivee 2026-04 » sur le Bureau.
 
 ## Tests
 
-Aucun test automatisé pour l'instant. `calc.js` et `storage.js` sont volontairement sans DOM : quand des tests arrivent, les mettre dans `tests/` et couvrir en priorité `computeHoursAndAbattForSlot` (bornes 8h, prorata, invalide, vide) et `normalizeData` (imports malformés).
+Suite sans dépendance basée sur le runner intégré de node — lancer depuis la racine :
+
+```bash
+node --test
+```
+
+Le harnais (`tests/harness.js`) charge les modules réels (config, utils, calc, storage, compute) avec `window`/`localStorage` simulés. Pas de DOM : les renderers et `app.js` se vérifient à la main dans le navigateur (section Lancement). Couverture actuelle : bornes 8 h / prorata / créneaux invalides (`calc.test.js`), imports malformés et export/import d'année (`storage.test.js`), abattement et statuts annuels (`year-recap.test.js`). Tout changement du moteur doit faire tourner cette suite avant commit.
+
+Sémantique historique à connaître : deux horaires *tous deux* imparsables valent « empty » (case vide), pas « invalid » — documenté dans `calc.test.js`.
 
 ## Conventions de développement
 

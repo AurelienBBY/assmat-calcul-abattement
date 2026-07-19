@@ -20,14 +20,14 @@ Cible de distribution : **GitHub Pages + PWA** (lot 6) — elle a un raccourci, 
 - ✅ `90-print.css` commité ; dossier « copy » sorti du dépôt (archivé sur le Bureau).
 - ✅ Nettoyage — avec une découverte : c'était `rules.js` qui n'était **pas chargé** (le `<script>` pointait sur `year-abattement.js`, d'où une explication affichée en double à l'écran). Bascule sur `rules.js` (+ typo corrigée), suppression de `year-abattement.js`, sentinel `#period-sentinel` corrigé dans app.js, garde utils réelle dans `render/index.js`.
 
-## Lot 2 — Moteur unifié
+## Lot 2 — Moteur unifié — ✅ fait le 2026-07-19
 
 **Pourquoi** : deux chemins de calcul (mensuel = DOM, annuel = localStorage) ont déjà divergé une fois. Une seule source de vérité rend la divergence impossible.
 
-- `state.data` → `calc.js` → rendu : le DOM n'est plus jamais lu pour calculer.
-- Premiers tests (`tests/`) sur `calc.js` (bornes 8h, prorata, invalide) et `storage.js` (imports malformés).
-- Export/import **annuel** (12 mois + profil dans un JSON) — c'est aussi la vraie sauvegarde. **Décisions (2026-07-19)** : on reste en JSON (seul format ré-importable sans perte ; le PDF est le format humain, le JSON le format machine) ; **un fichier par année** (`abattement-assmat-2026.json`), jamais un fichier cumulatif. Poids : ~30 Ko/an — aucune limite pratique (localStorage ≈ 5 Mo, soit &gt; 100 ans de carrière).
-- Corriger le bouton Sauvegarder en mode RÉCAP (exporte actuellement un fichier `null`).
+- ✅ `state.data` → `calc.js` → rendu : le DOM n'est plus jamais lu pour calculer (invariant inscrit dans CLAUDE.md).
+- ✅ Suite `node --test` (21 tests, zéro dépendance) : calc (bornes 8 h, prorata, invalides), storage (imports malformés, aller-retour export/import d'année), récap annuel.
+- ✅ Export/import **annuel** : format `abmat-year`, un fichier par année (`abattement-assmat-2026.json`), mois vides exclus ; l'import accepte aussi les anciens fichiers de mois (depuis le RÉCAP, bascule sur le mois du fichier). Le **profil** (« Mes informations », lot 5) sera ajouté à cette enveloppe. Rappel décisions : JSON = format machine, PDF = format humain ; ~30 Ko/an, aucune limite pratique.
+- ✅ Bouton Sauvegarder en mode RÉCAP corrigé (il exporte l'année affichée, plus un fichier `null`).
 
 ## Lot 3 — Interface (après maquette validée)
 
