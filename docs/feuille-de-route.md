@@ -67,6 +67,15 @@ Périmètre d'origine :
 
 - Publier sur **GitHub Pages** (repo existant) ; ajouter manifest + service worker (**PWA**) : raccourci bureau/téléphone, hors-ligne conservé, mises à jour automatiques, données jamais en ligne.
 
+## Lot 7 — Pièces justificatives (décidé le 2026-07-19, à faire après le lot 6)
+
+**Besoin** : les heures proviennent d'une fiche papier signée par les parents ; en cas de contrôle il faut retrouver, par mois, le calcul ET la pièce signée.
+
+- **Archivage local de la fiche signée** (photo JPG ou PDF) attachée au mois : bouton « Joindre la fiche signée » dans la section Déclaration. Stockage **IndexedDB** (le localStorage est trop petit pour des images ; IndexedDB reste 100 % local, rien ne sort de l'ordinateur, PWA comprise). Pièce visible, téléchargeable, remplaçable ; bouton « Télécharger les pièces de l'année » pour constituer le dossier de contrôle (relevés PDF + originaux signés).
+- **Saisie en vis-à-vis** : la fiche jointe s'affiche à côté du tableau pendant la saisie — recopie des exceptions sans jongler papier/clavier.
+- **OCR écarté (décision)** : fiches manuscrites → reconnaissance peu fiable (erreurs silencieuses = risque fiscal inacceptable), problème déjà résolu à 90 % par les semaines types, et dépendance lourde contraire à la règle zéro dépendance. Révisable uniquement si les fiches deviennent imprimées/dactylographiées — et même alors, avec écran de vérification obligatoire.
+- Point d'attention : les pièces ne voyagent PAS dans l'export JSON annuel (taille) — prévoir leur téléchargement séparé et le documenter dans l'UI.
+
 ## Différé / décisions en attente
 
 - ~~Garde en deux fois~~ → **tranché le 2026-07-19** : multi-créneaux par enfant/jour (voir lot 3).
