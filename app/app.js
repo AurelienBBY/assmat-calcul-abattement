@@ -134,9 +134,19 @@
         return out;
     }
 
+    function updateSavedIndicator() {
+        const el = document.querySelector("[data-saved-indicator]");
+        if (!el) return;
+        const now = new Date();
+        el.textContent = `✓ Enregistré à ${U.pad2(now.getHours())}:${U.pad2(now.getMinutes())}`;
+        el.hidden = false;
+    }
+
     function saveNow() {
         if (!state.key || !state.data) return;
-        S.saveMonth(state.key, state.data);
+        if (S.saveMonth(state.key, state.data)) {
+            updateSavedIndicator();
+        }
     }
 
     // --- UI: recalculs (le DOM affiche, l'état calcule) ----------------------
@@ -226,6 +236,13 @@
                 percu,
                 imposable
             });
+        }
+
+        // Total du mois visible en permanence dans la toolbar sticky.
+        const totalEl = document.querySelector("[data-toolbar-total]");
+        if (totalEl) {
+            totalEl.textContent = `Abattement : ${U.fmtEuro(monthAbatt || 0)}`;
+            totalEl.hidden = false;
         }
     }
 
@@ -488,8 +505,10 @@
         const ctx = document.querySelector('[data-toolbar-context]');
         if (!ctx) return;
         const y = Number(state.year);
+        const totalEl = document.querySelector("[data-toolbar-total]");
         if (isRecapMode()) {
             ctx.textContent = `• Récap ${y}`;
+            if (totalEl) totalEl.hidden = true; // le total mensuel n'a pas de sens ici
             return;
         }
         const m = getMonthLabelFR(state.monthIndex);
@@ -819,6 +838,18 @@
     document.addEventListener("DOMContentLoaded", () => {
         // Locale FR (24h)
         U.forceFrenchLocale();
+
+        // Tuto + explication : dépliés à la première visite, repliés ensuite.
+        try {
+            const VISITED_KEY = "abmat:ui:visited";
+            const firstVisit = !localStorage.getItem(VISITED_KEY);
+            document.querySelectorAll("details.folded-section").forEach((d) => {
+                d.open = firstVisit;
+            });
+            if (firstVisit) localStorage.setItem(VISITED_KEY, "1");
+        } catch (e) {
+            // Stockage indisponible : sections repliées, sans bloquer l'app.
+        }
 
         // Mois/année par défaut : "maintenant"
         const now = new Date();

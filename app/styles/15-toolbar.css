@@ -294,3 +294,43 @@
     display: none !important;
   }
 }
+/* --- Pilules d'état : total du mois + enregistrement ---------------------- */
+
+.toolbar-total,
+.toolbar-saved{
+  flex: 0 0 auto;
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1;
+  border-radius: 999px;
+  padding: 5px 11px;
+  white-space: nowrap;
+}
+
+.toolbar-total{
+  color: var(--accent-dark);
+  background: var(--accent-pale);
+}
+
+.toolbar-saved{
+  color: var(--ok);
+  background: var(--ok-pale);
+}
+
+@media (max-width: 760px){
+  .toolbar-total{ display: none; } /* priorité au ✓ Enregistré sur mobile */
+}
+
+/* --- Action principale : Imprimer ----------------------------------------- */
+
+.toolbar-btn--primary{
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.toolbar-btn--primary:hover{
+  background: var(--accent-dark);
+  border-color: var(--accent-dark);
+  color: #fff;
+}

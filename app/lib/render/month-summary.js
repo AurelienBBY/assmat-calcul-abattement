@@ -67,6 +67,7 @@
       `  <div class="summary-result__label">Revenu imposable après abattement</div>` +
       `  <div class="hint">À reporter sur votre déclaration.</div>` +
       `  <div class="summary-result__value" data-month-imposable>—</div>` +
+      `  <div class="summary-result__note" data-month-percu-note></div>` +
       `</div>` +
       `<div class="month-details" aria-label="Détails du calcul">` +
       `  <div class="month-details__title">Détails</div>` +
@@ -116,6 +117,7 @@
     const abattEl = container.querySelector("[data-month-abatt]");
     const percuEl = container.querySelector("[data-month-percu]");
     const imposableEl = container.querySelector("[data-month-imposable]");
+    const noteEl = container.querySelector("[data-month-percu-note]");
 
     const abatt = computed && typeof computed.abatt === "number" ? computed.abatt : 0;
     const percu = computed && typeof computed.percu === "number" ? computed.percu : 0;
@@ -124,5 +126,11 @@
     if (abattEl) abattEl.textContent = safeFmtEuro(abatt);
     if (percuEl) percuEl.textContent = safeFmtEuro(percu);
     if (imposableEl) imposableEl.textContent = safeFmtEuro(imposable);
+    if (noteEl) {
+      // La comparaison ne parle que si un abattement réduit réellement le perçu.
+      noteEl.textContent = (percu > 0 && imposable < percu)
+        ? `au lieu de ${safeFmtEuro(percu)} perçus`
+        : "";
+    }
   };
 })();

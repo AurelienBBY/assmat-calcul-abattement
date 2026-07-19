@@ -43,48 +43,52 @@ R.renderPeriodSelector = function renderPeriodSelector(container, state, onPerio
   const top = document.createElement("div");
   top.className = "period-top";
 
-  // Année
+  // Année : pastilles fixes de 2023 à l'année courante (les archives restent
+  // accessibles pour toujours — pas de fenêtre glissante).
+  const YEAR_MIN = 2023;
+
   const yearWrap = document.createElement("div");
   yearWrap.className = "period-year";
 
-  const yearLabel = document.createElement("label");
+  const yearLabel = document.createElement("span");
   yearLabel.className = "period-year__label";
   yearLabel.textContent = "Année";
-  yearLabel.setAttribute("for", "abmat-year");
-
-  const yearSelect = document.createElement("select");
-  yearSelect.className = "period-year__select";
-  yearSelect.id = "abmat-year";
-  yearSelect.name = "year";
 
   const now = new Date();
   const currentYear = now.getFullYear();
 
-  // Plage simple : année courante +/- 3
-  for (let y = currentYear - 3; y <= currentYear + 3; y++) {
-    const opt = document.createElement("option");
-    opt.value = String(y);
-    opt.textContent = String(y);
-    yearSelect.appendChild(opt);
-  }
-
   // Valeurs initiales
   const effectiveMonth = Number.isFinite(Number(state.monthIndex)) ? Number(state.monthIndex) : now.getMonth();
   const effectiveYear = Number.isFinite(Number(state.year)) ? Number(state.year) : currentYear;
-  yearSelect.value = String(effectiveYear);
 
   const isRecapActive = (effectiveMonth === 12);
 
   // Emit function
-  const emit = (nextMonthIndex) => {
+  const emit = (nextMonthIndex, nextYear) => {
     const next = {
       monthIndex: Number.isFinite(Number(nextMonthIndex)) ? Number(nextMonthIndex) : effectiveMonth,
-      year: Number(yearSelect.value)
+      year: Number.isFinite(Number(nextYear)) ? Number(nextYear) : effectiveYear
     };
     onPeriodChange && onPeriodChange(next);
   };
 
-  yearSelect.addEventListener("change", () => emit(effectiveMonth));
+  const yearTabs = document.createElement("div");
+  yearTabs.className = "year-tabs";
+  yearTabs.setAttribute("role", "group");
+  yearTabs.setAttribute("aria-label", "Année");
+
+  const minYear = Math.min(YEAR_MIN, effectiveYear);
+  const maxYear = Math.max(currentYear, effectiveYear);
+  for (let y = minYear; y <= maxYear; y++) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "year-tab" + (y === effectiveYear ? " is-active" : "");
+    btn.textContent = String(y);
+    btn.setAttribute("aria-pressed", y === effectiveYear ? "true" : "false");
+    const yy = y;
+    btn.addEventListener("click", () => emit(effectiveMonth, yy));
+    yearTabs.appendChild(btn);
+  }
 
   // Month tabs (intercalaires)
   const tabs = document.createElement("div");
@@ -124,7 +128,7 @@ R.renderPeriodSelector = function renderPeriodSelector(container, state, onPerio
 
   // Assemble elements
   yearWrap.appendChild(yearLabel);
-  yearWrap.appendChild(yearSelect);
+  yearWrap.appendChild(yearTabs);
   top.appendChild(yearWrap);
 
   wrap.appendChild(top);

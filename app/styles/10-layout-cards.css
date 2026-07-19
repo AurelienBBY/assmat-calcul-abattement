@@ -64,3 +64,31 @@ footer{
 footer{
   padding-bottom: 28px;
 }
+/* --- Sections repliables (tuto / explication) ----------------------------- */
+
+details.folded-section > summary{
+  cursor: pointer;
+  list-style: none;
+}
+
+details.folded-section > summary::-webkit-details-marker{
+  display: none;
+}
+
+details.folded-section > summary h2{
+  display: inline-block;
+  margin: 0;
+}
+
+details.folded-section > summary::before{
+  content: "▸ ";
+  color: var(--accent);
+}
+
+details[open].folded-section > summary::before{
+  content: "▾ ";
+}
+
+details.folded-section > summary + *{
+  margin-top: 12px;
+}

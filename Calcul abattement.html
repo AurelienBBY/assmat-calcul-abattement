@@ -39,6 +39,8 @@
       <div class="app-toolbar__topline">
         <div class="app-toolbar__title">Abattement Ass-Mat</div>
         <div class="app-toolbar__context" data-toolbar-context aria-live="polite"></div>
+        <span class="toolbar-total" data-toolbar-total hidden></span>
+        <span class="toolbar-saved" data-saved-indicator aria-live="polite" hidden></span>
       </div>
 
       <p class="intro">Outil de calcul pour la déclaration des revenus avec abattement forfaitaire.</p>
@@ -62,7 +64,7 @@
 
       <input id="abmat-action-file" type="file" accept="application/json" hidden />
 
-      <button type="button" class="toolbar-btn" data-toolbar-action="print" title="Imprimer" aria-label="Imprimer" id="abmat-action-print">
+      <button type="button" class="toolbar-btn toolbar-btn--primary" data-toolbar-action="print" title="Imprimer" aria-label="Imprimer" id="abmat-action-print">
         <span class="toolbar-btn__icon" aria-hidden="true">🖨</span>
         <span class="toolbar-btn__label">Imprimer</span>
         <span class="toolbar-btn__label-short">Impr.</span>
@@ -74,7 +76,8 @@
      TUTO (APERÇU + MODALE DÉTAILLÉE)
      ========================================================= -->
   <section id="tuto-section" class="no-print">
-    <h2>Comment fonctionne cet outil ?</h2>
+    <details class="folded-section">
+    <summary><h2>Comment fonctionne cet outil ?</h2></summary>
 
     <p class="hint">
       Cet outil vous aide à calculer l’<strong>abattement fiscal des assistantes maternelles</strong> pour préparer votre déclaration.
@@ -101,17 +104,20 @@
         Voir le tutoriel détaillé
       </button>
     </div>
+    </details>
   </section>
 
   <!-- =========================================================
        EXPLICATION (NON INTERACTIF)
        ========================================================= -->
   <section id="explain-section" class="no-print">
-    <h2>Explication — règles générales</h2>
+    <details class="folded-section">
+    <summary><h2>Explication — règles générales</h2></summary>
 
     <div id="explain">
       <!-- Généré dynamiquement par app.js (renderExplain) -->
     </div>
+    </details>
   </section>
 
   <!-- =========================================================

@@ -88,18 +88,27 @@
 /* Valeur phare : revenu imposable après abattement */
 #month-results .summary-result {
   border-radius: 14px;
-  border: 1px solid rgba(0, 0, 0, 0.10);
-  background: rgba(232, 237, 255, 0.80);
-  padding: 12px;
+  border: 2px solid var(--accent);
+  background: var(--accent-pale);
+  padding: 14px;
 
   display: grid;
   grid-template-columns: 1fr auto;
   grid-template-areas:
     "label value"
-    "hint  value";
+    "hint  note";
   column-gap: 12px;
   row-gap: 2px;
   align-items: center;
+}
+
+/* Note comparative sous la valeur ("au lieu de X € perçus") */
+#month-results .summary-result__note {
+  grid-area: note;
+  justify-self: end;
+  margin: 2px 4px 0 0;
+  font-size: 13px;
+  color: var(--muted);
 }
 
 #month-results .summary-result__label {
@@ -113,13 +122,14 @@
   justify-self: end;
   align-self: center;
 
-  padding: 8px 12px;
+  padding: 8px 14px;
   border-radius: 999px;
-  border: 1px solid rgba(0, 0, 0, 0.10);
-  background: rgba(255, 255, 255, 0.90);
+  border: 1px solid rgba(22, 48, 95, 0.18);
+  background: rgba(255, 255, 255, 0.92);
 
+  color: var(--accent-dark);
   font-weight: 900;
-  font-size: 22px;
+  font-size: 26px;
   letter-spacing: -0.02em;
   white-space: nowrap;
 }
@@ -153,8 +163,13 @@
     grid-template-areas:
       "label"
       "hint"
-      "value";
+      "value"
+      "note";
     row-gap: 6px;
+  }
+
+  #month-results .summary-result__note {
+    justify-self: start;
   }
 
   #month-results .summary-result__value {
