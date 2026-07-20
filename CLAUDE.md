@@ -14,7 +14,7 @@ Application **100 % statique et hors-ligne** : un fichier HTML + JS/CSS vanilla,
 
 Double-clic sur `index.html` (ou `open index.html`). Il n'y a ni build ni installation. Toute modification JS/CSS est visible au rechargement de la page. En production, l'outil est servi par **GitHub Pages** (déploiement automatique à chaque push sur `main`) en PWA — le service worker (`sw.js`, réseau d'abord / cache en secours) ne s'active qu'en http(s), jamais en ouverture locale.
 
-**Vérification manuelle minimale après toute modification** : ouvrir la page, saisir des heures sur un mois (cas ≥ 8h et < 8h), renseigner net + IRF, vérifier le résultat mensuel, ouvrir l'onglet RÉCAP, puis tester l'aperçu d'impression (Cmd+P).
+**Vérification manuelle minimale après toute modification** : ouvrir la page, vérifier les 3 onglets (Accueil, Mes informations, Déclaration), saisir des heures sur un mois (cas ≥ 8h et < 8h), renseigner net + IRF, vérifier le résultat mensuel, ouvrir le RÉCAP, puis tester l'aperçu d'impression (Cmd+P) — et que l'icône Imprimer disparaît bien hors Déclaration.
 
 ## Règles métier (source de vérité)
 
@@ -49,13 +49,25 @@ Redesign visuel complet à partir d'un handoff externe (`handoff_liquid_glass/`,
 
 **Invariant à respecter pour toute nouvelle UI** : ne jamais coder une couleur en dur pour une carte/bouton — utiliser `.glass`/`.glass-strong`/`.btn`/`.btn-primary`/`.pill` ou les tokens `var(--accent)`, `var(--ink)`, `var(--muted)`, etc.
 
-**Toolbar consolidée** : Sauvegarder + Importer fusionnés dans un bouton « Données » (`#abmat-action-data-toggle` → menu `#abmat-data-menu`, contient le statut d'enregistrement et la sauvegarde auto) ; icône « Mes informations » (`#abmat-action-infos`, a quitté la barre des mois — ce n'est pas une période) ; icône Imprimer. Le bouton Imprimer peut exister à **plusieurs endroits** (icône toolbar + CTA dans le héros du résultat) : `toolbar-actions.js` lie tous les éléments `[data-toolbar-action="print"]` via `querySelectorAll` à chaque appel (indépendant de la garde `abmatBound` qui ne concerne que Sauvegarder/Importer/le fichier caché) — **ne jamais revenir à un `getElementById` unique pour Imprimer**.
+**Toolbar consolidée** : Sauvegarder + Importer fusionnés dans un bouton « Données » (`#abmat-action-data-toggle` → menu `#abmat-data-menu`, contient le statut d'enregistrement et la sauvegarde auto) ; 3 onglets texte piliers (voir section Navigation ci-dessous) ; icône Imprimer. Le bouton Imprimer peut exister à **plusieurs endroits** (icône toolbar + bouton flottant mobile `.fab` + CTA dans le héros du résultat) : `toolbar-actions.js` lie tous les éléments `[data-toolbar-action="print"]` via `querySelectorAll` à chaque appel (indépendant de la garde `abmatBound` qui ne concerne que Sauvegarder/Importer/le fichier caché) — **ne jamais revenir à un `getElementById` unique pour Imprimer**. Les 3 boutons sont montrés/masqués ensemble selon le pilier actif (`declarationMode` dans `renderAll`).
 
 **Tableau mensuel en cartes** : `day-rows.js`/`month-table.js` génèrent des `<div>` (`.day-row`, `.kids`, `.kidline`…) au lieu de `<tr>/<td>`. Le contrat `data-*` (data-date, data-child, data-slot-index, data-time, data-absent, data-motif, data-action, data-hours, data-abatt, data-day-total, data-week-total) est **strictement identique** à l'ancien tableau — c'est ce qui a permis la réécriture sans toucher aux handlers d'`app.js`. La racine du conteneur garde la classe `abmat-table` (historique, sert aux 2 sélecteurs `document.querySelector(".abmat-table")` dans `app.js` — ne pas la renommer sans mettre à jour ces 2 endroits + l'itération `.day-row[data-date]`). Le tableau **annuel** (`year-recap.js`) est un vrai `<table>` qui partage aussi la classe `abmat-table` par coïncidence de nom historique : son habillage complet vit désormais dans `85-year-recap.css` sous `.year-recap__table`, indépendamment de `.abmat-table`.
 
 `90-print.css` et les gabarits `print-*.js` : **non touchés** par le redesign (décision explicite du handoff — le liquid glass ne s'applique qu'à l'écran, jamais à l'impression).
 
 **Impression** : on n'imprime jamais l'écran. `app.js` (`buildPrintDoc`, déclenché par le bouton Imprimer et par `beforeprint`) génère un document dans `#print-doc` — relevé mensuel (`compute/month-print.js` → `render/print-month.js`) ou récap annuel (`computeYearRecap` → `render/print-year.js`) selon la vue. `90-print.css` masque tout sauf `#print-doc` à l'impression (`body > :not(#print-doc)`) et le style en document serif. Socle commun `render/print-common.js` (en-tête d'identité lisant `abmat:profile`, règles, pied de page) — données via `textContent` uniquement.
+
+### Navigation à 3 piliers (2026-07-19)
+
+`state.pillar` = `"accueil" | "infos" | "declaration"` — les 3 destinations de la toolbar (`.pillar-tab[data-pillar]`, texte, pas des icônes : changement rare, la clarté prime sur la compacité). Persisté dans `abmat:ui:pillar` ; au tout premier lancement (rien en mémoire) → `"accueil"` si l'appareil est vraiment vierge (`hasAnyMonthData()` false), sinon `"declaration"` pour ne pas perturber une habitude déjà prise (mise à jour de l'outil sur un appareil déjà utilisé).
+
+- **Accueil** (`render/accueil.js`) : message de bienvenue toujours affiché, puis 3 raccourcis adaptés à l'état du profil (calculés à chaque affichage par `computeAccueilContext()` dans `app.js` — jamais figés). Héberge aussi le tutoriel et l'explication des règles (contenu statique dans `index.html`, relocalisé depuis les anciennes vues mensuelles, **plus jamais replié** : Accueil n'étant plus une page visitée à chaque mois, condenser son contenu n'a plus de sens).
+- **Mes informations** (`#infos-section`, pleine largeur) : identité + enfants + semaines types, inchangé, ne vit plus dans la colonne résultat de Déclaration.
+- **Déclaration** : tout ce qui existait avant (années/mois/RÉCAP, tableau, fiche de paie, résultat collant) — `state.monthIndex` (0-11 = mois, 12 = RÉCAP) n'a de sens que sous ce pilier.
+
+Helpers dans `app.js` : `isAccueilMode()`, `isInfosMode()` (= `pillar==="infos"`), `isRecapMode()` (= pilier declaration ET monthIndex 12), `isMonthMode()` (declaration hors récap). **`isMonthMode()` gouverne le chargement des données mensuelles** (`loadAndRenderMonth`) — ne jamais réintroduire un test basé sur `monthIndex` seul pour distinguer Infos (l'ancien sentinel `monthIndex===13` n'existe plus).
+
+**Années déclarées** : case à cocher dans le récap annuel (`year-recap.js`) → `S.setYearDeclared(year, bool)` (repère manuel local, volontairement **hors export/merge** — ce n'est pas une donnée fiscale) → badge ✓ sur la pastille correspondante dans `period.js` (lit `S.getDeclaredYears()`, passé via `state.declaredYears`).
 
 ### Invariant : une seule source de calcul
 
@@ -97,7 +109,9 @@ Une entrée localStorage par mois, clé `abmat:YYYY-MM`. Le bouton Sauvegarder e
 
 **Lot 2 fait le 2026-07-19** : calculs mensuels depuis `state.data` (le DOM n'est plus lu), export/import de l'année complète (corrige l'export « null » depuis le RÉCAP), suite `node --test`.
 
-**Lot 5 (cœur) fait le 2026-07-19** : onglet MES INFOS (mode `monthIndex === 13`) — profil `abmat:profile` (identité, enfants `{name, active, week}`, semaine type lun→ven un créneau/jour), pré-remplissage d'un mois vide (`compute/prefill.js`, action volontaire — jamais automatique), profil embarqué dans l'export d'année, prénoms dans tableau et PDF, encart 1AJ + comparaison des régimes au RÉCAP. Modes de vue : 0-11 = mois, 12 = RÉCAP, 13 = Infos (les deux derniers sans `state.data`).
+**Lot 5 (cœur) fait le 2026-07-19** : vue Mes informations — profil `abmat:profile` (identité, enfants `{name, active, week}`, semaine type lun→ven un créneau/jour), pré-remplissage d'un mois vide (`compute/prefill.js`, action volontaire — jamais automatique), profil embarqué dans l'export d'année, prénoms dans tableau et PDF, encart 1AJ + comparaison des régimes au RÉCAP.
+
+**Lot 9 fait le 2026-07-19** : navigation à 3 piliers (Accueil / Mes informations / Déclaration), détaillée dans la section « Navigation à 3 piliers » ci-dessus. `monthIndex===13` (ancien sentinel Infos) a disparu, remplacé par `state.pillar`.
 
 **Lot 3 fait le 2026-07-19** (3 étapes) : schéma v2 (multi-créneaux + absences, migration auto) ; nouveau tableau de saisie (`render/day-rows.js` + `render/month-table.js` : enfants visibles + « + enfant », « + créneau »/✕, absence avec motif, fériés calculés `U.getFrenchHolidays`, « Recopier la semaine précédente », total du jour — valeurs remplies depuis `state.data` via `createElement`, **jamais de donnée dans innerHTML**) ; thème (accent unique `--accent` #23458c, base 17 px, héros du résultat avec note « au lieu de X € perçus », pilules toolbar « ✓ Enregistré » + total du mois, tuto/explication en `<details>` repliés après première visite — flag `abmat:ui:visited` —, années en pastilles fixes 2023 → courante). 29 tests verts. ⚠️ **Les étapes DOM (tableau + thème) n'ont pas encore été vérifiées dans un navigateur.**
 
@@ -111,7 +125,7 @@ Suite sans dépendance basée sur le runner intégré de node — lancer depuis 
 node --test
 ```
 
-Le harnais (`tests/harness.js`) charge les modules réels (config, utils, calc, storage, compute) avec `window`/`localStorage` simulés. Pas de DOM : les renderers et `app.js` se vérifient à la main dans le navigateur (section Lancement). Couverture actuelle : bornes 8 h / prorata / créneaux invalides (`calc.test.js`), imports malformés et export/import d'année (`storage.test.js`), abattement et statuts annuels (`year-recap.test.js`). Tout changement du moteur doit faire tourner cette suite avant commit.
+Le harnais (`tests/harness.js`) charge les modules réels (config, utils, calc, storage, compute) avec `window`/`localStorage` simulés. Pas de DOM : les renderers, `app.js` et la navigation à 3 piliers se vérifient à la main dans le navigateur (section Lancement). Couverture actuelle : bornes 8 h / prorata / créneaux invalides (`calc.test.js`), imports malformés et export/import d'année (`storage.test.js`), abattement et statuts annuels (`year-recap.test.js`), années déclarées (`declared-years.test.js`). Tout changement du moteur doit faire tourner cette suite avant commit.
 
 Sémantique historique à connaître : deux horaires *tous deux* imparsables valent « empty » (case vide), pas « invalid » — documenté dans `calc.test.js`.
 

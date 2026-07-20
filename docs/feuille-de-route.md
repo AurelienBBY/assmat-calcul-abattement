@@ -99,6 +99,19 @@ Périmètre d'origine :
 - ✅ PDF et impression **non touchés** (décision du handoff).
 - ⚠️ **Vérification navigateur non encore faite par l'utilisateur** — c'est le plus gros changement DOM du projet après le tableau v2 du lot 3.
 
+## Lot 9 — Navigation à 3 piliers — ✅ fait le 2026-07-19
+
+**Origine** : retour utilisateur après la première maquette Accueil — question de fond sur le parcours utilisateur (« accueil, inscription des informations, infos déclarative »). Deux maquettes de validation avant code (écran Accueil seul, puis navigation complète à 3 onglets). Détail technique complet dans `CLAUDE.md` (section « Navigation à 3 piliers »).
+
+- ✅ **Accueil** (nouveau pilier, `render/accueil.js`) : message de bienvenue toujours affiché en premier (retour utilisateur explicite — ne pas enchaîner directement sur une invitation à agir), puis 3 raccourcis adaptés à l'état du profil. Héberge le tutoriel et l'explication des règles, relocalisés depuis les vues mensuelles (ne se répètent plus à chaque mois) et plus jamais repliés (Accueil n'est pas une page récurrente à condenser).
+- ✅ **Mes informations** devient sa propre section pleine largeur (`#infos-section`), plus cohérent qu'imbriqué dans la colonne résultat de Déclaration.
+- ✅ **Déclaration** regroupe ce qui existait (années/mois/RÉCAP, tableau, fiche de paie, résultat) — la sous-navigation années/mois n'apparaît plus que sous ce pilier.
+- ✅ Toolbar simplifiée à 3 onglets texte (au lieu d'icônes) + Imprimer masqué hors Déclaration (aucune cible valable sur Accueil/Infos) + Données toujours global.
+- ✅ **Années déclarées** : case à cocher manuelle dans le récap annuel (pas une date calculée — les fenêtres de déclaration varient chaque année) → badge ✓ sur la pastille d'année. Volontairement hors export/merge (repère local, pas une donnée fiscale).
+- ✅ Pilier mémorisé (`abmat:ui:pillar`) : Accueil par défaut sur un appareil vierge, Déclaration sinon (n'interrompt pas une habitude déjà prise après mise à jour de l'outil).
+- ✅ Nettoyage : `explain.js` perd un paramètre mort depuis l'origine ; le mécanisme de pliage première-visite (`abmat:ui:visited`) est retiré, devenu sans objet.
+- 48 tests verts (dont 4 nouveaux pour les années déclarées). ⚠️ **Vérification navigateur non encore faite** — changement de navigation structurel, à tester en priorité (les 3 onglets, le contexte adaptatif d'Accueil selon le profil, le badge déclarée).
+
 ## Lot 7 — Pièces justificatives (décidé le 2026-07-19, à faire après le lot 6)
 
 **Besoin** : les heures proviennent d'une fiche papier signée par les parents ; en cas de contrôle il faut retrouver, par mois, le calcul ET la pièce signée.
