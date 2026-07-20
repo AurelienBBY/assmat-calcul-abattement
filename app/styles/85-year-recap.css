@@ -1,234 +1,124 @@
 /* ============================================================================
-   80-month-results.css — Résultats du mois (calculés)
+   85-year-recap.css — Récapitulatif annuel (RÉCAP) — verre
    ----------------------------------------------------------------------------
-   - La section #month-results-section est la carte principale.
-   - Le renderer injecte un conteneur .month-results dans #month-results.
-   - On met en avant le "Revenu imposable après abattement" puis les détails.
+   NOTE : le tableau annuel (year-recap.js) est un vrai <table class="abmat-
+   table year-recap__table">. Depuis le redesign, la classe .abmat-table sert
+   aussi de racine au tableau du mois (désormais des <div>, cf. 40-table.css)
+   — la classe est donc partagée par coïncidence de nom mais plus par un style
+   générique commun : tout l'habillage du tableau annuel vit ici, sous
+   .year-recap__table, sans dépendre de règles .abmat-table génériques.
    ========================================================================== */
 
-#month-results-section {
-  margin-top: 16px;
-}
+.year-recap{ display: flex; flex-direction: column; gap: 20px; }
 
-/* Titre de section : Résultats du mois — <mois année> */
-#month-results-section h2 {
-  font-size: 1.05rem;
-  font-weight: 800;
-  line-height: 1.25;
-  margin-bottom: 4px;
-}
-
-#month-results-section .hint {
-  margin-top: 4px;
-}
-
-/* Conteneur rendu par month-summary.js (pas une sous-carte) */
-#month-results .month-results {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 12px;
-}
-
-/* Bloc "Détails" : explicite que les lignes expliquent le total */
-#month-results .month-details {
-  margin-top: 6px;
-  padding: 10px 12px;
-  border-left: 2px solid rgba(0, 0, 0, 0.08);
-  background: rgba(0, 0, 0, 0.025);
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  width: min(100%, 1020px);
-  margin: 6px auto 0;
-}
-
-/* Séparateurs discrets entre les lignes de détail */
-#month-results .month-details .summary-row + .summary-row {
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
-  padding-top: 10px;
-  margin-top: 6px;
-}
-
-/* Hints sur ligne dédiée (labels + détails) */
-#month-results .summary-result .hint,
-#month-results .month-details .hint {
-  display: block;
-}
-
-#month-results .summary-result .hint {
-  grid-area: hint;
-  margin-top: 0;
-}
-
-/* Hints plus collés sous les labels dans les détails */
-#month-results .month-details .hint {
-  margin-top: 2px;
-}
-
-/* Valeurs en bulle à droite */
-#month-results .month-details .summary-row > span:last-child {
-  justify-self: end;
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  background: rgba(255, 255, 255, 0.85);
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-#month-results .month-details__title {
-  font-weight: 700;
-  font-size: 0.95rem;
-  color: rgba(0, 0, 0, 0.55);
-  letter-spacing: 0.01em;
-}
-
-/* Valeur phare : revenu imposable après abattement */
-#month-results .summary-result {
-  border-radius: 14px;
-  border: 1px solid rgba(0, 0, 0, 0.10);
-  background: rgba(232, 237, 255, 0.80);
-  padding: 12px;
-
-  display: grid;
-  grid-template-columns: 1fr auto;
-  grid-template-areas:
-    "label value"
-    "hint  value";
-  column-gap: 12px;
-  row-gap: 2px;
-  align-items: center;
-}
-
-#month-results .summary-result__label {
-  grid-area: label;
-  font-weight: 700;
-  margin-bottom: 0;
-}
-
-#month-results .summary-result__value {
-  grid-area: value;
-  justify-self: end;
-  align-self: center;
-
-  padding: 8px 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(0, 0, 0, 0.10);
-  background: rgba(255, 255, 255, 0.90);
-
-  font-weight: 900;
-  font-size: 22px;
-  letter-spacing: -0.02em;
-  white-space: nowrap;
-}
-
-/* Lignes de détails */
-#month-results .summary-row {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 0;
-}
-
-#month-results .summary-row--muted {
-  opacity: 0.85;
-}
-
-#month-results .summary-row > span:first-child strong {
-  font-weight: 700; /* au lieu d’un gras “trop titre” */
-}
-
-/* Responsive */
-@media (max-width: 720px) {
-  #month-results .summary-row {
-    grid-template-columns: 1fr;
-    align-items: start;
-  }
-
-  #month-results .summary-result {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "label"
-      "hint"
-      "value";
-    row-gap: 6px;
-  }
-
-  #month-results .summary-result__value {
-    justify-self: start;
-  }
-
-  #month-results .month-details .summary-row > span:last-child {
-    justify-self: start;
-  }
-
-  #month-results .summary-result__value {
-    font-size: 20px;
-  }
-}
-
-/* ============================================================================
-   RÉCAP annuel — colonnes opérateurs (+, =, −) dans le tableau
-   ========================================================================== */
-
-/* En-têtes opérateurs : centrés, étroits, discrets */
-.year-recap__opcol{
-  width: 44px;
-  min-width: 44px;
-  max-width: 44px;
-  text-align: center;
-  font-weight: 900;
-  color: rgba(0, 0, 0, 0.55);
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-}
-
-/* Les cellules opérateurs du body restent vides mais gardent l’alignement */
-.year-recap__table-wrap td.year-recap__opcol{
-  font-weight: 900;
-  color: rgba(0, 0, 0, 0.18);
-}
-
-@media (max-width: 720px){
-  .year-recap__opcol{
-    width: 34px;
-    min-width: 34px;
-    max-width: 34px;
-  }
-}
+.card__title{ margin: 0 0 14px; font-size: 16px; }
 
 /* --- Encart « Case 1AJ » --------------------------------------------------- */
 
 .year-declare{
   display: flex;
   align-items: center;
-  gap: 18px;
-  border-left: 5px solid var(--accent);
-  background: var(--accent-pale);
-  border-radius: 0 12px 12px 0;
-  padding: 16px 20px;
-  margin-bottom: 18px;
+  gap: 20px;
+  padding: 18px 22px;
 }
 
 .year-declare__case{
   flex: 0 0 auto;
   font-weight: 800;
   color: var(--accent-dark);
-  border: 2px solid var(--accent-dark);
-  border-radius: 8px;
-  padding: 10px 14px;
+  border: 2px solid oklch(var(--l-dark) var(--c-dark) var(--hue) / .5);
+  border-radius: var(--radius-sm);
+  padding: 10px 16px;
   white-space: nowrap;
-  background: #fff;
+  background: oklch(100% 0 0 / .7);
 }
 
-.year-declare__text{ margin: 0; max-width: 62ch; }
-.year-declare__amount{ font-size: 1.25rem; color: var(--accent-dark); }
+.year-declare__text{ margin: 0; font-size: 14.5px; line-height: 1.5; max-width: 62ch; }
+.year-declare__amount{ font-size: 19px; color: var(--accent-dark); }
 
 @media (max-width: 700px){
   .year-declare{ flex-direction: column; align-items: flex-start; }
+}
+
+/* --- Résultats annuels : héros (réutilise .summary-result du mois) --------- */
+
+.year-recap__annual .summary-result{
+  padding: 20px;
+  border-radius: var(--radius-md);
+  background: var(--accent-pale);
+  border: none;
+  display: block;
+}
+.year-recap__annual .summary-result__label{ font-size: 14.5px; }
+.year-recap__annual .summary-result__value{
+  display: block;
+  margin-top: 10px;
+  font-size: 32px;
+  color: var(--accent-dark);
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Tableau annuel : habillage propre (indépendant de .abmat-table) ------ */
+
+.year-recap__table-wrap{ overflow-x: auto; }
+
+.year-recap__table{
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.year-recap__table th{
+  text-align: left;
+  padding: 8px 6px;
+  font-size: 10.5px;
+  color: var(--muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  border-bottom: 1px solid oklch(0% 0 0 / .08);
+  white-space: nowrap;
+}
+
+.year-recap__table td{
+  padding: 9px 6px;
+  border-bottom: 1px solid oklch(0% 0 0 / .05);
+  font-variant-numeric: tabular-nums;
+}
+
+.year-recap__opcol{
+  width: 34px;
+  min-width: 34px;
+  max-width: 34px;
+  text-align: center;
+  font-weight: 900;
+  color: oklch(0% 0 0 / .18);
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.year-recap__row{ cursor: pointer; transition: background .15s ease; border-radius: 10px; }
+.year-recap__row:hover{ background: oklch(100% 0 0 / .5); }
+.year-recap__row:focus-visible{ outline: 2px solid var(--accent); outline-offset: -2px; }
+
+.year-recap__month{ font-weight: 700; }
+
+.abmat-chip{
+  display: inline-block;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.abmat-chip--ok{ background: var(--ok-pale); color: var(--ok); }
+.abmat-chip--warn{ background: var(--warn-pale); color: var(--warn); }
+.abmat-chip--muted{ background: oklch(0% 0 0 / .05); color: var(--muted); }
+
+@media (max-width: 720px){
+  .year-recap__table{ font-size: 11.5px; }
+  .year-recap__opcol{ width: 22px; min-width: 22px; max-width: 22px; }
 }
 
 /* --- Comparaison des régimes ----------------------------------------------- */
@@ -236,8 +126,8 @@
 .year-compare__grid{
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  margin-top: 12px;
+  gap: 16px;
+  margin-top: 14px;
 }
 
 @media (max-width: 700px){
@@ -245,27 +135,29 @@
 }
 
 .regime{
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  background: oklch(100% 0 0 / .4);
+  border: .5px solid oklch(100% 0 0 / .5);
 }
 
 .regime--win{
-  border: 2px solid var(--ok);
+  border: 1.5px solid oklch(45% .12 152 / .6);
   background: var(--ok-pale);
 }
 
 .regime__win-tag{
   color: var(--ok);
   font-weight: 800;
-  font-size: .74rem;
+  font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: .06em;
+  letter-spacing: .05em;
 }
 
-.regime__name{ font-weight: 700; margin-top: 2px; }
+.regime__name{ font-weight: 700; margin-top: 2px; font-size: 14.5px; }
 .regime__value{
-  font-size: 1.5rem;
-  font-weight: 800;
+  font-size: 24px;
+  font-weight: 900;
   font-variant-numeric: tabular-nums;
+  margin-top: 4px;
 }

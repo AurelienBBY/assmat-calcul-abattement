@@ -1,24 +1,15 @@
 /* ============================================================================
-   60-tuto.css — Box tutoriel (aperçu)
+   60-tuto.css — Box tutoriel (aperçu) — verre
    ----------------------------------------------------------------------------
    IMPORTANT :
-   - Le conteneur #tuto-section doit hériter EXACTEMENT du style “carte” commun.
-   - On ne met donc PAS de background/radius/shadow/max-width/margin ici.
+   - Le conteneur #tuto-section hérite du style "carte" (verre) commun.
    - Ce fichier ne contient que la mise en forme interne de la box.
    ========================================================================== */
 
-#tuto-section h2{
-  margin: 0 0 8px 0;
-}
+#tuto-section h2{ margin: 0 0 8px 0; }
 
-.tuto-steps{
-  margin: 0;
-  padding-left: 18px;
-}
-
-.tuto-steps li{
-  margin: 6px 0;
-}
+.tuto-steps{ margin: 0; padding-left: 18px; }
+.tuto-steps li{ margin: 6px 0; }
 
 .tuto-actions{
   margin-top: 10px;
@@ -27,26 +18,17 @@
   align-items: center;
 }
 
-/* Bouton "neutre" (utilisé dans la box tuto et éventuellement ailleurs) */
+/* Bouton "neutre" (verre léger) */
 .btn-secondary{
-  border: 1px solid rgba(0,0,0,.20);
-  background: #fff;
-  padding: 8px 10px;
-  border-radius: 10px;
+  border: .5px solid oklch(100% 0 0 / var(--glass-border));
+  background: oklch(100% 0 0 / .6);
+  padding: 9px 14px;
+  border-radius: 999px;
   cursor: pointer;
   font: inherit;
   font-weight: 700;
+  color: var(--ink);
+  transition: filter .15s ease, transform .15s ease;
 }
-
-.btn-secondary:hover{
-  background: #fafafa;
-}
-
-.btn-secondary:active{
-  transform: translateY(1px);
-}
-
-.btn-secondary:focus{
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(0,0,0,.06);
-}
+.btn-secondary:hover{ filter: brightness(1.03); }
+.btn-secondary:active{ transform: scale(.97); }

@@ -1,5 +1,5 @@
 /* ============================================================================
-   30-years-params.css — Paramètres de calcul (année)
+   30-years-params.css — Paramètres de calcul (année) — verre
    ----------------------------------------------------------------------------
    Contient uniquement :
    - #year-params (conteneur rendu par JS)
@@ -7,7 +7,6 @@
    - explications + récapitulatif
    ========================================================================== */
 
-/* Le conteneur JS reste "nu" : pas de sous-carte supplémentaire */
 #year-params{
   padding: 0;
   border: 0;
@@ -16,16 +15,14 @@
 
 .year-params-title{
   margin: 0 0 12px 0;
-  color: #111;
+  color: var(--ink);
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
 }
 
-.year-param-row{
-  margin: 8px 0;
-}
+.year-param-row{ margin: 8px 0; }
 
 .year-param-row.is-kv{
   display: grid;
@@ -35,10 +32,7 @@
   margin: 0;
 }
 
-.year-param-label{
-  color: var(--muted);
-  font-weight: 600;
-}
+.year-param-label{ color: var(--muted); font-weight: 600; }
 
 .year-param-value{
   font-weight: 800;
@@ -53,18 +47,13 @@
   align-items: center;
   gap: 8px 10px;
 }
-
-.year-param-sub .hint{
-  margin: 0;
-  font-size: 12px;
-}
+.year-param-sub .hint{ margin: 0; font-size: 12px; }
 
 .year-param-row.is-rule{
   margin-top: 10px;
-  padding: 10px 12px;
-  background: var(--card-2);
-  border: 1px solid var(--border);
-  border-radius: 14px;
+  padding: 12px 14px;
+  background: oklch(100% 0 0 / .35);
+  border-radius: var(--radius-md);
 }
 
 .year-rule-title{
@@ -74,62 +63,41 @@
   gap: 8px 10px;
 }
 
-.year-rule-formula{
-  margin-top: 6px;
-}
-
-.year-rule-formula .hint{
-  margin: 0;
-  font-size: 12px;
-}
+.year-rule-formula{ margin-top: 6px; }
+.year-rule-formula .hint{ margin: 0; font-size: 12px; }
 
 .year-param-row.is-rule code{
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 12px;
-  padding: 2px 6px;
+  padding: 2px 7px;
   border-radius: 8px;
-  background: #fff;
-  border: 1px solid var(--border);
+  background: oklch(100% 0 0 / .7);
+  border: 1px solid oklch(0% 0 0 / .1);
 }
 
-.inline-label{
-  font-weight: 600;
-  margin-right: 6px;
-}
+.inline-label{ font-weight: 600; margin-right: 6px; }
 
 /* --- Explication + récap (paramètres de calcul) -------------------------- */
 
 .calc-explain{
   margin-top: 10px;
-  padding: 12px 12px;
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 14px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  background: oklch(100% 0 0 / .35);
+  border: .5px solid oklch(100% 0 0 / .5);
 }
 
-.calc-explain p{
-  margin: 0 0 10px 0;
-  font-size: 13px;
-  color: #111;
-}
-
-.calc-explain p:last-child{
-  margin-bottom: 0;
-}
-
-.calc-explain a{
-  color: #1d4ed8;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
+.calc-explain p{ margin: 0 0 10px 0; font-size: 13.5px; color: var(--ink); }
+.calc-explain p:last-child{ margin-bottom: 0; }
+.calc-explain a{ color: var(--accent-dark); text-decoration: underline; text-underline-offset: 2px; }
 
 .calc-explain code{
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 12px;
   padding: 2px 6px;
   border-radius: 8px;
-  background: var(--card-2);
-  border: 1px solid var(--border);
+  background: oklch(0% 0 0 / .04);
+  border: 1px solid oklch(0% 0 0 / .08);
   white-space: nowrap;
 }
 
@@ -137,27 +105,32 @@
   margin: 14px 0 8px 0;
   font-weight: 800;
   font-size: 13px;
-  color: #111;
+  color: var(--ink);
 }
 
 .calc-recap{
-  padding: 10px 12px;
-  background: var(--card-2);
-  border: 1px solid var(--border);
-  border-radius: 14px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  background: oklch(100% 0 0 / .4);
+  border: .5px solid oklch(100% 0 0 / .5);
 }
 
-.calc-recap-list{
-  margin: 0;
-  padding-left: 18px;
+.calc-recap-list{ margin: 0; padding-left: 18px; }
+.calc-recap-list li{ margin: 9px 0; font-size: 13.5px; line-height: 1.5; }
+.calc-recap-list li.hint{ margin-top: 8px; font-size: 12.5px; }
+
+/* --- SMIC manquant : encadré d'alerte douce ------------------------------- */
+
+.year-param-row.is-rule:has(#abmat-smic-input){
+  background: var(--warn-pale);
 }
 
-.calc-recap-list li{
-  margin: 6px 0;
-  font-size: 13px;
-}
-
-.calc-recap-list li.hint{
-  margin-top: 8px;
-  font-size: 12px;
+#abmat-smic-input{
+  font: inherit;
+  font-size: 13.5px;
+  padding: 7px 10px;
+  border: 1px solid oklch(0% 0 0 / .12);
+  border-radius: 8px;
+  background: #fff;
+  width: 110px;
 }

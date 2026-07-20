@@ -1,5 +1,5 @@
 /* ============================================================================
-   70-modal.css — Modales (tutoriel détaillé)
+   70-modal.css — Modales (tutoriel détaillé) — verre
    ----------------------------------------------------------------------------
    Contient uniquement :
    - .modal + overlay
@@ -7,69 +7,73 @@
    ========================================================================== */
 
 .modal[aria-hidden="true"]{ display: none; }
-.modal[aria-hidden="false"]{ display: block; }
+.modal[aria-hidden="false"]{ display: flex; }
 
 .modal{
   position: fixed;
   inset: 0;
   z-index: 9999;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 6vh 20px;
 }
 
 .modal__overlay{
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,.45);
+  background: oklch(20% .02 var(--hue) / .38);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
 }
 
 .modal__panel{
   position: relative;
-  max-width: 860px;
-  margin: 6vh auto;
-  background: #fff;
-  border-radius: 14px;
-  box-shadow: 0 10px 30px rgba(0,0,0,.25);
+  width: min(860px, 100%);
   max-height: 88vh;
   overflow: auto;
-  padding: 14px 16px;
+  padding: 0;
 }
 
 .modal__header{
+  position: sticky;
+  top: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid rgba(0,0,0,.08);
+  padding: 18px 24px;
+  border-bottom: 1px solid oklch(0% 0 0 / .07);
+  background: inherit;
 }
+.modal__header h2{ margin: 0; font-size: 17px; }
 
 .modal__close{
-  border: 0;
-  background: transparent;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: .5px solid oklch(0% 0 0 / .1);
+  background: oklch(100% 0 0 / .6);
+  color: var(--muted);
   cursor: pointer;
-  font-size: 18px;
-  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  padding: 0;
 }
 
-.modal__content{
-  padding: 12px 0;
-}
-
-.modal__content h3{
-  margin: 14px 0 6px;
-}
+.modal__content{ padding: 24px 24px 20px; }
+.modal__content h3{ margin: 14px 0 6px; }
 
 .modal__footer{
   padding-top: 10px;
-  border-top: 1px solid rgba(0,0,0,.08);
+  border-top: 1px solid oklch(0% 0 0 / .08);
   display: flex;
   justify-content: flex-end;
 }
 
 /* ----------------------------------------------------------------------------
    Iframe tuto (chargée depuis app/modals/tuto.html)
-   - occupe toute la largeur
-   - hauteur confortable
-   - scroll interne si besoin
    ------------------------------------------------------------------------- */
 
 .tuto-embed{
@@ -80,20 +84,10 @@
   overflow: auto;
 }
 
-/* Le contenu de la modale doit pouvoir laisser l’iframe respirer */
-.modal__content{
-  padding: 12px 0;
-}
-
-/* Sur petits écrans : réduire la marge et augmenter la place utile */
 @media (max-width: 720px){
   .modal__panel{
     width: calc(100% - 24px);
-    margin: 4vh auto;
     max-height: 92vh;
   }
-
-  .tuto-embed{
-    height: 72vh;
-  }
+  .tuto-embed{ height: 72vh; }
 }
