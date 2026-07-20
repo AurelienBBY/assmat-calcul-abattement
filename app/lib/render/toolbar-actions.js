@@ -6,10 +6,12 @@
    - Déclenche l'import via un input[type=file] caché (JSON)
 
    Attendus dans le DOM (toolbar) :
-   - #abmat-action-save  (bouton "Sauvegarder")
-   - #abmat-action-load  (bouton "Charger")
-   - #abmat-action-print (bouton "Imprimer")
+   - #abmat-action-save  (bouton "Sauvegarder", dans le menu Données)
+   - #abmat-action-load  (bouton "Charger", dans le menu Données)
+   - [data-toolbar-action="print"] (1 ou plusieurs boutons "Imprimer")
    - #abmat-action-file  (input[type=file] caché, accept application/json)
+   - #abmat-action-data-toggle + #abmat-data-menu (menu Données)
+   - #abmat-action-infos (icône "Mes informations")
 
    Dépendances :
    - window.ABMAT.render (R) — initialisé par render/index.js
@@ -39,21 +41,36 @@
    * NOTE: on ne rend plus de blocs "Données" / "Impression" dans la page.
    * Le param `container` est conservé pour compatibilité, mais n’est plus utilisé.
    */
-  R.renderToolbarActions = function renderToolbarActions(container, state, onPrint, onExport, onImportRequest) {
+  R.renderToolbarActions = function renderToolbarActions(container, state, onPrint, onExport, onImportRequest, onOpenInfos) {
+    // Impression : peut exister à plusieurs endroits (icône toolbar toujours
+    // présente + CTA dans le héros du résultat, recréé à chaque rendu du
+    // mois). Indépendant de la garde ci-dessous : ce bloc s'exécute à chaque
+    // appel pour (re)lier les nouveaux boutons ; un garde-fou par élément
+    // évite les doubles écoutes sur les boutons déjà liés.
+    document.querySelectorAll('[data-toolbar-action="print"]').forEach((btn) => {
+      if (btn.dataset.printBound === "1") return;
+      btn.dataset.printBound = "1";
+      btn.addEventListener("click", () => {
+        onPrint && onPrint();
+      });
+    });
+
     // Toolbar targets
     const btnSave = document.getElementById("abmat-action-save");
     const btnLoad = document.getElementById("abmat-action-load");
-    const btnPrint = document.getElementById("abmat-action-print");
     const fileInput = document.getElementById("abmat-action-file");
+    const btnDataToggle = document.getElementById("abmat-action-data-toggle");
+    const dataMenu = document.getElementById("abmat-data-menu");
+    const btnInfos = document.getElementById("abmat-action-infos");
 
-    const root = (btnSave || btnLoad || btnPrint || fileInput);
+    const root = (btnSave || btnLoad || fileInput);
     if (root && root.dataset && root.dataset.abmatBound === "1") {
       return;
     }
     if (root && root.dataset) root.dataset.abmatBound = "1";
 
     // Garde-fous : si la toolbar n’existe pas (ex: intégration partielle), on ne casse pas.
-    if (!btnSave && !btnLoad && !btnPrint && !fileInput) {
+    if (!btnSave && !btnLoad && !fileInput) {
       if (container) container.innerHTML = "";
       return;
     }
@@ -67,13 +84,6 @@
     if (btnSave) {
       btnSave.addEventListener("click", () => {
         onExport && onExport();
-      });
-    }
-
-    // Impression
-    if (btnPrint) {
-      btnPrint.addEventListener("click", () => {
-        onPrint && onPrint();
       });
     }
 
@@ -95,6 +105,32 @@
       fileInput.addEventListener("change", () => {
         const file = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
         onImportRequest && onImportRequest(file);
+      });
+    }
+
+    // Bouton « Données » : ouvre/ferme le menu (Sauvegarder / Importer / auto-sauvegarde)
+    if (btnDataToggle && dataMenu) {
+      const closeMenu = () => {
+        dataMenu.hidden = true;
+        btnDataToggle.setAttribute("aria-expanded", "false");
+      };
+      btnDataToggle.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        const willOpen = dataMenu.hidden;
+        dataMenu.hidden = !willOpen;
+        btnDataToggle.setAttribute("aria-expanded", willOpen ? "true" : "false");
+      });
+      // Ferme le menu après un clic sur une de ses actions, ou en cliquant ailleurs.
+      dataMenu.addEventListener("click", (ev) => {
+        if (ev.target instanceof Element && ev.target.closest("button")) closeMenu();
+      });
+      document.addEventListener("click", closeMenu);
+    }
+
+    // Bouton « Mes informations » (icône réglages) : bascule sur la vue Infos.
+    if (btnInfos) {
+      btnInfos.addEventListener("click", () => {
+        onOpenInfos && onOpenInfos();
       });
     }
 

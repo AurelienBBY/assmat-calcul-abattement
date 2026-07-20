@@ -1,14 +1,19 @@
 /* ============================================================================
-   render/month-table.js — Tableau du mois (structure + événements)
+   render/month-table.js — Tableau du mois (structure + événements) — verre
    ----------------------------------------------------------------------------
    Rôle :
-   - Génère les semaines et les jours ouvrés du mois (lignes via day-rows.js)
+   - Génère les semaines et les jours ouvrés du mois (cartes via day-rows.js)
    - Séparateurs de semaine avec « Recopier la semaine précédente »
    - Totaux hebdomadaires
    - Délègue tous les événements (inputs, absences, boutons) aux handlers
 
+   IMPORTANT : la racine n'est plus un <table> mais un <div class="days">
+   (racine "abmat-table" conservée en classe pour la délégation d'événements
+   et les sélecteurs d'app.js — la délégation elle-même est agnostique du tag,
+   uniquement basée sur les attributs data-*).
+
    Handlers attendus : { onTimeChange, onSlotAdd, onSlotRemove, onAbsentToggle,
-                         onMotifChange, onChildAdd, onWeekCopy }
+                         onMotifChange, onChildAdd, onWeekCopy, onPrefill }
    ========================================================================== */
 
 (function () {
@@ -24,9 +29,11 @@
     throw new Error("ABMAT.utils est requis avant ABMAT.render (charger utils.js en premier).");
   }
 
-  function attachEvents(table, H) {
+  const ICON_COPY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v6h6M20 20v-6h-6"/><path d="M5 15a7 7 0 0 0 12 3l3-3M19 9a7 7 0 0 0-12-3L4 9"/></svg>';
+
+  function attachEvents(root, H) {
     // Saisie d'un horaire
-    table.addEventListener("input", (ev) => {
+    root.addEventListener("input", (ev) => {
       const t = ev.target;
       if (!(t instanceof HTMLInputElement) || t.type !== "time") return;
       H.onTimeChange({
@@ -39,7 +46,7 @@
     });
 
     // Absence (case à cocher) et motif (select)
-    table.addEventListener("change", (ev) => {
+    root.addEventListener("change", (ev) => {
       const t = ev.target;
       if (t instanceof HTMLInputElement && t.hasAttribute("data-absent")) {
         H.onAbsentToggle({
@@ -57,7 +64,7 @@
     });
 
     // Boutons (+ enfant, + créneau, ✕, recopier la semaine)
-    table.addEventListener("click", (ev) => {
+    root.addEventListener("click", (ev) => {
       const btn = ev.target instanceof Element ? ev.target.closest("button[data-action]") : null;
       if (!btn) return;
       const isoDate = btn.getAttribute("data-date");
@@ -105,7 +112,7 @@
     // Mois vide + semaines types disponibles : proposer le pré-remplissage.
     if (state.prefillAvailable && typeof handlers.onPrefill === "function") {
       const banner = document.createElement("div");
-      banner.className = "prefill-banner";
+      banner.className = "prefill-banner glass-strong";
 
       const text = document.createElement("span");
       text.textContent = "Ce mois est vide — remplissez-le en un clic avec les semaines types de vos enfants (fériés exclus).";
@@ -113,7 +120,7 @@
 
       const btn = document.createElement("button");
       btn.type = "button";
-      btn.className = "prefill-banner__btn";
+      btn.className = "btn btn-primary prefill-banner__btn";
       btn.textContent = "Pré-remplir le mois";
       btn.addEventListener("click", () => handlers.onPrefill());
       banner.appendChild(btn);
@@ -121,25 +128,10 @@
       container.appendChild(banner);
     }
 
-    const table = document.createElement("table");
-    table.className = "abmat-table";
-    table.setAttribute("data-month", `${year}-${U.pad2(monthIndex + 1)}`);
+    const root = document.createElement("div");
+    root.className = "abmat-table days";
+    root.setAttribute("data-month", `${year}-${U.pad2(monthIndex + 1)}`);
 
-    const thead = document.createElement("thead");
-    const trh = document.createElement("tr");
-    [
-      ["col-date", "Date"], ["", "Enfant"], ["", "Horaires (entrée → sortie)"],
-      ["", "Temps de présence"], ["", "Abattement"], ["", "Total jour"]
-    ].forEach(([cls, label]) => {
-      const th = document.createElement("th");
-      if (cls) th.className = cls;
-      th.textContent = label;
-      trh.appendChild(th);
-    });
-    thead.appendChild(trh);
-    table.appendChild(thead);
-
-    const tbody = document.createElement("tbody");
     const totalDays = U.daysInMonth(year, monthIndex);
 
     let hasRows = false;
@@ -168,39 +160,38 @@
         const startLabel = `${U.pad2(weekStartDate.getDate())}/${U.pad2(weekStartDate.getMonth() + 1)}`;
         const endLabel = `${U.pad2(end.getDate())}/${U.pad2(end.getMonth() + 1)}`;
 
-        const trSep = document.createElement("tr");
-        trSep.className = "week-sep";
-        const tdSep = document.createElement("td");
-        tdSep.colSpan = 6;
-        tdSep.innerHTML = `Semaine du <strong>${startLabel}</strong> au <strong>${endLabel}</strong>`;
+        const wkHead = document.createElement("div");
+        wkHead.className = "wk-head";
+        const label = document.createElement("span");
+        label.innerHTML = `Semaine du <strong>${startLabel}</strong> au <strong>${endLabel}</strong>`;
+        wkHead.appendChild(label);
 
         // « Recopier la semaine précédente » : seulement si elle est dans le même mois
         if (weekStartDate.getDate() - 7 >= 1) {
           const copyBtn = document.createElement("button");
           copyBtn.type = "button";
-          copyBtn.className = "week-copy";
+          copyBtn.className = "wk-copy";
           copyBtn.setAttribute("data-action", "copy-week");
           copyBtn.setAttribute("data-week-start", U.toIsoDate(weekStartDate));
           copyBtn.setAttribute("data-week-end", U.toIsoDate(end));
-          copyBtn.textContent = "⟳ Recopier la semaine précédente";
-          tdSep.appendChild(copyBtn);
+          copyBtn.innerHTML = ICON_COPY + "Recopier la semaine précédente";
+          wkHead.appendChild(copyBtn);
         }
 
-        trSep.appendChild(tdSep);
-        tbody.appendChild(trSep);
+        root.appendChild(wkHead);
       }
 
       const isoDate = U.toIsoDate(d);
       const weekdayLong = d.toLocaleDateString("fr-FR", { weekday: "long" });
 
-      R.buildDayRows({
+      root.appendChild(R.buildDayRows({
         isoDate,
         weekdayLabel: weekdayLong.charAt(0).toUpperCase() + weekdayLong.slice(1),
         dayNumLabel: `${U.pad2(day)}/${U.pad2(monthIndex + 1)}`,
         ferieName: holidays[isoDate] || null,
         dayObj: days[isoDate],
         childNames
-      }).forEach((tr) => tbody.appendChild(tr));
+      }));
 
       // --- Fin de semaine : total hebdomadaire
       let nextWorking = null;
@@ -212,31 +203,24 @@
 
       if (isEndOfWeek && weekStartDate) {
         const weekEnd = new Date(d);
-        const startLabel = `${U.pad2(weekStartDate.getDate())}/${U.pad2(weekStartDate.getMonth() + 1)}`;
-        const endLabel = `${U.pad2(weekEnd.getDate())}/${U.pad2(weekEnd.getMonth() + 1)}`;
 
-        const trTotal = document.createElement("tr");
-        trTotal.className = "week-total";
-
-        const tdLabel = document.createElement("td");
-        tdLabel.className = "week-total-label";
-        tdLabel.colSpan = 5;
-        tdLabel.innerHTML = `Total abattement semaine du <strong>${startLabel}</strong> au <strong>${endLabel}</strong>`;
-
-        const tdAmount = document.createElement("td");
-        tdAmount.className = "week-total-amount col-abatt";
-        tdAmount.innerHTML =
-          `<span class="week-total-pill"><span data-week-total data-week-start="${U.toIsoDate(weekStartDate)}" data-week-end="${U.toIsoDate(weekEnd)}">—</span></span>`;
-
-        trTotal.appendChild(tdLabel);
-        trTotal.appendChild(tdAmount);
-        tbody.appendChild(trTotal);
+        const wtot = document.createElement("div");
+        wtot.className = "wtot";
+        const label = document.createElement("span");
+        label.textContent = "Total semaine";
+        const amount = document.createElement("b");
+        amount.setAttribute("data-week-total", "");
+        amount.setAttribute("data-week-start", U.toIsoDate(weekStartDate));
+        amount.setAttribute("data-week-end", U.toIsoDate(weekEnd));
+        amount.textContent = "—";
+        wtot.appendChild(label);
+        wtot.appendChild(amount);
+        root.appendChild(wtot);
       }
     }
 
-    table.appendChild(tbody);
-    container.appendChild(table);
-    attachEvents(table, handlers);
+    container.appendChild(root);
+    attachEvents(root, handlers);
 
     if (!hasRows) {
       const p = document.createElement("p");

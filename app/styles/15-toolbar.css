@@ -1,92 +1,68 @@
 /* ============================================================================
-   15-toolbar.css — Mini barre d’outils sticky (actions globales)
+   15-toolbar.css — Mini barre d’outils sticky (verre) — actions globales
    ----------------------------------------------------------------------------
    Objectifs :
-   - Barre compacte sticky en haut de page
-   - Actions globales : Sauvegarder / Importer / Imprimer
+   - Barre glass sticky en haut de page, cible tactile 44×44 (HIG)
+   - Bouton unique « Données » (icône disquette) → menu Sauvegarder/Importer/
+     sauvegarde auto ; icône Mes informations ; icône Imprimer
    - Contexte (mois + année) affichable uniquement quand utile
-   - Responsive : texte abrégé sur petits écrans
    ========================================================================== */
 
 :root {
-  /* fallback si la variable n’est pas encore définie dans 00-vars-base.css */
   --toolbar-h: 44px;
   --toolbar-sticky-offset: 95px;
-  --toolbar-left-nudge-y: 17px;
-  --toolbar-actions-nudge-y: -17px;
 }
 
 /* Conteneur sticky */
 .app-toolbar {
   position: sticky;
-  top: 0;
+  top: 14px;
   z-index: 200;
 
-  min-height: 52px; /* header principal */
+  min-height: 52px;
   padding: 12px 16px;
+  margin: 14px auto 48px;
+  max-width: var(--maxw);
 
   display: flex;
   flex-wrap: nowrap;
-  align-items: stretch; /* chaque colonne prend toute la hauteur */
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
 
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
-}
-
-/* Transition douce entre états */
-.app-toolbar {
-  transition:
-    min-height 200ms ease,
-    padding 200ms ease,
-    box-shadow 200ms ease,
-    backdrop-filter 200ms ease;
+  transition: box-shadow 200ms ease, backdrop-filter 200ms ease, min-height 200ms ease, padding 200ms ease;
 }
 
 /* État compact : quand on a scrollé sous le hero */
 .app-toolbar--compact {
   min-height: 36px;
   padding: 6px 12px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
 }
 
-/* Sur fond très clair, on garde une séparation nette */
-@supports not ((backdrop-filter: blur(10px)) or (-webkit-backdrop-filter: blur(10px))) {
-  .app-toolbar {
-    background: #ffffff;
-  }
-}
-
-/* Zone gauche : titre + contexte */
+/* Zone gauche : titre + contexte + pilules */
 .app-toolbar__left {
   flex: 1 1 auto;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center; /* centre verticalement titre + intro dans la barre */
+  justify-content: center;
   gap: 3px;
-  transform: translateY(var(--toolbar-left-nudge-y));
 }
 
 .app-toolbar__title {
-  font-weight: 700;
-  font-size: 18px;
+  font-weight: 650;
+  font-size: 19px;
   line-height: 1;
-  color: #111;
+  color: var(--ink);
   white-space: nowrap;
+  letter-spacing: -.01em;
 }
 
 .app-toolbar__left .intro {
   margin: 0;
-  padding-left: 0; /* aligné exactement avec le titre */
-  font-size: 13.5px; /* plus lisible */
+  font-size: 13.5px;
   line-height: 1.25;
-  color: rgba(0, 0, 0, 0.55); /* plus doux */
+  color: var(--muted);
 }
 
 .app-toolbar--compact .app-toolbar__left .intro {
@@ -94,39 +70,26 @@
 }
 
 .app-toolbar--compact .app-toolbar__title {
-  font-size: 14px;
+  font-size: 15px;
 }
 
-/* Ligne haute : Titre + contexte sur la même ligne */
 .app-toolbar__topline {
   display: flex;
   align-items: center;
   gap: 10px;
   min-width: 0;
-}
-
-.app-toolbar__topline .app-toolbar__title {
-  flex: 0 0 auto;
-}
-
-.app-toolbar__topline .app-toolbar__context {
-  flex: 1 1 auto;
-  min-width: 0;
+  flex-wrap: wrap;
 }
 
 /* Contexte (ex: “• Février 2028”) */
 .app-toolbar__context {
   font-size: 14px;
   line-height: 1;
-  color: rgba(0, 0, 0, 0.65);
+  color: var(--muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 40vw;
-}
-
-.app-toolbar--compact .app-toolbar__context {
-  opacity: 0.85;
 }
 
 /* Par défaut, le contexte peut être caché (affiché via JS au scroll) */
@@ -134,159 +97,125 @@
   display: none;
 }
 
-/* Zone droite : boutons */
+.toolbar-total{ flex: 0 0 auto; white-space: nowrap; }
+
+@media (max-width: 760px){
+  .toolbar-total{ display: none; }
+}
+
+/* Zone droite : icônes d'action */
 .app-toolbar__actions {
   flex: 0 0 auto;
-  align-self: stretch;
-  transform: translateY(var(--toolbar-actions-nudge-y));
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
+  gap: 8px;
   white-space: nowrap;
 }
 
-.toolbar-btn {
-  appearance: none;
-  border: 1px solid rgba(0, 0, 0, 0.10);
-  background: rgba(255, 255, 255, 0.95);
-  color: #111;
+.toolbar-icon-group{ position: relative; }
 
-  height: 36px;
-  padding: 0 10px;
-
-  border-radius: 14px;
+.icon-btn{
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: .5px solid oklch(100% 0 0 / var(--glass-border));
+  background:
+    linear-gradient(125deg, oklch(100% 0 0 / .55), transparent 40%),
+    linear-gradient(180deg, oklch(100% 0 0 / .82), oklch(100% 0 0 / .58));
+  backdrop-filter: blur(calc(var(--blur) * .6));
+  -webkit-backdrop-filter: blur(calc(var(--blur) * .6));
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
+  color: var(--ink);
+  box-shadow: 0 .5px 0 rgba(255,255,255,.8) inset, 0 6px 14px rgba(20,30,60,.08);
+  transition: transform .15s ease, filter .15s ease;
+  padding: 0;
+}
+.icon-btn svg{ width: 19px; height: 19px; display: block; }
+.icon-btn:hover{ filter: brightness(1.03); }
+.icon-btn:active{ transform: scale(.94); }
 
-  display: inline-flex;
+.icon-btn--primary{
+  border: none;
+  color: #fff;
+  background:
+    linear-gradient(125deg, oklch(100% 0 0 / .4), transparent 45%),
+    linear-gradient(160deg, oklch(calc(var(--l-accent) + 8%) var(--c-accent) var(--hue)), oklch(var(--l-dark) var(--c-dark) var(--hue)));
+  box-shadow: 0 .5px 0 rgba(255,255,255,.45) inset, 0 10px 22px oklch(var(--l-dark) var(--c-dark) var(--hue) / .38);
+}
+
+.app-toolbar--compact .icon-btn{ width: 36px; height: 36px; }
+.app-toolbar--compact .icon-btn svg{ width: 16px; height: 16px; }
+
+/* --- Menu « Données » ------------------------------------------------------ */
+
+.data-menu{
+  position: absolute;
+  top: 52px;
+  right: 0;
+  min-width: 220px;
+  padding: 6px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 60;
+}
+
+.data-menu__status{
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--ok);
+  padding: 8px 10px 6px;
+}
+
+.data-menu__item{
+  display: flex;
   align-items: center;
-  gap: 6px;
-
+  gap: 9px;
+  border: none;
+  background: transparent;
+  padding: 10px 10px;
+  border-radius: 11px;
+  font: inherit;
+  font-size: 13.5px;
   font-weight: 600;
-  font-size: 13px;
-  line-height: 1;
-
-  transition: transform 120ms ease, background 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
 }
+.data-menu__item:hover{ background: oklch(0% 0 0 / .05); }
+.data-menu__item svg{ width: 17px; height: 17px; flex: 0 0 auto; color: var(--muted); }
 
-.app-toolbar--compact .toolbar-btn {
-  height: 30px;
-}
-
-
-/* Bouton Charger : 2 lignes (label + nom de fichier) */
-.toolbar-btn--load {
-  padding: 0 10px;
-  align-items: center;
-}
-
-.toolbar-btn__content {
-  display: inline-flex;
+.data-menu__item.toolbar-btn--load .toolbar-btn__content{
+  display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 2px;
-  min-width: 0;            /* permet l’ellipsis */
+  min-width: 0;
 }
 
-.toolbar-btn__sub {
-  display: block;          /* l’élément existe, JS gère display:none/"" */
+.data-menu__item .toolbar-btn__sub{
   font-size: 10px;
-  line-height: 1;
   font-weight: 600;
-  opacity: 0.75;
+  color: var(--muted);
   max-width: 220px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* Quand le sous-texte est masqué via style="display:none", on garde un bouton compact */
-.toolbar-btn--load .toolbar-btn__sub[style*="display:none"] {
-  display: none;
+/* Ligne « sauvegarde automatique » réutilisée dans le menu (états is-ok/is-warn) */
+.data-menu__item.toolbar-autosave{
+  border-top: 1px solid oklch(0% 0 0 / .06);
+  margin-top: 2px;
+  padding-top: 12px;
 }
-
-/* Si le sous-texte est visible, on resserre légèrement l’espacement vertical */
-.toolbar-btn--load .toolbar-btn__label {
-  line-height: 1;
-}
-
-/* États visuels optionnels */
-.toolbar-btn.is-loaded {
-  border-color: rgba(46, 125, 50, 0.4);
-}
-
-.toolbar-btn.is-error {
-  border-color: rgba(211, 47, 47, 0.4);
-}
-
-.toolbar-btn:hover {
-  background: #fff;
-  border-color: rgba(0, 0, 0, 0.16);
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
-}
-
-.toolbar-btn:active {
-  transform: translateY(1px);
-}
-
-.toolbar-btn:focus-visible {
-  outline: 2px solid rgba(0, 0, 0, 0.35);
-  outline-offset: 2px;
-}
-
-.toolbar-btn__icon {
-  width: 18px;
-  height: 18px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-}
-
-/* Labels : version longue + version courte (affichage responsive) */
-.toolbar-btn__label-short {
-  display: none;
-}
-
-@media (max-width: 760px) {
-  .app-toolbar {
-    padding: 10px 12px;
-  }
-
-  .app-toolbar__context {
-    max-width: 52vw;
-  }
-
-  .toolbar-btn {
-    padding: 0 8px;
-  }
-
-  .toolbar-btn__label {
-    display: none;
-  }
-
-  .toolbar-btn__label-short {
-    display: inline;
-  }
-
-  /* Sur petits écrans, le bouton Charger garde son label (sinon il devient incompréhensible) */
-  .toolbar-btn--load .toolbar-btn__label {
-    display: inline;
-  }
-  .toolbar-btn--load .toolbar-btn__label-short {
-    display: none;
-  }
-
-  .toolbar-btn--load .toolbar-btn__sub {
-    max-width: 140px;
-  }
-}
-
-@media (max-width: 420px) {
-  .app-toolbar__context {
-    max-width: 52vw;
-  }
-}
+.data-menu__item.toolbar-autosave.is-ok{ color: var(--ok); }
+.data-menu__item.toolbar-autosave.is-warn{ color: var(--warn); }
 
 /* Impression : ne pas afficher la toolbar */
 @media print {
@@ -294,69 +223,3 @@
     display: none !important;
   }
 }
-/* --- Pilules d'état : total du mois + enregistrement ---------------------- */
-
-.toolbar-total,
-.toolbar-saved{
-  flex: 0 0 auto;
-  font-size: 12.5px;
-  font-weight: 700;
-  line-height: 1;
-  border-radius: 999px;
-  padding: 5px 11px;
-  white-space: nowrap;
-}
-
-.toolbar-total{
-  color: var(--accent-dark);
-  background: var(--accent-pale);
-}
-
-.toolbar-saved{
-  color: var(--ok);
-  background: var(--ok-pale);
-}
-
-@media (max-width: 760px){
-  .toolbar-total{ display: none; } /* priorité au ✓ Enregistré sur mobile */
-}
-
-/* --- Action principale : Imprimer ----------------------------------------- */
-
-.toolbar-btn--primary{
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
-}
-
-.toolbar-btn--primary:hover{
-  background: var(--accent-dark);
-  border-color: var(--accent-dark);
-  color: #fff;
-}
-
-/* --- Pilule-bouton : sauvegarde automatique (dossier) --------------------- */
-
-.toolbar-autosave{
-  flex: 0 0 auto;
-  border: none;
-  font-size: 12.5px;
-  font-weight: 700;
-  line-height: 1;
-  border-radius: 999px;
-  padding: 5px 11px;
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-.toolbar-autosave.is-ok{
-  color: var(--ok);
-  background: var(--ok-pale);
-}
-
-.toolbar-autosave.is-warn{
-  color: #8a5a00;
-  background: #f7ecd4;
-}
-
-.toolbar-autosave:hover{ filter: brightness(0.96); }

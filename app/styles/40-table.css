@@ -1,360 +1,252 @@
 /* ============================================================================
-   40-table.css — Tableau mensuel (détail journalier)
+   40-table.css — Tableau mensuel en cartes glass (jour / semaine)
    ----------------------------------------------------------------------------
    Contient uniquement :
-   - titres liés au tableau
-   - table (.abmat-table)
-   - séparateurs semaine + total semaine
-   - helpers colonnes + champs horaires
+   - conteneur .days + semaines (.wk-head, .wtot)
+   - carte jour (.day-row) : date, kidlines (avatar, absence, créneaux), total
+   - pilules de créneaux, avatar, badges férié
    ========================================================================== */
-
 
 .month-heading{
   margin: 0 0 10px 0;
   color: var(--muted);
 }
 
-:root{
-  --abmat-thead-h: 44px; /* hauteur approximative du header tableau */
-  --abmat-weekbar-h: 34px; /* hauteur approximative de la barre "Semaine" */
-  --abmat-weekbar-gap: 6px;
-  --abmat-sticky-overlap: 6px; /* recouvre l'ombre/bord du thead pour éviter un "gap" visible */
-  --abmat-sticky-top: var(--toolbar-sticky-offset, var(--toolbar-h));
+.days{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.abmat-table{
-  width: 100%;
-
-  /* Sticky header reliability (Safari)
-     - avoid border-collapse: collapse
-     - avoid overflow:hidden on the table element */
-  border-collapse: separate;
-  border-spacing: 0;
-
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: visible;
-}
-
-/* Coins arrondis sans casser le sticky */
-.abmat-table thead th:first-child{ border-top-left-radius: var(--radius); }
-.abmat-table thead th:last-child{ border-top-right-radius: var(--radius); }
-.abmat-table tbody tr:last-child td:first-child{ border-bottom-left-radius: var(--radius); }
-.abmat-table tbody tr:last-child td:last-child{ border-bottom-right-radius: var(--radius); }
-
-/* Empêche les fonds des cellules de dépasser les coins arrondis */
-.abmat-table thead th,
-.abmat-table tbody td{
-  background-clip: padding-box;
-}
-
-
-.abmat-table thead th{
-  background: var(--card-2);
-  background-clip: padding-box;
-  box-shadow: 0 6px 12px rgba(0,0,0,0.06);
-  border-bottom: 1px solid var(--border);
-  padding: 10px 8px;
-  font-size: 13px;
-  text-align: center;
-  vertical-align: bottom;
-  white-space: nowrap;
-  position: sticky;
-  top: var(--abmat-sticky-top);
-  z-index: 5;
-}
-
-/* Sticky 1ère colonne (Date) — utile en scroll horizontal */
-.abmat-table thead th.col-date{
-  position: sticky;
-  left: 0;
-  z-index: 6; /* au-dessus des autres th sticky */
-  background: var(--card-2);
-  background-clip: padding-box;
-  box-shadow: 10px 0 14px rgba(0,0,0,0.06);
-}
-
-.abmat-table tbody td.col-date{
-  position: sticky;
-  left: 0;
-  z-index: 3; /* sous la barre semaine sticky */
-  background: inherit; /* conserve le fond des lignes week-sep / week-total */
-  background-clip: padding-box;
-  box-shadow: 10px 0 14px rgba(0,0,0,0.03);
-  vertical-align: top;
-  text-align: center;
-}
-
-/* Le libellé de date “glisse” dans la cellule (rowspan=3) pour rester lisible */
-.abmat-table tbody td.col-date .col-date__inner{
-  position: sticky;
-  display: inline-block;
-  width: 100%;
-  top: calc(
-    var(--abmat-sticky-top)
-    + var(--abmat-thead-h)
-    + var(--abmat-weekbar-h)
-    + var(--abmat-weekbar-gap)
-    - var(--abmat-sticky-overlap)
-  );
-}
-
-@media (max-width: 720px){
-  .abmat-table tbody td.col-date .col-date__inner{
-    position: sticky;
-    display: inline-block;
-    width: 100%;
-    top: calc(
-      var(--abmat-sticky-top)
-      + var(--abmat-thead-h)
-      + var(--abmat-weekbar-h)
-      + var(--abmat-weekbar-gap)
-      - var(--abmat-sticky-overlap)
-    );
-  }
-}
-
-@media print{
-  .abmat-table tbody td.col-date .col-date__inner{
-    position: static;
-  }
-}
-
-/* Evite un “trou” visuel à la jonction */
-.abmat-table thead th.col-date,
-.abmat-table tbody td.col-date{
-  border-right: 1px solid var(--border);
-}
-
-.abmat-table .th-sub{
-  font-weight: 500;
-  color: var(--muted);
-  font-size: 12px;
-}
-
-.abmat-table tbody td{
-  border-top: 1px solid var(--border);
-  padding: 10px 8px;
-  vertical-align: middle;
-  font-size: 13px;
-  text-align: center;
-}
-
-/* Séparateur de semaine */
-.week-sep td{
-  background: #e8edff;
-  font-weight: 800;
-  border-top: 2px solid #c7d2fe;
-}
-
-/* Sticky barre de semaine : "Semaine du … au …" */
-.abmat-table tbody tr.week-sep td{
-  position: sticky;
-  top: calc(var(--abmat-sticky-top) + var(--abmat-thead-h) - var(--abmat-sticky-overlap));
-  z-index: 5;
-  background: #e8edff;
-  box-shadow: 0 6px 10px rgba(0,0,0,0.08);
-}
-
-/* Les lignes de semaine restent lisibles */
-.week-sep td{ text-align: left; }
-
-/* Ligne total semaine */
-.week-total td{
-  background: var(--card-2);
-  font-weight: 800;
-}
-
-.week-total td.week-total-label{
-  text-align: right;
-  padding-right: 16px;
-}
-
-.week-total td.week-total-amount{
-  text-align: center;
-}
-
-.week-total-pill{
-  display: inline-block;
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: #fff;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
-  font-weight: 800;
-  white-space: nowrap;
-}
-
-/* Colonnes / sous contenus */
-.col-date strong{
-  display: inline-block;
-  margin-bottom: 4px;
-}
-
-.date-iso{
-  color: var(--muted);
-  font-size: 12px;
-}
-
-.time-pair{
+.wk-head{
   display: flex;
   align-items: center;
-  gap: 6px;
-  justify-content: center;
-}
-
-.abmat-table input[type="time"]{
-  text-align: center;
-}
-
-.sep{
-  color: var(--muted);
-}
-
-.col-hours,
-.col-abatt,
-.col-total{
-  text-align: center;
-  white-space: nowrap;
+  justify-content: space-between;
+  padding: 10px 4px 2px;
+  font-size: 12.5px;
   font-weight: 700;
+  color: var(--accent-dark);
 }
+.wk-head:first-child{ padding-top: 2px; }
 
-.col-hours .muted,
-.col-abatt .muted,
-.col-hours .sep,
-.col-abatt .sep{
-  font-weight: 400;
-}
-
-.col-total strong{
-  font-size: 14px;
-}
-
-@media (max-width: 720px){
-  .abmat-table thead th,
-  .abmat-table tbody td{
-    padding: 8px 6px;
-    font-size: 12px;
-  }
-
-  .week-total td.week-total-label{
-    padding-right: 12px;
-  }
-}
-
-@media print{
-  .abmat-table thead th{
-    position: static;
-  }
-}
-
-@media print{
-  .abmat-table tbody tr.week-sep td{
-    position: static;
-  }
-}
-/* --- Saisie v2 : enfants, créneaux, absences, fériés ---------------------- */
-
-.col-horaires{ min-width: 250px; }
-
-.creneau{
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 2px 0;
-}
-.creneau-sep{ color: var(--muted); }
-
-.mt-add{
-  border: 1px dashed #cfcfc8;
-  background: none;
-  color: var(--muted);
-  border-radius: 999px;
-  padding: 2px 10px;
-  font-size: 12px;
-  cursor: pointer;
-  margin-top: 4px;
-}
-.mt-add:hover{ color: #111; border-color: #9a9a92; }
-
-.mt-remove{
+.wk-copy{
   border: none;
-  background: none;
-  color: var(--muted);
-  cursor: pointer;
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
   font-size: 12px;
-  padding: 2px 4px;
-}
-.mt-remove:hover{ color: #b3261e; }
-
-.child-name{ font-weight: 600; display: block; }
-
-.absent-toggle{
+  font-weight: 700;
+  cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-weight: 400;
+}
+.wk-copy svg{ width: 13px; height: 13px; }
+.wk-copy:hover{ color: var(--accent-dark); }
+
+.wtot{
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 14px 4px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--muted);
+}
+.wtot b{
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  margin-left: 6px;
+}
+
+/* --- Carte jour ------------------------------------------------------------ */
+
+.day-row{
+  display: grid;
+  grid-template-columns: 60px 1fr auto;
+  gap: 14px;
+  align-items: start;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: oklch(100% 0 0 / .4);
+  border: .5px solid oklch(100% 0 0 / .5);
+  transition: background .15s ease;
+}
+.day-row:hover{ background: oklch(100% 0 0 / .62); }
+
+.day-row.is-ferie{ background: oklch(48% .12 70 / .08); }
+
+.day-row .d{
+  text-align: center;
+  padding-top: 2px;
+}
+.day-row .d b{
+  display: block;
+  font-size: 15px;
+  font-weight: 800;
+}
+.day-row .d span{
+  display: block;
+  font-size: 10.5px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+
+.ferie{
+  display: block;
+  margin-top: 4px;
+  font-size: 8.5px;
+  font-weight: 700;
+  color: var(--warn);
+  background: var(--warn-pale);
+  border-radius: 6px;
+  padding: 2px 4px;
+  line-height: 1.25;
+  white-space: normal;
+}
+
+.addchild, .addslot{
+  display: block;
+  border: 1px dashed oklch(0% 0 0 / .18);
+  background: transparent;
+  color: var(--muted);
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+  font: inherit;
+}
+.addchild{
+  margin-top: 6px;
+  padding: 2px 7px;
+  font-size: 10px;
+  width: 100%;
+}
+.addslot{
+  padding: 4px 10px;
+  font-size: 11.5px;
+  display: inline-block;
+}
+.addchild:hover, .addslot:hover{ color: var(--ink); border-color: oklch(0% 0 0 / .35); }
+
+.kids{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kidline{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.avatar{
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--accent-pale);
+  color: var(--accent-dark);
+  font-size: 10px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.kid-horaires{ display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+.slot-chip{
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px 4px 9px;
+  border-radius: 999px;
+  background: oklch(100% 0 0 / .7);
+  border: 1px solid oklch(0% 0 0 / .08);
   font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.slot-chip input[type="time"]{
+  border: none;
+  background: transparent;
+  padding: 0;
+  width: 84px;
+  min-width: 84px;
+  font: inherit;
+  font-size: 12px;
+}
+.slot-x{
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 11px;
+  padding: 0 2px;
+}
+.slot-x:hover{ color: oklch(50% .18 25); }
+
+.abs-toggle{
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 400;
   color: var(--muted);
   cursor: pointer;
 }
+.abs-toggle input{ accent-color: var(--accent); }
 
-tr.is-ferie td{ background: #f7f3e8; }
-.ferie-badge{
-  display: inline-block;
-  margin-top: 4px;
-  font-size: 11px;
+.motif-sel{
+  border: 1px solid oklch(0% 0 0 / .12);
+  border-radius: 999px;
+  padding: 4px 9px;
+  font: inherit;
+  font-size: 11.5px;
+  background: var(--warn-pale);
+  color: var(--warn);
   font-weight: 700;
-  color: #8a5a00;
-  background: #f7ecd4;
-  border-radius: 5px;
-  padding: 1px 6px;
 }
 
-.week-copy{
-  float: right;
-  border: 1px solid #d6d6d0;
-  background: #fff;
-  color: #333;
-  border-radius: 7px;
-  padding: 2px 10px;
-  font-size: 12px;
-  cursor: pointer;
+/* Statut discret par enfant (heures · abattement), pour info secondaire */
+.kid-status{
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
 }
-.week-copy:hover{ border-color: #999; }
+.kid-status [title="Horaire incomplet ou sortie avant l'entrée — corrigez ce créneau."]{
+  color: var(--warn);
+  font-weight: 700;
+}
 
-.col-daytotal{
+.day-row .r2{
   text-align: right;
-  vertical-align: middle;
+  padding-top: 2px;
 }
-.day-total-pill{ font-weight: 700; white-space: nowrap; }
+.day-total-pill{
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  font-size: 14.5px;
+  color: var(--accent-dark);
+  white-space: nowrap;
+}
+
+@media (max-width: 640px){
+  .day-row{ grid-template-columns: 44px 1fr; }
+  .day-row .r2{ grid-column: 1 / -1; text-align: left; padding-top: 6px; }
+}
 
 /* --- Bandeau de pré-remplissage (mois vide + semaines types) -------------- */
 
 .prefill-banner{
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 14px;
   flex-wrap: wrap;
-  border: 1px dashed var(--accent);
-  background: var(--accent-pale);
-  color: var(--accent-dark);
-  border-radius: 12px;
-  padding: 12px 16px;
+  justify-content: space-between;
+  padding: 14px 18px;
   margin-bottom: 14px;
+  color: var(--ink);
   font-weight: 600;
 }
-
-.prefill-banner__btn{
-  border: none;
-  background: var(--accent);
-  color: #fff;
-  border-radius: 999px;
-  padding: 8px 16px;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.prefill-banner__btn:hover{ background: var(--accent-dark); }

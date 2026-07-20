@@ -46,42 +46,52 @@
       <div class="app-toolbar__topline">
         <div class="app-toolbar__title">Abattement Ass-Mat</div>
         <div class="app-toolbar__context" data-toolbar-context aria-live="polite"></div>
-        <span class="toolbar-total" data-toolbar-total hidden></span>
-        <span class="toolbar-saved" data-saved-indicator aria-live="polite" hidden></span>
-        <button type="button" class="toolbar-autosave" data-autosave hidden></button>
+        <span class="pill pill-accent toolbar-total" data-toolbar-total hidden></span>
       </div>
 
       <p class="intro">Outil de calcul pour la déclaration des revenus avec abattement forfaitaire.</p>
     </div>
 
     <div class="app-toolbar__actions" aria-label="Actions">
-      <button type="button" class="toolbar-btn" data-toolbar-action="export" title="Sauvegarder l’année (fichier JSON)" aria-label="Sauvegarder l’année (fichier JSON)" id="abmat-action-save">
-        <span class="toolbar-btn__icon" aria-hidden="true">💾</span>
-        <span class="toolbar-btn__label">Sauvegarder</span>
-        <span class="toolbar-btn__label-short">Sauveg.</span>
-      </button>
+      <div class="toolbar-icon-group">
+        <button type="button" class="icon-btn" data-toolbar-action="data-toggle" id="abmat-action-data-toggle" aria-haspopup="true" aria-expanded="false" aria-label="Données (sauvegarder, importer)" title="Données">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h11l3 3v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M8 4v5h7V4"/><path d="M7 21v-7h10v7"/></svg>
+        </button>
 
-      <button type="button" class="toolbar-btn toolbar-btn--load" data-toolbar-action="import" title="Importer (reprendre une sauvegarde)" aria-label="Importer (reprendre une sauvegarde)" id="abmat-action-load">
-        <span class="toolbar-btn__icon" aria-hidden="true">📂</span>
+        <div class="data-menu glass-strong" id="abmat-data-menu" hidden>
+          <div class="data-menu__status" data-saved-indicator aria-live="polite" hidden></div>
 
-        <span class="toolbar-btn__content">
-          <span class="toolbar-btn__label" data-toolbar-load-label>Charger les données</span>
-          <span class="toolbar-btn__sub" data-toolbar-load-status style="display:none"></span>
-        </span>
-      </button>
+          <button type="button" class="data-menu__item" data-toolbar-action="export" id="abmat-action-save">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+            <span class="toolbar-btn__label">Sauvegarder l’année</span>
+          </button>
+
+          <button type="button" class="data-menu__item toolbar-btn--load" data-toolbar-action="import" id="abmat-action-load">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 21h16"/></svg>
+            <span class="toolbar-btn__content">
+              <span class="toolbar-btn__label" data-toolbar-load-label>Importer une sauvegarde</span>
+              <span class="toolbar-btn__sub" data-toolbar-load-status style="display:none"></span>
+            </span>
+          </button>
+
+          <button type="button" class="data-menu__item toolbar-autosave" data-autosave hidden></button>
+        </div>
+      </div>
 
       <input id="abmat-action-file" type="file" accept="application/json" hidden />
 
-      <button type="button" class="toolbar-btn toolbar-btn--primary" data-toolbar-action="print" title="Imprimer" aria-label="Imprimer" id="abmat-action-print">
-        <span class="toolbar-btn__icon" aria-hidden="true">🖨</span>
-        <span class="toolbar-btn__label">Imprimer</span>
-        <span class="toolbar-btn__label-short">Impr.</span>
+      <button type="button" class="icon-btn" data-toolbar-action="infos" id="abmat-action-infos" aria-label="Mes informations" title="Mes informations — enfants, identité, semaines types">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+
+      <button type="button" class="icon-btn icon-btn--primary" data-toolbar-action="print" title="Imprimer" aria-label="Imprimer" id="abmat-action-print">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
       </button>
     </div>
   </header>
 
   <!-- Restauration : proposé au démarrage quand l'appareil n'a aucune donnée -->
-  <div id="restore-banner" class="restore-banner no-print" hidden>
+  <div id="restore-banner" class="restore-banner glass-strong no-print" hidden>
     <span>
       Vos données ne sont pas sur cet appareil. Si vous avez une sauvegarde
       (fichier <strong>abattement-assmat-….json</strong>), importez-la —
@@ -232,7 +242,7 @@
   <div class="modal" id="tuto-modal" aria-hidden="true">
   <div class="modal__overlay" data-close-tuto></div>
 
-  <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="tuto-modal-title" tabindex="-1">
+  <div class="modal__panel glass-strong" role="dialog" aria-modal="true" aria-labelledby="tuto-modal-title" tabindex="-1">
     <header class="modal__header">
       <h2 id="tuto-modal-title">Tutoriel détaillé</h2>
       <button type="button" class="modal__close" data-close-tuto aria-label="Fermer">✕</button>

@@ -1,30 +1,49 @@
 /* ============================================================================
-   00-vars-base.css — Variables + base typographie
+   00-vars-base.css — Design system "Liquid Glass" (teinte Prune, verre médium)
    ----------------------------------------------------------------------------
-   Contenu volontairement minimal :
-   - Variables CSS (couleurs, rayons, ombres)
-   - Reset léger + styles globaux (typo, titres, textes)
+   Redesign visuel du 2026-07-19 (handoff_liquid_glass) : verre translucide,
+   flou, reflets discrets. Teinte et intensité fixées (pas de sélecteur en
+   production — validées : Prune / Médium). Les noms de variables historiques
+   (--accent, --card, --muted…) sont conservés : tout le CSS existant qui les
+   consomme récupère le nouveau rendu sans modification.
    ========================================================================== */
 
 :root{
-  --maxw: 1100px;
-  --radius: 25px;
-  --border: #e6e6e0;
-  --toolbar-h: 52px; /* hauteur de la toolbar sticky */
-  --muted: #59616b;        /* gris biaisé bleu, contraste AA en 14px */
-  --bg: #ffffff;           /* neutral white */
-  --card: #f9f9f7;         /* blanc cassé */
-  --card-2: #f2f2ef;       /* léger contraste */
-  --shadow: 0 12px 28px rgba(0,0,0,.28);
+  --maxw: 1180px;
+  --radius: 24px;
+  --radius-md: 16px;
+  --radius-sm: 12px;
+  --toolbar-h: 52px;
 
-  /* Accent unique : bleu encre administratif (maquette validée) */
-  --accent: #23458c;
-  --accent-dark: #16305f;
-  --accent-pale: #e9eef8;
+  /* --- Teinte (Prune) + verre (intensité médium) --------------------------- */
+  --hue: 322;
+  --l-accent: 42%; --c-accent: .1;
+  --l-dark: 26%;   --c-dark: .095;
+  --blur: 24px;
+  --glass-top: .68; --glass-bot: .5; --glass-border: .65;
+  --glass-shadow: 0 10px 30px rgba(20,30,60,.12), 0 1px 0 rgba(255,255,255,.6) inset;
+
+  --ink: oklch(22% .02 var(--hue));
+  --muted: oklch(46% .02 var(--hue));
+  --border: oklch(0% 0 0 / .1);
+
+  /* Accent unique — noms historiques conservés, valeurs recalculées en Prune */
+  --accent: oklch(var(--l-accent) var(--c-accent) var(--hue));
+  --accent-dark: oklch(var(--l-dark) var(--c-dark) var(--hue));
+  --accent-pale: oklch(var(--l-accent) var(--c-accent) var(--hue) / .14);
 
   /* Sémantique (indépendante de l'accent) */
-  --ok: #1a7a4a;
-  --ok-pale: #e2f2e9;
+  --ok: oklch(45% .12 152);
+  --ok-pale: oklch(45% .12 152 / .14);
+  --warn: oklch(48% .12 70);
+  --warn-pale: oklch(48% .12 70 / .14);
+
+  --bg: oklch(98% .006 var(--hue));
+  --card: oklch(100% 0 0 / .5);   /* fallback si backdrop-filter indisponible */
+  --card-2: oklch(0% 0 0 / .04);
+  --shadow: var(--glass-shadow);
+
+  font-synthesis: none;
 }
 
 *{ box-sizing: border-box; }
@@ -32,16 +51,22 @@
 html, body{
   margin: 0;
   padding: 0;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  font-size: 17px;         /* base généreuse : lisible sans lunettes collées à l'écran */
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 17px;
   line-height: 1.45;
-  color: #111;
-  background: var(--bg);
+  color: var(--ink);
+  background:
+    radial-gradient(1100px 760px at 8% -8%, oklch(91% .055 var(--hue) / .55), transparent 62%),
+    radial-gradient(950px 680px at 108% 6%, oklch(93% .045 calc(var(--hue) + 42) / .5), transparent 60%),
+    radial-gradient(900px 900px at 46% 118%, oklch(94% .035 calc(var(--hue) - 34) / .45), transparent 62%),
+    var(--bg);
+  background-attachment: fixed;
 }
 
 h1{
   margin: 0 0 10px 0;
   font-size: 22px;
+  letter-spacing: -.01em;
 }
 
 h2{
@@ -82,16 +107,95 @@ input[type="number"],
 input[type="time"]{
   font: inherit;
   padding: 7px 10px;
-  border: 1px solid #d6d6d0;
-  border-radius: 12px;
-  background: #fff;
-  color: #111;
+  border: 1px solid oklch(0% 0 0 / .12);
+  border-radius: var(--radius-sm);
+  background: oklch(100% 0 0 / .7);
+  color: var(--ink);
 }
 
 input[type="time"]{
   padding: 6px 8px;
   min-width: 128px;
 }
+
+/* --- Système de verre (glass) ---------------------------------------------
+   Deux niveaux : .glass (cartes) et .glass-strong (toolbar, popovers, héros).
+   ========================================================================== */
+
+.glass{
+  background:
+    linear-gradient(125deg, oklch(100% 0 0 / .4), transparent 26%, transparent 72%, oklch(100% 0 0 / .06)),
+    linear-gradient(180deg, oklch(100% 0 0 / var(--glass-top)), oklch(100% 0 0 / var(--glass-bot)));
+  backdrop-filter: blur(var(--blur)) saturate(160%);
+  -webkit-backdrop-filter: blur(var(--blur)) saturate(160%);
+  border: 1px solid oklch(100% 0 0 / var(--glass-border));
+  box-shadow: var(--glass-shadow);
+  border-radius: var(--radius);
+}
+
+.glass-strong{
+  background:
+    linear-gradient(125deg, oklch(100% 0 0 / .48), transparent 26%, transparent 72%, oklch(100% 0 0 / .08)),
+    linear-gradient(180deg, oklch(100% 0 0 / calc(var(--glass-top) + .1)), oklch(100% 0 0 / calc(var(--glass-bot) + .12)));
+  backdrop-filter: blur(calc(var(--blur) + 6px)) saturate(170%);
+  -webkit-backdrop-filter: blur(calc(var(--blur) + 6px)) saturate(170%);
+  border: 1px solid oklch(100% 0 0 / min(1, calc(var(--glass-border) + .12)));
+  box-shadow: var(--glass-shadow);
+  border-radius: var(--radius);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))){
+  .glass, .glass-strong{ background: oklch(99% .004 var(--hue)); }
+}
+
+/* Boutons pilule (verre) réutilisables */
+.btn{
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  border: .5px solid oklch(100% 0 0 / var(--glass-border));
+  background:
+    linear-gradient(125deg, oklch(100% 0 0 / .55), transparent 40%),
+    linear-gradient(180deg, oklch(100% 0 0 / .82), oklch(100% 0 0 / .58));
+  backdrop-filter: blur(calc(var(--blur) * .6));
+  -webkit-backdrop-filter: blur(calc(var(--blur) * .6));
+  font: inherit;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: 0 .5px 0 rgba(255,255,255,.8) inset, 0 6px 16px rgba(20,30,60,.08);
+  transition: transform .15s ease, filter .15s ease;
+}
+.btn:hover{ filter: brightness(1.03); }
+.btn:active{ transform: scale(.97); }
+
+.btn-primary{
+  border: none;
+  color: #fff;
+  background:
+    linear-gradient(125deg, oklch(100% 0 0 / .4), transparent 45%),
+    linear-gradient(160deg, oklch(calc(var(--l-accent) + 8%) var(--c-accent) var(--hue)), oklch(var(--l-dark) var(--c-dark) var(--hue)));
+  box-shadow: 0 .5px 0 rgba(255,255,255,.45) inset, 0 10px 22px oklch(var(--l-dark) var(--c-dark) var(--hue) / .38);
+}
+
+.pill{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 650;
+  border: .5px solid oklch(100% 0 0 / .5);
+  letter-spacing: -.01em;
+}
+.pill-accent{ color: var(--accent-dark); background: var(--accent-pale); }
+.pill-ok{ color: var(--ok); background: var(--ok-pale); }
+.pill-warn{ color: var(--warn); background: var(--warn-pale); }
 
 /* --- Utilitaires accessibilité ------------------------------------------ */
 

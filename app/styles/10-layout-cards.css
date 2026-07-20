@@ -1,10 +1,10 @@
 /* ============================================================================
-   10-layout-cards.css — Layout commun + "cartes"
+   10-layout-cards.css — Layout commun + "cartes" (verre)
    ----------------------------------------------------------------------------
    Contient uniquement :
    - largeur max + centrage
    - padding externe commun
-   - styles "carte" (background, radius, shadow)
+   - styles "carte" (verre translucide, cf. .glass dans 00-vars-base.css)
    ========================================================================== */
 
 /* Conteneurs principaux : même largeur et mêmes marges */
@@ -28,22 +28,27 @@ header .intro{
 header{
   margin: 18px auto;
   padding: 18px 16px;
-  background: var(--card);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  color: #111;
+  color: var(--ink);
 }
 
-/* "Cartes" standard */
+/* "Cartes" standard — verre translucide */
 section,
 main,
 footer{
   margin: 14px auto;
-  padding: 18px 16px;
-  background: var(--card);
+  padding: 20px 22px;
+  color: var(--ink);
+}
+
+section, main, footer, header{
+  background:
+    linear-gradient(125deg, oklch(100% 0 0 / .4), transparent 26%, transparent 72%, oklch(100% 0 0 / .06)),
+    linear-gradient(180deg, oklch(100% 0 0 / var(--glass-top)), oklch(100% 0 0 / var(--glass-bot)));
+  backdrop-filter: blur(var(--blur)) saturate(160%);
+  -webkit-backdrop-filter: blur(var(--blur)) saturate(160%);
+  border: 1px solid oklch(100% 0 0 / var(--glass-border));
+  box-shadow: var(--glass-shadow);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  color: #111;
 }
 
 /* Padding interne commun (contenu des cartes)
@@ -51,8 +56,8 @@ footer{
    - évite de répéter des paddings par section
 */
 :where(header, section, main, footer) > *{
-  padding-left: 18px;
-  padding-right: 18px;
+  padding-left: 2px;
+  padding-right: 2px;
 }
 
 /* Exceptions : éléments pleine largeur */
@@ -64,11 +69,15 @@ footer{
 footer{
   padding-bottom: 28px;
 }
+
 /* --- Sections repliables (tuto / explication) ----------------------------- */
 
 details.folded-section > summary{
   cursor: pointer;
   list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 details.folded-section > summary::-webkit-details-marker{
@@ -80,13 +89,15 @@ details.folded-section > summary h2{
   margin: 0;
 }
 
-details.folded-section > summary::before{
-  content: "▸ ";
-  color: var(--accent);
+details.folded-section > summary::after{
+  content: "▾";
+  color: var(--muted);
+  transition: transform .2s ease;
+  font-size: 13px;
 }
 
-details[open].folded-section > summary::before{
-  content: "▾ ";
+details[open].folded-section > summary::after{
+  transform: rotate(180deg);
 }
 
 details.folded-section > summary + *{
@@ -98,16 +109,13 @@ details.folded-section > summary + *{
 .restore-banner{
   max-width: var(--maxw);
   margin: 14px auto;
-  padding: 14px 18px;
+  padding: 16px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
   flex-wrap: wrap;
-  border: 1px dashed var(--accent);
-  background: var(--accent-pale);
-  color: var(--accent-dark);
-  border-radius: 14px;
+  color: var(--ink);
   font-weight: 600;
 }
 
@@ -119,22 +127,29 @@ details.folded-section > summary + *{
 
 .restore-banner__btn{
   border: none;
-  background: var(--accent);
   color: #fff;
+  background:
+    linear-gradient(125deg, oklch(100% 0 0 / .4), transparent 45%),
+    linear-gradient(160deg, oklch(calc(var(--l-accent) + 8%) var(--c-accent) var(--hue)), oklch(var(--l-dark) var(--c-dark) var(--hue)));
+  box-shadow: 0 .5px 0 rgba(255,255,255,.45) inset, 0 10px 22px oklch(var(--l-dark) var(--c-dark) var(--hue) / .38);
   border-radius: 999px;
-  padding: 8px 16px;
+  padding: 9px 18px;
   font: inherit;
   font-weight: 700;
   cursor: pointer;
 }
 
-.restore-banner__btn:hover{ background: var(--accent-dark); }
-
 .restore-banner__close{
-  border: none;
-  background: none;
-  color: var(--accent-dark);
-  font-size: 15px;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: .5px solid oklch(0% 0 0 / .1);
+  background: oklch(100% 0 0 / .6);
+  color: var(--muted);
+  font-size: 13px;
   cursor: pointer;
-  padding: 4px 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
 }

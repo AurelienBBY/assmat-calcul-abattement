@@ -90,7 +90,10 @@ R.renderPeriodSelector = function renderPeriodSelector(container, state, onPerio
     yearTabs.appendChild(btn);
   }
 
-  // Month tabs (intercalaires)
+  // Month tabs (intercalaires), scrollables avec dégradés de bord
+  const tabsWrap = document.createElement("div");
+  tabsWrap.className = "mtabs-wrap";
+
   const tabs = document.createElement("div");
   tabs.className = "month-tabs";
 
@@ -126,25 +129,30 @@ R.renderPeriodSelector = function renderPeriodSelector(container, state, onPerio
   recapBtn.addEventListener("click", () => emit(12));
   tabs.appendChild(recapBtn);
 
-  // Onglet MES INFOS (profil : identité, enfants, semaines types)
-  const infosBtn = document.createElement("button");
-  infosBtn.type = "button";
-  infosBtn.className = "month-tab month-tab--recap" + (effectiveMonth === 13 ? " is-active" : "");
-  infosBtn.textContent = "MES INFOS";
-  infosBtn.setAttribute("aria-label", "Mes informations");
-
-  infosBtn.addEventListener("click", () => emit(13));
-  tabs.appendChild(infosBtn);
-
   // Assemble elements
   yearWrap.appendChild(yearLabel);
   yearWrap.appendChild(yearTabs);
   top.appendChild(yearWrap);
 
+  tabsWrap.appendChild(tabs);
   wrap.appendChild(top);
-  wrap.appendChild(tabs);
+  wrap.appendChild(tabsWrap);
 
   container.appendChild(wrap);
+
+  // Dégradés de bord : visibles seulement quand il y a du contenu masqué
+  // (mois affichés en pastilles scrollables sur écrans étroits).
+  const updateEdges = () => {
+    tabsWrap.classList.toggle("at-start", tabs.scrollLeft < 4);
+    tabsWrap.classList.toggle("at-end", tabs.scrollLeft + tabs.clientWidth > tabs.scrollWidth - 4);
+  };
+  tabs.addEventListener("scroll", updateEdges);
+  updateEdges();
+  // L'onglet actif peut être hors champ (ex: retour depuis RÉCAP) : le centrer.
+  const activeTab = tabs.querySelector(".month-tab.is-active");
+  if (activeTab && typeof activeTab.scrollIntoView === "function") {
+    activeTab.scrollIntoView({ block: "nearest", inline: "center" });
+  }
 };
 
 })();

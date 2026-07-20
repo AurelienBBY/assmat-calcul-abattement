@@ -298,9 +298,9 @@
         const forfaitJour = computeForfaitJour();
         const month = C.computeMonthTotal(state.data.days, forfaitJour);
 
-        // Rafraîchit l'affichage de chaque jour (l'enfant 1 est toujours visible).
-        const rows = Array.from(table.querySelectorAll('tbody tr[data-date][data-child="1"]'));
-        rows.forEach((tr) => updateDayRow(tr.getAttribute("data-date")));
+        // Rafraîchit l'affichage de chaque jour (une carte .day-row par jour).
+        const rows = Array.from(table.querySelectorAll(".day-row[data-date]"));
+        rows.forEach((row) => updateDayRow(row.getAttribute("data-date")));
 
         // Totaux par semaine, depuis le détail par jour du calcul.
         const weekSpans = Array.from(table.querySelectorAll("[data-week-total][data-week-start][data-week-end]"));
@@ -352,6 +352,13 @@
     function onPeriodChange(next) {
         state.year = Number(next.year);
         state.monthIndex = Number(next.monthIndex);
+        loadAndRenderMonth(true);
+    }
+
+    // Icône « Mes informations » de la toolbar (a quitté la barre des mois :
+    // ce n'est pas une période temporelle).
+    function onOpenInfos() {
+        state.monthIndex = 13;
         loadAndRenderMonth(true);
     }
 
@@ -1005,7 +1012,7 @@
 
             // 5) Actions : branchées sur la toolbar sticky (export / import / print)
             if (typeof R.renderActions === "function") {
-                R.renderActions(null, { year: state.year, monthIndex: state.monthIndex }, onPrint, onExport, onImportRequest);
+                R.renderActions(null, { year: state.year, monthIndex: state.monthIndex }, onPrint, onExport, onImportRequest, onOpenInfos);
             }
 
             // 6) Date d’édition
