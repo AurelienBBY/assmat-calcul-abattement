@@ -48,6 +48,15 @@
 
 *{ box-sizing: border-box; }
 
+/* Garde-fou global : l'attribut natif `hidden` (piloté par JS via
+   el.hidden = true/false) doit toujours gagner, même quand un composant
+   fixe son propre `display` (flex/grid/block) en CSS — sans cette règle,
+   un élément type .data-menu{display:flex} reste visible en permanence
+   dès qu'il porte la classe, quel que soit l'état de `hidden` (piège
+   classique : une règle d'auteur sur `display` bat la règle UA par
+   défaut `[hidden]{display:none}`, à spécificité égale). */
+[hidden]{ display: none !important; }
+
 html, body{
   margin: 0;
   padding: 0;
