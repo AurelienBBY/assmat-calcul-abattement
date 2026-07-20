@@ -36,8 +36,23 @@
 .year-declare__text{ margin: 0; font-size: 14.5px; line-height: 1.5; max-width: 62ch; }
 .year-declare__amount{ font-size: 19px; color: var(--accent-dark); }
 
+.year-declare__checkbox{
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-dark);
+  white-space: nowrap;
+  cursor: pointer;
+  margin-left: auto;
+}
+.year-declare__checkbox input{ accent-color: var(--ok); }
+
 @media (max-width: 700px){
   .year-declare{ flex-direction: column; align-items: flex-start; }
+  .year-declare__checkbox{ margin-left: 0; }
 }
 
 /* --- Résultats annuels : héros (réutilise .summary-result du mois) --------- */

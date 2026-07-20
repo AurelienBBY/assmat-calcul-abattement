@@ -70,8 +70,10 @@
    * @param {Object} recap.totals
    * @param {Array}  recap.months
    * @param {(monthIndex:number)=>void} [onSelectMonth] Callback when clicking a month row.
+   * @param {boolean} [declared] Cette année est-elle marquée comme déclarée ?
+   * @param {(checked:boolean)=>void} [onDeclaredChange] Callback quand on coche/décoche.
    */
-  R.renderYearRecap = function renderYearRecap(container, recap, onSelectMonth) {
+  R.renderYearRecap = function renderYearRecap(container, recap, onSelectMonth, declared, onDeclaredChange) {
     if (!container) return;
 
     const year = recap && Number(recap.year);
@@ -91,6 +93,10 @@
       `<strong class="year-declare__amount">${totalsImposable}</strong> dans la case ` +
       `<strong>« Traitements et salaires » (1AJ)</strong> de votre déclaration, ` +
       `<strong>à la place du montant prérempli</strong> — celui-ci ne tient pas compte de l'abattement.</p>` +
+      `    <label class="year-declare__checkbox">` +
+      `      <input type="checkbox" data-year-declared-checkbox ${declared ? "checked" : ""} />` +
+      `      Cette année est déclarée` +
+      `    </label>` +
       `  </div>` +
       `  <section class="card year-recap__annual" aria-label="Résultats annuels">` +
       `    <h3 class="card__title">Résultats annuels — ${Number.isFinite(year) ? year : ""}</h3>` +
@@ -152,6 +158,13 @@
       `    </div>` +
       `  </section>` +
       `</div>`;
+
+    const declaredCheckbox = container.querySelector("[data-year-declared-checkbox]");
+    if (declaredCheckbox) {
+      declaredCheckbox.addEventListener("change", () => {
+        onDeclaredChange && onDeclaredChange(declaredCheckbox.checked);
+      });
+    }
 
     const tbody = container.querySelector("tbody[data-year-months]");
     if (!tbody) return;

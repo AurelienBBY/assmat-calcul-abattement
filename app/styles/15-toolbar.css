@@ -118,6 +118,44 @@
   flex-wrap: wrap;
 }
 
+/* --- Onglets piliers : Accueil / Mes informations / Déclaration ----------- */
+
+.pillar-tabs{
+  display: inline-flex;
+  gap: 4px;
+  background: oklch(0% 0 0 / .04);
+  border-radius: 999px;
+  padding: 4px;
+}
+
+.pillar-tab{
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  padding: 7px 15px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 13.5px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.pillar-tab:hover{ color: var(--ink); }
+
+.pillar-tab.on{
+  background: var(--accent);
+  color: #fff;
+}
+
+.app-toolbar--compact .pillar-tab{
+  padding: 5px 11px;
+  font-size: 12px;
+}
+
+@media (max-width: 640px){
+  .pillar-tab{ padding: 6px 11px; font-size: 12px; }
+}
+
 /* Contexte (ex: “• Février 2028”) */
 .app-toolbar__context {
   font-size: 14px;

@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="app/styles/20-period.css" />
   <link rel="stylesheet" href="app/styles/30-year-params.css" />
   <link rel="stylesheet" href="app/styles/40-table.css" />
+  <link rel="stylesheet" href="app/styles/45-accueil.css" />
 
   <link rel="stylesheet" href="app/styles/60-tuto.css" />
   <link rel="stylesheet" href="app/styles/70-modal.css" />
@@ -48,6 +49,11 @@
     <div class="app-toolbar__left">
       <div class="app-toolbar__topline">
         <div class="app-toolbar__title">Abattement Ass-Mat</div>
+        <div class="pillar-tabs" role="tablist" aria-label="Sections">
+          <button type="button" class="pillar-tab" role="tab" data-pillar="accueil">Accueil</button>
+          <button type="button" class="pillar-tab" role="tab" data-pillar="infos">Mes informations</button>
+          <button type="button" class="pillar-tab" role="tab" data-pillar="declaration">Déclaration</button>
+        </div>
         <div class="app-toolbar__context" data-toolbar-context aria-live="polite"></div>
         <span class="pill pill-accent toolbar-total" data-toolbar-total hidden></span>
       </div>
@@ -83,10 +89,6 @@
 
       <input id="abmat-action-file" type="file" accept="application/json" hidden />
 
-      <button type="button" class="icon-btn" data-toolbar-action="infos" id="abmat-action-infos" aria-label="Mes informations" title="Mes informations — enfants, identité, semaines types">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      </button>
-
       <button type="button" class="icon-btn icon-btn--primary" data-toolbar-action="print" title="Imprimer" aria-label="Imprimer" id="abmat-action-print">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
       </button>
@@ -118,51 +120,68 @@
   </div>
 
   <!-- =========================================================
-     TUTO (APERÇU + MODALE DÉTAILLÉE)
-     ========================================================= -->
-  <section id="tuto-section" class="no-print">
-    <details class="folded-section">
-    <summary><h2>Comment fonctionne cet outil ?</h2></summary>
+       ACCUEIL — bienvenue + raccourcis (JS) + tuto + règles (statiques)
+       Visible uniquement quand le pilier actif est "accueil" (app.js).
+       ========================================================= -->
+  <div id="accueil-section" class="no-print">
 
-    <p class="hint">
-      Cet outil vous aide à calculer l’<strong>abattement fiscal des assistantes maternelles</strong> pour préparer votre déclaration.
-    </p>
+    <section id="accueil-hero-section">
+      <div id="accueil-quick">
+        <!-- Généré dynamiquement par app.js (renderAccueil) -->
+      </div>
+    </section>
 
-    <p>
-      Le principe est simple : vous remplissez vos <strong>jours de garde mois par mois</strong>, et l’outil calcule automatiquement
-      l’abattement correspondant (par jour et par enfant), puis affiche un récapitulatif.
-    </p>
+    <section id="tuto-section">
+      <h2>Comment fonctionne cet outil ?</h2>
 
-    <ol class="tuto-steps">
-      <li><strong>Choisissez la période</strong> à compléter (année et mois).</li>
-      <li><strong>Renseignez vos jours</strong> : heures de présence, nombre d’enfants, indemnités si nécessaire.</li>
-      <li><strong>Vérifiez le récapitulatif</strong> (abattement total + montant à déclarer).</li>
-      <li><strong>Sauvegardez</strong> ou <strong>imprimez</strong> pour archiver le mois.</li>
-    </ol>
+      <p class="hint">
+        Cet outil vous aide à calculer l’<strong>abattement fiscal des assistantes maternelles</strong> pour préparer votre déclaration.
+      </p>
 
-    <p class="hint">
-      💡 Astuce : exportez le mois une fois terminé, puis importez-le plus tard si vous devez le modifier ou le vérifier.
-    </p>
+      <p>
+        Le principe est simple : vous remplissez vos <strong>jours de garde mois par mois</strong>, et l’outil calcule automatiquement
+        l’abattement correspondant (par jour et par enfant), puis affiche un récapitulatif.
+      </p>
 
-    <div class="tuto-actions">
-      <button type="button" class="btn-secondary" data-open-tuto>
-        Voir le tutoriel détaillé
-      </button>
-    </div>
-    </details>
-  </section>
+      <ol class="tuto-steps">
+        <li><strong>Choisissez la période</strong> à compléter (année et mois).</li>
+        <li><strong>Renseignez vos jours</strong> : heures de présence, nombre d’enfants, indemnités si nécessaire.</li>
+        <li><strong>Vérifiez le récapitulatif</strong> (abattement total + montant à déclarer).</li>
+        <li><strong>Sauvegardez</strong> ou <strong>imprimez</strong> pour archiver le mois.</li>
+      </ol>
+
+      <p class="hint">
+        💡 Astuce : exportez le mois une fois terminé, puis importez-le plus tard si vous devez le modifier ou le vérifier.
+      </p>
+
+      <div class="tuto-actions">
+        <button type="button" class="btn-secondary" data-open-tuto>
+          Voir le tutoriel détaillé
+        </button>
+      </div>
+    </section>
+
+    <section id="explain-section">
+      <h2>Explication — règles générales</h2>
+
+      <div id="explain">
+        <!-- Généré dynamiquement par app.js (renderExplain) -->
+      </div>
+    </section>
+
+  </div><!-- /#accueil-section -->
 
   <!-- =========================================================
-       EXPLICATION (NON INTERACTIF)
+       MES INFORMATIONS — identité, enfants, semaines types
+       Visible uniquement quand le pilier actif est "infos" (app.js).
        ========================================================= -->
-  <section id="explain-section" class="no-print">
-    <details class="folded-section">
-    <summary><h2>Explication — règles générales</h2></summary>
+  <section id="infos-section" class="no-print">
+    <h2>Mes informations</h2>
+    <p class="hint">Vos informations apparaissent dans la saisie et en en-tête des documents imprimés.</p>
 
-    <div id="explain">
-      <!-- Généré dynamiquement par app.js (renderExplain) -->
+    <div id="infos-content">
+      <!-- Généré dynamiquement par app.js (renderInfos) -->
     </div>
-    </details>
   </section>
 
   <!-- =========================================================
@@ -312,6 +331,7 @@
   <!-- Renderers (ordre important) -->
   <script src="app/lib/render/index.js"></script>
   <script src="app/lib/render/explain.js"></script>
+  <script src="app/lib/render/accueil.js"></script>
   <script src="app/lib/render/period.js"></script>
   <script src="app/lib/render/rules.js"></script>
   <script src="app/lib/render/day-rows.js"></script>

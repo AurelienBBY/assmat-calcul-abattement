@@ -77,9 +77,15 @@ R.renderPeriodSelector = function renderPeriodSelector(container, state, onPerio
   yearTabs.setAttribute("role", "group");
   yearTabs.setAttribute("aria-label", "Année");
 
+  // Années marquées « déclarée » (repère manuel posé dans le récap, cf. storage.js)
+  const declaredYears = Array.isArray(state.declaredYears) ? state.declaredYears : [];
+
   const minYear = Math.min(YEAR_MIN, effectiveYear);
   const maxYear = Math.max(currentYear, effectiveYear);
   for (let y = minYear; y <= maxYear; y++) {
+    const yearWrapItem = document.createElement("span");
+    yearWrapItem.className = "year-tab-wrap";
+
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "year-tab" + (y === effectiveYear ? " is-active" : "");
@@ -87,7 +93,18 @@ R.renderPeriodSelector = function renderPeriodSelector(container, state, onPerio
     btn.setAttribute("aria-pressed", y === effectiveYear ? "true" : "false");
     const yy = y;
     btn.addEventListener("click", () => emit(effectiveMonth, yy));
-    yearTabs.appendChild(btn);
+    yearWrapItem.appendChild(btn);
+
+    if (declaredYears.includes(y)) {
+      const badge = document.createElement("span");
+      badge.className = "year-declared-badge";
+      badge.textContent = "✓";
+      badge.setAttribute("aria-label", `Année ${y} déclarée`);
+      badge.title = `Année ${y} déclarée`;
+      yearWrapItem.appendChild(badge);
+    }
+
+    yearTabs.appendChild(yearWrapItem);
   }
 
   // Month tabs (intercalaires), scrollables avec dégradés de bord

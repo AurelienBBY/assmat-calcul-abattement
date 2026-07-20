@@ -21,17 +21,14 @@
   }
 
   /**
-   * Rend le bloc d’explication (écran uniquement) sur les règles générales.
+   * Rend le bloc d’explication (écran uniquement, contenu générique — vit
+   * désormais dans l'écran Accueil, plus dans les vues mensuelles).
    *
    * @param {HTMLElement} container
-   * @param {Object} state {year:number, forfaitJour?:number}
    */
-  R.renderExplain = function renderExplain(container, state) {
+  R.renderExplain = function renderExplain(container) {
     if (!container) return;
     container.innerHTML = "";
-
-    const year = Number.isFinite(Number(state && state.year)) ? Number(state.year) : (new Date()).getFullYear();
-    const forfait = Number.isFinite(Number(state && state.forfaitJour)) ? Number(state.forfaitJour) : 0;
 
     const explain = document.createElement("div");
     explain.className = "calc-explain no-print";

@@ -11,7 +11,7 @@
    - [data-toolbar-action="print"] (1 ou plusieurs boutons "Imprimer")
    - #abmat-action-file  (input[type=file] caché, accept application/json)
    - #abmat-action-data-toggle + #abmat-data-menu (menu Données)
-   - #abmat-action-infos (icône "Mes informations")
+   - .pillar-tab[data-pillar] (3 onglets : accueil / infos / declaration)
 
    Dépendances :
    - window.ABMAT.render (R) — initialisé par render/index.js
@@ -41,7 +41,7 @@
    * NOTE: on ne rend plus de blocs "Données" / "Impression" dans la page.
    * Le param `container` est conservé pour compatibilité, mais n’est plus utilisé.
    */
-  R.renderToolbarActions = function renderToolbarActions(container, state, onPrint, onExport, onImportRequest, onOpenInfos) {
+  R.renderToolbarActions = function renderToolbarActions(container, state, onPrint, onExport, onImportRequest, onSwitchPillar) {
     // Impression : peut exister à plusieurs endroits (icône toolbar toujours
     // présente + CTA dans le héros du résultat, recréé à chaque rendu du
     // mois). Indépendant de la garde ci-dessous : ce bloc s'exécute à chaque
@@ -61,7 +61,7 @@
     const fileInput = document.getElementById("abmat-action-file");
     const btnDataToggle = document.getElementById("abmat-action-data-toggle");
     const dataMenu = document.getElementById("abmat-data-menu");
-    const btnInfos = document.getElementById("abmat-action-infos");
+    const pillarTabs = document.querySelectorAll(".pillar-tab[data-pillar]");
 
     const root = (btnSave || btnLoad || fileInput);
     if (root && root.dataset && root.dataset.abmatBound === "1") {
@@ -127,12 +127,12 @@
       document.addEventListener("click", closeMenu);
     }
 
-    // Bouton « Mes informations » (icône réglages) : bascule sur la vue Infos.
-    if (btnInfos) {
-      btnInfos.addEventListener("click", () => {
-        onOpenInfos && onOpenInfos();
+    // Onglets Accueil / Mes informations / Déclaration : bascule de pilier.
+    pillarTabs.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        onSwitchPillar && onSwitchPillar(btn.getAttribute("data-pillar"));
       });
-    }
+    });
 
     // (Optionnel) expose le nom de fichier attendu via title sur le bouton Charger
     // sans polluer l’UI.
