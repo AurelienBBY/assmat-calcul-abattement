@@ -13,16 +13,37 @@
   --toolbar-sticky-offset: 95px;
 }
 
-/* Conteneur sticky */
-.app-toolbar {
+/* --- Groupe sticky : toolbar + nav (période) fusionnés au scroll --------- */
+
+.topbar-group{
   position: sticky;
   top: 14px;
   z-index: 200;
 
+  max-width: var(--maxw);
+  margin: 14px auto 32px;
+  padding: 0 16px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: gap 250ms ease;
+}
+
+.topbar-group--stuck{ gap: 0; }
+
+/* Neutralise le max-width/margin génériques (10-layout-cards.css) : c'est
+   .topbar-group qui centre désormais l'ensemble — la toolbar et la nav ne
+   sont plus que des enfants pleine largeur du groupe. */
+#app-toolbar, #period-section{
+  max-width: none;
+  margin: 0;
+}
+
+/* Conteneur toolbar (dans le groupe) */
+.app-toolbar {
   min-height: 52px;
   padding: 12px 16px;
-  margin: 14px auto 48px;
-  max-width: var(--maxw);
 
   display: flex;
   flex-wrap: nowrap;
@@ -30,7 +51,23 @@
   justify-content: space-between;
   gap: 12px;
 
-  transition: box-shadow 200ms ease, backdrop-filter 200ms ease, min-height 200ms ease, padding 200ms ease;
+  position: relative;
+  transition: box-shadow 200ms ease, min-height 200ms ease, padding 200ms ease, border-radius 200ms ease;
+}
+
+/* Fusion : la toolbar perd ses coins bas, la nav (juste après) perd ses
+   coins hauts — les deux ne forment plus qu'une seule carte de verre. */
+.topbar-group--stuck .app-toolbar{
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom: none;
+  box-shadow: none;
+}
+.topbar-group--stuck #period-section{
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  border-top: none;
+  margin-top: -1px;
 }
 
 /* État compact : quand on a scrollé sous le hero */

@@ -39,9 +39,12 @@
 <body>
 
   <!-- =========================================================
-       MINI TOOLBAR STICKY (ACTIONS + CONTEXTE)
+       GROUPE STICKY : TOOLBAR (ACTIONS + CONTEXTE) + NAV (PÉRIODE)
+       Les deux se soudent visuellement (une seule carte verre) une fois
+       qu'on a scrollé sous le hero — cf. #topbar-group--stuck (app.js).
        ========================================================= -->
-  <header id="app-toolbar" class="app-toolbar app-toolbar--context-hidden no-print" role="banner">
+  <div id="topbar-group" class="topbar-group no-print">
+  <header id="app-toolbar" class="app-toolbar app-toolbar--context-hidden" role="banner">
     <div class="app-toolbar__left">
       <div class="app-toolbar__topline">
         <div class="app-toolbar__title">Abattement Ass-Mat</div>
@@ -89,6 +92,17 @@
       </button>
     </div>
   </header>
+
+  <!-- =========================================================
+       SÉLECTION DE LA PÉRIODE (MOIS / ANNÉE)
+       ========================================================= -->
+  <section id="period-section">
+    <div id="period-selector">
+      <!-- Généré dynamiquement par app.js -->
+    </div>
+  </section>
+  </div><!-- /#topbar-group -->
+  <div id="period-sentinel" aria-hidden="true"></div>
 
   <!-- Restauration : proposé au démarrage quand l'appareil n'a aucune donnée -->
   <div id="restore-banner" class="restore-banner glass-strong no-print" hidden>
@@ -152,78 +166,79 @@
   </section>
 
   <!-- =========================================================
-       SÉLECTION DE LA PÉRIODE (MOIS / ANNÉE)
+       CONTENU : grille 2 colonnes sur ordinateur (résultat collant à
+       droite pendant qu'on saisit) ; 1 colonne sur mobile (cf. .fab).
+       En mode RÉCAP/INFOS, app.js bascule sur #content-grid--single
+       (le tableau/la fiche de paie sont masqués, une seule colonne
+       suffit pour les résultats/infos).
        ========================================================= -->
-  <section id="period-section">
-    <h2>Période de calcul</h2>
-    <p class="hint">
-    Choisissez l’année et le mois à afficher.
-    </p>
+  <div id="content-grid" class="content-grid">
+    <div class="content-grid__main">
 
-    <!--
-      Sélecteurs du mois et de l’année.
-      Le JavaScript se chargera de générer automatiquement
-      les jours ouvrés du mois sélectionné.
-    -->
-    <div id="period-selector">
-      <!-- Généré dynamiquement par app.js -->
+      <!--
+          Cette section affiche :
+          - le SMIC horaire brut retenu pour l’année
+          - le coefficient légal (3 × SMIC)
+          - le forfait journalier par enfant
+          Elle est principalement informative mais peut être modifiable
+          si le SMIC de l’année n’est pas encore connu.
+        -->
+      <section id="year-params-section">
+        <h2>Paramètres de calcul — déclaration avec abattement</h2>
+
+        <div id="year-params">
+          <!-- Généré dynamiquement par app.js -->
+        </div>
+      </section>
+
+      <!-- =========================================================
+           TABLEAU DES JOURS DU MOIS
+           ========================================================= -->
+      <section id="month-table-section">
+        <h2>Temps de présence des enfants</h2>
+        <div id="month-table"></div>
+      </section>
+
+      <!-- =========================================================
+           DÉCLARATION DU MOIS (FICHE DE PAIE)
+           ========================================================= -->
+      <section id="payslip-section">
+        <h2>Déclaration du mois</h2>
+
+        <p class="hint">
+          Renseignez ici les montants de votre fiche de paie (net imposable et IRF).
+        </p>
+
+        <div id="payslip-inputs">
+          <!-- Généré dynamiquement par app.js -->
+        </div>
+      </section>
+
     </div>
-  </section>
 
-  <!--
-      Cette section affiche :
-      - le SMIC horaire brut retenu pour l’année
-      - le coefficient légal (3 × SMIC)
-      - le forfait journalier par enfant
-      Elle est principalement informative mais peut être modifiable
-      si le SMIC de l’année n’est pas encore connu.
-    -->
-  <section id="year-params-section">
-    <h2>Paramètres de calcul — déclaration avec abattement</h2>
+    <!-- =========================================================
+         RÉSULTATS DU MOIS (CALCULÉS) — colonne collante sur ordinateur
+         ========================================================= -->
+    <div class="content-grid__aside">
+      <section id="month-results-section">
+        <h2>Revenus perçus en </h2>
 
-    <div id="year-params">
-      <!-- Généré dynamiquement par app.js -->
+        <p class="hint">
+          Résumé des montants calculés (abattement total et montant à déclarer).
+        </p>
+
+        <div id="month-results">
+          <!-- Généré dynamiquement par app.js -->
+        </div>
+      </section>
     </div>
-  </section>
-  <div id="period-sentinel" aria-hidden="true"></div>
+  </div><!-- /#content-grid -->
 
-  <!-- =========================================================
-       TABLEAU DES JOURS DU MOIS
-       ========================================================= -->
-  <section id="month-table-section">
-    <h2>Temps de présence des enfants</h2>
-    <div id="month-table"></div>
-  </section>
-
-  <!-- =========================================================
-       DÉCLARATION DU MOIS (FICHE DE PAIE)
-       ========================================================= -->
-  <section id="payslip-section">
-    <h2>Déclaration du mois</h2>
-
-    <p class="hint">
-      Renseignez ici les montants de votre fiche de paie (net imposable et IRF).
-    </p>
-
-    <div id="payslip-inputs">
-      <!-- Généré dynamiquement par app.js -->
-    </div>
-  </section>
-
-  <!-- =========================================================
-       RÉSULTATS DU MOIS (CALCULÉS)
-       ========================================================= -->
-  <section id="month-results-section">
-    <h2>Revenus perçus en </h2>
-
-    <p class="hint">
-      Résumé des montants calculés (abattement total et montant à déclarer).
-    </p>
-
-    <div id="month-results">
-      <!-- Généré dynamiquement par app.js -->
-    </div>
-  </section>
+  <!-- Bouton flottant Imprimer (mobile uniquement — la colonne résultat
+       n'est plus collante sur petit écran, cf. .fab et son media query) -->
+  <button type="button" class="fab" data-toolbar-action="print" aria-label="Imprimer">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+  </button>
 
   <!-- =========================================================
        PIED DE PAGE / MENTIONS

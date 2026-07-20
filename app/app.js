@@ -768,20 +768,31 @@
         else bar.classList.add("app-toolbar--context-hidden");
     }
 
-    // --- Toolbar sticky : mode compact quand on quitte le hero ---------------
+    // --- Toolbar + nav : fusion visuelle une fois qu'on a quitté le hero -----
+    //
+    // #period-section (la nav mois/année) vit maintenant DANS #topbar-group,
+    // sticky avec la toolbar : un IntersectionObserver posé directement sur un
+    // élément sticky resterait "intersecting" en permanence une fois collé
+    // (il reste visible à l'écran), donc on observe plutôt #period-sentinel
+    // (placé juste après le groupe, hors flux sticky) — un seul signal pilote
+    // à la fois le mode compact, la fusion toolbar/nav et le texte de contexte.
 
     function attachToolbarShrinkObserver() {
         const bar = document.getElementById("app-toolbar");
+        const group = document.getElementById("topbar-group");
         const sentinel = document.getElementById("period-sentinel");
-        if (!bar || !sentinel || typeof IntersectionObserver !== "function") return;
+        if (!bar || !group || !sentinel || typeof IntersectionObserver !== "function") return;
 
         const obs = new IntersectionObserver(
             (entries) => {
                 const e = entries && entries[0] ? entries[0] : null;
                 if (!e) return;
-                // Sentinel visible => on est encore sur le hero => toolbar "large"
-                // Sentinel non visible => on a scrollé => toolbar "compact"
-                bar.classList.toggle("app-toolbar--compact", !e.isIntersecting);
+                // Sentinel visible => on est encore sur le hero => groupe "large"
+                // Sentinel non visible => on a scrollé => groupe "collé/fusionné"
+                const stuck = !e.isIntersecting;
+                bar.classList.toggle("app-toolbar--compact", stuck);
+                group.classList.toggle("topbar-group--stuck", stuck);
+                setToolbarContextVisible(stuck);
             },
             { root: null, threshold: 0 }
         );
@@ -789,47 +800,10 @@
         obs.observe(sentinel);
     }
 
-
     function initToolbarSticky() {
-        const bar = document.getElementById("app-toolbar");
-        if (!bar) return;
-
-        // 2) Contexte (mois/année) : visible uniquement si on a scrollé sous la section Période
-        // IMPORTANT : #period-section peut être rendu après (via renderPeriodSelector).
-        // => On démarre toujours avec le contexte CACHÉ pour éviter tout flash au chargement.
+        // Contexte (mois/année) caché par défaut : pas de flash au chargement,
+        // attachToolbarShrinkObserver() prend le relais dès le premier scroll.
         setToolbarContextVisible(false);
-
-        function attachPeriodObserver() {
-            const periodSection = document.getElementById("period-section");
-            if (!periodSection || typeof IntersectionObserver !== "function") {
-                // Fallback : on reste caché (zéro flash)
-                return false;
-            }
-
-            const obs = new IntersectionObserver(
-                (entries) => {
-                    const e = entries && entries[0] ? entries[0] : null;
-                    if (!e) return;
-                    // Visible => on cache (redondant)
-                    // Pas visible => on affiche seulement si on a scrollé APRES la période (donc si elle est au-dessus)
-                    if (e.isIntersecting) {
-                        setToolbarContextVisible(false);
-                    } else {
-                        const scrolledPast = e.boundingClientRect.top < 0;
-                        setToolbarContextVisible(scrolledPast);
-                    }
-                },
-                { root: null, threshold: 0.01 }
-            );
-
-            obs.observe(periodSection);
-            return true;
-        }
-
-        // On tente tout de suite, puis on retente juste après le premier render si besoin.
-        if (!attachPeriodObserver()) {
-            setTimeout(attachPeriodObserver, 0);
-        }
     }
 
     // --- Rendu global ---------------------------------------------------------
@@ -895,6 +869,12 @@
         setElVisible(tableRoot, !overviewMode);
         // Les paramètres de l'année n'ont pas leur place sur la fiche Infos.
         setElVisible(document.getElementById("year-params-section"), !infosMode);
+
+        // Grille 2 colonnes (résultat collant) seulement en vue mensuelle :
+        // en RÉCAP/INFOS le tableau et la fiche de paie sont masqués, une
+        // seule colonne pleine largeur est plus lisible pour leur contenu.
+        const contentGrid = document.getElementById("content-grid");
+        if (contentGrid) contentGrid.classList.toggle("content-grid--single", overviewMode);
 
     if (infosMode) {
         if (resultsSection) {

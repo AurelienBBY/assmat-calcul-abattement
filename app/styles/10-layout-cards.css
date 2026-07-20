@@ -153,3 +153,69 @@ details.folded-section > summary + *{
   justify-content: center;
   padding: 0;
 }
+
+/* --- Grille de contenu : résultat collant sur ordinateur ------------------- */
+
+.content-grid{
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 16px;
+
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+/* Vue RÉCAP/INFOS : une seule colonne pleine largeur (cf. app.js renderAll).
+   Les sections individuelles restent gérées par setElVisible (ex : les
+   paramètres de l'année restent visibles en RÉCAP, masqués en Infos). */
+.content-grid.content-grid--single{
+  grid-template-columns: 1fr;
+}
+.content-grid.content-grid--single .content-grid__aside{
+  position: static;
+  top: auto;
+}
+
+.content-grid__main > section,
+.content-grid__aside > section{
+  max-width: none;
+  margin: 0 auto 14px;
+}
+.content-grid__main > section:last-child{ margin-bottom: 0; }
+
+.content-grid__aside{
+  position: sticky;
+  top: calc(14px + 168px); /* sous le groupe toolbar+nav (hauteur approx.) */
+}
+
+@media (max-width: 860px){
+  .content-grid{ grid-template-columns: 1fr; }
+  .content-grid__aside{ position: static; top: auto; }
+}
+
+/* --- Bouton flottant Imprimer (mobile) ------------------------------------- */
+
+.fab{
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  border: none;
+  background: linear-gradient(160deg, oklch(calc(var(--l-accent) + 6%) var(--c-accent) var(--hue)), oklch(var(--l-dark) var(--c-dark) var(--hue)));
+  box-shadow: 0 12px 26px oklch(var(--l-dark) var(--c-dark) var(--hue) / .4);
+  z-index: 150;
+  cursor: pointer;
+}
+.fab svg{ width: 24px; height: 24px; }
+
+@media (max-width: 860px){
+  .fab{ display: flex; }
+}
