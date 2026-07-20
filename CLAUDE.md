@@ -43,6 +43,18 @@ window.ABMAT.render      app/lib/render/*.js        rendu DOM + événements (1 
 
 CSS découpé par zone dans `app/styles/` (préfixes numériques = ordre de chargement). Le tutoriel est une page séparée (`app/modals/tuto.html`) chargée en iframe.
 
+### Design "Liquid Glass" (2026-07-19)
+
+Redesign visuel complet à partir d'un handoff externe (`handoff_liquid_glass/`, conservé à la racine comme référence — maquettes HTML + README détaillé). Teinte **Prune** (`--hue: 322`) et intensité de verre **Médium** fixées en dur dans `00-vars-base.css` (pas de sélecteur runtime en production). Les noms de variables historiques (`--accent`, `--card`, `--muted`…) sont conservés : tout le CSS les consommant récupère le nouveau rendu sans modification. Deux classes de verre réutilisables : `.glass` (cartes) et `.glass-strong` (toolbar, popovers, héros) — voir `00-vars-base.css`.
+
+**Invariant à respecter pour toute nouvelle UI** : ne jamais coder une couleur en dur pour une carte/bouton — utiliser `.glass`/`.glass-strong`/`.btn`/`.btn-primary`/`.pill` ou les tokens `var(--accent)`, `var(--ink)`, `var(--muted)`, etc.
+
+**Toolbar consolidée** : Sauvegarder + Importer fusionnés dans un bouton « Données » (`#abmat-action-data-toggle` → menu `#abmat-data-menu`, contient le statut d'enregistrement et la sauvegarde auto) ; icône « Mes informations » (`#abmat-action-infos`, a quitté la barre des mois — ce n'est pas une période) ; icône Imprimer. Le bouton Imprimer peut exister à **plusieurs endroits** (icône toolbar + CTA dans le héros du résultat) : `toolbar-actions.js` lie tous les éléments `[data-toolbar-action="print"]` via `querySelectorAll` à chaque appel (indépendant de la garde `abmatBound` qui ne concerne que Sauvegarder/Importer/le fichier caché) — **ne jamais revenir à un `getElementById` unique pour Imprimer**.
+
+**Tableau mensuel en cartes** : `day-rows.js`/`month-table.js` génèrent des `<div>` (`.day-row`, `.kids`, `.kidline`…) au lieu de `<tr>/<td>`. Le contrat `data-*` (data-date, data-child, data-slot-index, data-time, data-absent, data-motif, data-action, data-hours, data-abatt, data-day-total, data-week-total) est **strictement identique** à l'ancien tableau — c'est ce qui a permis la réécriture sans toucher aux handlers d'`app.js`. La racine du conteneur garde la classe `abmat-table` (historique, sert aux 2 sélecteurs `document.querySelector(".abmat-table")` dans `app.js` — ne pas la renommer sans mettre à jour ces 2 endroits + l'itération `.day-row[data-date]`). Le tableau **annuel** (`year-recap.js`) est un vrai `<table>` qui partage aussi la classe `abmat-table` par coïncidence de nom historique : son habillage complet vit désormais dans `85-year-recap.css` sous `.year-recap__table`, indépendamment de `.abmat-table`.
+
+`90-print.css` et les gabarits `print-*.js` : **non touchés** par le redesign (décision explicite du handoff — le liquid glass ne s'applique qu'à l'écran, jamais à l'impression).
+
 **Impression** : on n'imprime jamais l'écran. `app.js` (`buildPrintDoc`, déclenché par le bouton Imprimer et par `beforeprint`) génère un document dans `#print-doc` — relevé mensuel (`compute/month-print.js` → `render/print-month.js`) ou récap annuel (`computeYearRecap` → `render/print-year.js`) selon la vue. `90-print.css` masque tout sauf `#print-doc` à l'impression (`body > :not(#print-doc)`) et le style en document serif. Socle commun `render/print-common.js` (en-tête d'identité lisant `abmat:profile`, règles, pied de page) — données via `textContent` uniquement.
 
 ### Invariant : une seule source de calcul

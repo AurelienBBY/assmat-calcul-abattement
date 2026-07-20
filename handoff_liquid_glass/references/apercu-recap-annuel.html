@@ -1,0 +1,146 @@
+<!-- @dsCard group="Aperçu" viewport="1440x1500" name="Récapitulatif annuel (RÉCAP)" subtitle="Encart 1AJ, résultats annuels, détail par mois, comparaison des régimes — liquid glass" -->
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="./styles.css">
+<style>
+body{margin:0;min-height:100vh;font-size:16px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px 100px}
+.topbar-group{position:sticky;top:14px;z-index:20;margin:14px 0 48px;display:flex;flex-direction:column;gap:12px}
+.tb-row{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;position:relative;z-index:2}
+.nav-row{padding:10px 14px;position:relative;z-index:1}
+.tb-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0}
+.tb-title{font-weight:650;font-size:19px;white-space:nowrap;letter-spacing:-.01em}
+.tb-ctx{color:var(--muted);font-size:14px}
+.icon-btn{width:44px;height:44px;border-radius:999px;border:.5px solid oklch(100% 0 0 / var(--glass-border));background:linear-gradient(125deg,oklch(100% 0 0 / .55),transparent 40%),linear-gradient(180deg,oklch(100% 0 0 / .82),oklch(100% 0 0 / .58));display:flex;align-items:center;justify-content:center;color:var(--ink)}
+.icon-btn svg{width:19px;height:19px}
+.ylabel{font-weight:700;font-size:13px;color:var(--muted);margin-right:8px}
+.ytabs{display:inline-flex;gap:6px;margin-bottom:10px}
+.ytab{border:1px solid oklch(0% 0 0 / .08);background:#fff;color:var(--muted);border-radius:999px;padding:5px 12px;font-weight:700;font-size:12.5px;cursor:pointer}
+.ytab.on{background:oklch(var(--l-accent) var(--c-accent) var(--hue));border-color:transparent;color:#fff}
+.mtabs{display:flex;gap:4px;overflow-x:auto;padding:5px;border-radius:14px;background:oklch(0% 0 0 / .04)}
+.mtab{flex:0 0 auto;border:none;background:transparent;color:var(--muted);border-radius:10px;padding:9px 14px;font-weight:700;font-size:12px;cursor:pointer}
+.mtab.on{background:#fff;color:var(--ink);font-weight:800;box-shadow:0 4px 12px rgba(20,30,60,.12)}
+.mtab.special{color:oklch(var(--l-dark) var(--c-dark) var(--hue))}
+
+.declare{display:flex;align-items:center;gap:20px;padding:18px 22px;margin-bottom:20px}
+.case{flex:0 0 auto;font-weight:800;color:oklch(var(--l-dark) var(--c-dark) var(--hue));border:2px solid oklch(var(--l-dark) var(--c-dark) var(--hue) / .5);border-radius:10px;padding:10px 16px;background:oklch(100% 0 0 / .7);white-space:nowrap}
+.declare p{margin:0;font-size:14.5px;line-height:1.5;max-width:62ch}
+.amount{font-size:19px;color:oklch(var(--l-dark) var(--c-dark) var(--hue));font-weight:800}
+
+.card{padding:22px 24px;margin-bottom:20px}
+.card h3{margin:0 0 14px;font-size:16px}
+.hero-a{padding:20px;border-radius:16px;background:oklch(var(--l-accent) var(--c-accent) var(--hue) / .1)}
+.hero-a .lbl{font-weight:700;font-size:14.5px}
+.hero-a .hint{color:var(--muted);font-size:13px;margin:2px 0 10px}
+.hero-a .val{font-size:32px;font-weight:900;color:oklch(var(--l-dark) var(--c-dark) var(--hue));font-variant-numeric:tabular-nums}
+.details{margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:10px 24px}
+.drow{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid oklch(0% 0 0 / .06);font-size:13.5px}
+.drow b{font-variant-numeric:tabular-nums}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:8px 6px;font-size:10.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.03em;border-bottom:1px solid oklch(0% 0 0 / .08)}
+td{padding:9px 6px;border-bottom:1px solid oklch(0% 0 0 / .05);font-variant-numeric:tabular-nums}
+tr.op th,tr.op td{width:22px;text-align:center;color:oklch(0% 0 0 / .18);font-weight:800}
+.mrow{cursor:pointer;transition:background .15s}
+.mrow:hover{background:oklch(100% 0 0 / .5)}
+.mname{font-weight:700}
+.chip{border-radius:999px;padding:3px 10px;font-size:11px;font-weight:700;white-space:nowrap}
+.chip.ok{background:oklch(45% .12 152 / .14);color:oklch(45% .12 152)}
+.chip.warn{background:oklch(48% .12 70 / .14);color:oklch(48% .12 70)}
+.chip.mut{background:oklch(0% 0 0 / .05);color:var(--muted)}
+
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px}
+.regime{border-radius:16px;padding:16px 18px;background:oklch(100% 0 0 / .4);border:.5px solid oklch(100% 0 0 / .5)}
+.regime.win{border:1.5px solid oklch(45% .12 152 / .6);background:oklch(45% .12 152 / .08)}
+.wtag{color:oklch(45% .12 152);font-weight:800;font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+.rname{font-weight:700;margin-top:2px;font-size:14.5px}
+.rval{font-size:24px;font-weight:900;font-variant-numeric:tabular-nums;margin-top:4px}
+.rhint{color:var(--muted);font-size:12.5px;margin-top:6px}
+
+@media (max-width:760px){
+  .declare{flex-direction:column;align-items:flex-start}
+  .details{grid-template-columns:1fr}
+  .compare{grid-template-columns:1fr}
+  table{font-size:11.5px}
+  th:nth-child(3),td:nth-child(3),th:nth-child(5),td:nth-child(5),th:nth-child(7),td:nth-child(7),th:nth-child(9),td:nth-child(9){display:none}
+}
+</style></head>
+<body data-palette="prune" data-intensity="medium">
+<div class="wrap">
+  <div class="topbar-group">
+    <div class="tb-row glass-strong">
+      <div class="tb-left"><span class="tb-title">Abattement Ass-Mat</span><span class="tb-ctx">• Récapitulatif 2026</span></div>
+      <button class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></button>
+    </div>
+    <div class="nav-row glass">
+      <span class="ylabel">Année</span>
+      <span class="ytabs"><button class="ytab">2024</button><button class="ytab">2025</button><button class="ytab on">2026</button></span>
+      <div class="mtabs">
+        <button class="mtab">JAN</button><button class="mtab">FÉV</button><button class="mtab">MAR</button><button class="mtab">AVR</button>
+        <button class="mtab">MAI</button><button class="mtab">JUIN</button><button class="mtab">JUIL</button><button class="mtab">AOÛ</button>
+        <button class="mtab">SEP</button><button class="mtab">OCT</button><button class="mtab">NOV</button><button class="mtab">DÉC</button>
+        <button class="mtab special on">RÉCAP</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="declare glass-strong">
+    <div class="case">Case 1AJ</div>
+    <p>Au printemps 2027, reportez <strong class="amount">2 447,10 €</strong> dans la case <strong>« Traitements et salaires » (1AJ)</strong>, <strong>à la place du montant prérempli</strong> — celui-ci ne tient pas compte de l'abattement.</p>
+  </div>
+
+  <div class="card glass">
+    <h3>Résultats annuels — 2026</h3>
+    <div class="hero-a">
+      <div class="lbl">Revenu imposable annuel après abattement</div>
+      <div class="hint">À reporter sur votre déclaration.</div>
+      <div class="val">2 447,10 €</div>
+    </div>
+    <div class="details">
+      <div class="drow"><span>Total revenus net imposables</span><b>14 140,80 €</b></div>
+      <div class="drow"><span>Total IRF</span><b>420,00 €</b></div>
+      <div class="drow"><span>Total perçu</span><b>14 560,80 €</b></div>
+      <div class="drow"><span>Abattement</span><b>12 113,70 €</b></div>
+      <div class="drow"><span>Total jours &lt; 8h</span><b>18</b></div>
+      <div class="drow"><span>Total jours ≥ 8h</span><b>203</b></div>
+    </div>
+  </div>
+
+  <div class="card glass">
+    <h3>Détail par mois</h3>
+    <p style="margin:-8px 0 12px;color:var(--muted);font-size:13px">Cliquez sur un mois pour revenir dessus et corriger vos données.</p>
+    <table>
+      <tr><th>Mois</th><th>NET</th><th>+</th><th>IRF</th><th>=</th><th>Total perçu</th><th>−</th><th>Abattement</th><th>=</th><th>Imposable</th><th>Statut</th></tr>
+      <tr class="mrow"><td class="mname">Janvier</td><td>1 178,40 €</td><td>+</td><td>35,00 €</td><td>=</td><td>1 213,40 €</td><td>−</td><td>1 009,68 €</td><td>=</td><td>203,72 €</td><td><span class="chip ok">OK</span></td></tr>
+      <tr class="mrow"><td class="mname">Février</td><td>1 178,40 €</td><td>+</td><td>35,00 €</td><td>=</td><td>1 213,40 €</td><td>−</td><td>936,90 €</td><td>=</td><td>276,50 €</td><td><span class="chip ok">OK</span></td></tr>
+      <tr class="mrow"><td class="mname">Mars</td><td>1 178,40 €</td><td>+</td><td>35,00 €</td><td>=</td><td>1 213,40 €</td><td>−</td><td>1 009,68 €</td><td>=</td><td>203,72 €</td><td><span class="chip ok">OK</span></td></tr>
+      <tr class="mrow"><td class="mname">Avril</td><td>1 178,40 €</td><td>+</td><td>35,00 €</td><td>=</td><td>1 213,40 €</td><td>−</td><td>972,42 €</td><td>=</td><td>240,98 €</td><td><span class="chip ok">OK</span></td></tr>
+      <tr class="mrow"><td class="mname">Mai</td><td>1 178,40 €</td><td>+</td><td>35,00 €</td><td>=</td><td>1 213,40 €</td><td>−</td><td>936,90 €</td><td>=</td><td>276,50 €</td><td><span class="chip warn">Incomplet</span></td></tr>
+      <tr class="mrow"><td class="mname">Juin</td><td>1 178,40 €</td><td>+</td><td>35,00 €</td><td>=</td><td>1 213,40 €</td><td>−</td><td>972,42 €</td><td>=</td><td>240,98 €</td><td><span class="chip ok">OK</span></td></tr>
+      <tr class="mrow"><td class="mname">Juillet</td><td>0,00 €</td><td>+</td><td>0,00 €</td><td>=</td><td>0,00 €</td><td>−</td><td>108,18 €</td><td>=</td><td>0,00 €</td><td><span class="chip warn">Incomplet</span></td></tr>
+      <tr class="mrow"><td class="mname">Août</td><td>—</td><td>+</td><td>—</td><td>=</td><td>—</td><td>−</td><td>—</td><td>=</td><td>—</td><td><span class="chip mut">Vide</span></td></tr>
+      <tr class="mrow"><td class="mname">Septembre</td><td>—</td><td>+</td><td>—</td><td>=</td><td>—</td><td>−</td><td>—</td><td>=</td><td>—</td><td><span class="chip mut">Vide</span></td></tr>
+      <tr class="mrow"><td class="mname">Octobre</td><td>—</td><td>+</td><td>—</td><td>=</td><td>—</td><td>−</td><td>—</td><td>=</td><td>—</td><td><span class="chip mut">Vide</span></td></tr>
+      <tr class="mrow"><td class="mname">Novembre</td><td>—</td><td>+</td><td>—</td><td>=</td><td>—</td><td>−</td><td>—</td><td>=</td><td>—</td><td><span class="chip mut">Vide</span></td></tr>
+      <tr class="mrow"><td class="mname">Décembre</td><td>—</td><td>+</td><td>—</td><td>=</td><td>—</td><td>−</td><td>—</td><td>=</td><td>—</td><td><span class="chip mut">Vide</span></td></tr>
+    </table>
+  </div>
+
+  <div class="card glass">
+    <h3>L'abattement vous est-il favorable cette année ?</h3>
+    <p style="margin:-8px 0 0;color:var(--muted);font-size:13px">Comparaison indicative — la structure des indemnités en CCAS est à vérifier sur les bulletins.</p>
+    <div class="compare">
+      <div class="regime win">
+        <div class="wtag">Option gagnante</div>
+        <div class="rname">Tout déclarer + abattement</div>
+        <div class="rval">2 447,10 €</div>
+        <p class="rhint">Salaires + indemnités déclarés, puis abattement forfaitaire déduit.</p>
+      </div>
+      <div class="regime">
+        <div class="rname">Salaires seuls, sans abattement</div>
+        <div class="rval">14 140,80 €</div>
+        <p class="rhint">Régime de droit commun : net imposable déclaré tel quel, sans les indemnités.</p>
+      </div>
+    </div>
+  </div>
+</div>
+</body></html>

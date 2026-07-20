@@ -1,0 +1,23 @@
+<!-- @dsCard group="Saisie" name="Pré-remplissage" subtitle="Bandeau proposé sur un mois vide (jamais automatique) — liquid glass" -->
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="./styles.css">
+<style>
+body{margin:0;padding:36px 20px;min-height:100vh}
+.wrap{max-width:820px;margin:0 auto}
+.banner{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:space-between;padding:14px 18px}
+.msg{display:flex;align-items:center;gap:12px;flex:1 1 320px;min-width:0}
+.ic{flex:0 0 auto;width:36px;height:36px;border-radius:999px;background:oklch(var(--l-accent) var(--c-accent) var(--hue) / .16);color:oklch(var(--l-dark) var(--c-dark) var(--hue));display:flex;align-items:center;justify-content:center}
+.ic svg{width:18px;height:18px}
+.banner p{margin:0;font-size:14px;color:var(--ink);line-height:1.4}
+</style></head>
+<body data-palette="prune" data-intensity="medium">
+<div class="wrap">
+  <div class="banner glass-strong">
+    <div class="msg">
+      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v6h6M20 20v-6h-6"/><path d="M5 15a7 7 0 0 0 12 3l3-3M19 9a7 7 0 0 0-12-3L4 9"/></svg></span>
+      <p>Ce mois est vide — remplissez-le en un clic avec les semaines types de vos enfants (fériés exclus).</p>
+    </div>
+    <button class="btn btn-primary">Pré-remplir le mois</button>
+  </div>
+</div>
+</body></html>

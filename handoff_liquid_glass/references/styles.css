@@ -1,0 +1,25 @@
+:root{--hue:258/* @kind other */;--l-accent:42%;--c-accent:.1/* @kind other */;--l-dark:26%;--c-dark:.095/* @kind other */;--blur:24px;--glass-top:.68/* @kind other */;--glass-bot:.5/* @kind other */;--glass-border:.65/* @kind other */;--glass-shadow:0 10px 30px rgba(20,30,60,.12),0 1px 0 rgba(255,255,255,.6) inset;--radius-lg:24px;--radius-md:16px;--radius-sm:12px;--ink:oklch(22% .02 var(--hue));--muted:oklch(46% .02 var(--hue));font-synthesis:none}
+[data-intensity="subtle"]{--blur:14px;--glass-top:.86/* @kind other */;--glass-bot:.74/* @kind other */;--glass-border:.5/* @kind other */;--glass-shadow:0 4px 16px rgba(20,30,60,.08)}
+[data-intensity="medium"]{--blur:24px;--glass-top:.68/* @kind other */;--glass-bot:.5/* @kind other */;--glass-border:.65/* @kind other */;--glass-shadow:0 10px 30px rgba(20,30,60,.12),0 1px 0 rgba(255,255,255,.6) inset}
+[data-intensity="assume"]{--blur:38px;--glass-top:.54/* @kind other */;--glass-bot:.36/* @kind other */;--glass-border:.82/* @kind other */;--glass-shadow:0 20px 48px rgba(20,30,60,.2),0 1px 0 rgba(255,255,255,.9) inset,0 -14px 30px -22px rgba(255,255,255,.7) inset}
+[data-palette="encre"]{--hue:258/* @kind other */}
+[data-palette="sauge"]{--hue:156/* @kind other */}
+[data-palette="prune"]{--hue:322/* @kind other */}
+html,body{margin:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Arial,sans-serif;color:var(--ink);background:
+radial-gradient(1100px 760px at 8% -8%,oklch(91% .055 var(--hue) / .6),transparent 62%),
+radial-gradient(950px 680px at 108% 6%,oklch(93% .045 calc(var(--hue) + 42) / .55),transparent 60%),
+radial-gradient(900px 900px at 46% 118%,oklch(94% .035 calc(var(--hue) - 34) / .5),transparent 62%),
+oklch(98% .006 var(--hue));background-attachment:fixed}
+.accent{color:oklch(var(--l-accent) var(--c-accent) var(--hue))}
+.glass{background:linear-gradient(125deg,oklch(100% 0 0 / .4),transparent 26%,transparent 72%,oklch(100% 0 0 / .06)),linear-gradient(180deg,oklch(100% 0 0 / var(--glass-top)),oklch(100% 0 0 / var(--glass-bot)));backdrop-filter:blur(var(--blur)) saturate(160%);-webkit-backdrop-filter:blur(var(--blur)) saturate(160%);border:1px solid oklch(100% 0 0 / var(--glass-border));box-shadow:var(--glass-shadow);border-radius:var(--radius-lg)}
+.glass-strong{background:linear-gradient(125deg,oklch(100% 0 0 / .48),transparent 26%,transparent 72%,oklch(100% 0 0 / .08)),linear-gradient(180deg,oklch(100% 0 0 / calc(var(--glass-top) + .1)),oklch(100% 0 0 / calc(var(--glass-bot) + .12)));backdrop-filter:blur(calc(var(--blur) + 6px)) saturate(170%);-webkit-backdrop-filter:blur(calc(var(--blur) + 6px)) saturate(170%);border:1px solid oklch(100% 0 0 / min(1,calc(var(--glass-border) + .12)));box-shadow:var(--glass-shadow);border-radius:var(--radius-lg)}
+.btn{display:inline-flex;align-items:center;gap:7px;height:44px;padding:0 18px;border-radius:999px;border:.5px solid oklch(100% 0 0 / var(--glass-border));background:linear-gradient(125deg,oklch(100% 0 0 / .55),transparent 40%),linear-gradient(180deg,oklch(100% 0 0 / .82),oklch(100% 0 0 / .58));backdrop-filter:blur(calc(var(--blur) * .6));-webkit-backdrop-filter:blur(calc(var(--blur) * .6));font:inherit;font-weight:600;font-size:15px;color:var(--ink);cursor:pointer;box-shadow:0 .5px 0 rgba(255,255,255,.8) inset,0 6px 16px rgba(20,30,60,.08);transition:transform .15s ease}
+.btn:active{transform:scale(.97)}
+.btn svg{flex:0 0 auto;display:block;width:17px;height:17px}
+.btn:hover{filter:brightness(1.03)}
+.btn-primary{border:none;color:#fff;background:linear-gradient(125deg,oklch(100% 0 0 / .4),transparent 45%),linear-gradient(160deg,oklch(calc(var(--l-accent) + 8%) var(--c-accent) var(--hue)),oklch(var(--l-dark) var(--c-dark) var(--hue)));box-shadow:0 .5px 0 rgba(255,255,255,.45) inset,0 10px 22px oklch(var(--l-dark) var(--c-dark) var(--hue) / .38)}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:7px 14px;font-size:13px;font-weight:650;border:.5px solid oklch(100% 0 0 / .5);letter-spacing:-.01em}
+.pill-accent{color:oklch(var(--l-dark) var(--c-dark) var(--hue));background:oklch(var(--l-accent) var(--c-accent) var(--hue) / .14)}
+.pill-ok{color:oklch(45% .12 152);background:oklch(45% .12 152 / .14)}
+.pill-warn{color:oklch(48% .12 70);background:oklch(48% .12 70 / .14)}

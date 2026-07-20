@@ -1,0 +1,51 @@
+<!-- @dsCard group="États" name="Modale du tutoriel" subtitle="Overlay + panneau liquid glass, contenu détaillé en iframe" -->
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="./styles.css">
+<style>
+body{margin:0;min-height:100vh}
+.modal{position:fixed;inset:0;display:flex;align-items:flex-start;justify-content:center;padding:6vh 20px}
+.overlay{position:absolute;inset:0;background:oklch(20% .02 var(--hue) / .38);backdrop-filter:blur(3px)}
+.panel{position:relative;width:min(860px,100%);max-height:88vh;overflow:auto;padding:0}
+.head{position:sticky;top:0;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 24px;border-bottom:1px solid oklch(0% 0 0 / .07);background:inherit}
+.head h2{margin:0;font-size:17px}
+.close{width:34px;height:34px;border-radius:999px;border:.5px solid oklch(0% 0 0 / .1);background:oklch(100% 0 0 / .6);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px}
+.content{padding:36px 24px 28px;color:var(--ink);font-size:14.5px;line-height:1.6}
+.content h3{font-size:14px;margin:22px 0 8px;color:oklch(var(--l-dark) var(--c-dark) var(--hue))}
+.content h3:first-child{margin-top:0}
+.content ul{margin:6px 0;padding-left:20px}
+.content p{margin:6px 0}
+.warn{border-radius:14px;padding:10px 14px;background:oklch(48% .12 70 / .1);color:oklch(40% .1 70);font-size:13.5px;margin:12px 0}
+.step{display:flex;gap:10px;align-items:flex-start;margin:14px 0}
+.step .n{flex:0 0 auto;width:24px;height:24px;border-radius:999px;background:oklch(var(--l-dark) var(--c-dark) var(--hue));color:#fff;font-size:11.5px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.step div{flex:1}
+.step strong{display:block;font-size:14.5px;margin-bottom:2px}
+</style></head>
+<body data-palette="prune" data-intensity="medium">
+<div class="modal">
+  <div class="overlay"></div>
+  <div class="panel glass-strong">
+    <div class="head glass-strong">
+      <h2>Tutoriel détaillé</h2>
+      <button class="close">✕</button>
+    </div>
+    <div class="content">
+      <div class="warn">⚠️ Cet outil est une aide au calcul. Il ne remplace pas les documents officiels et n'a aucune valeur justificative en cas de contrôle.</div>
+
+      <div class="step"><span class="n">1</span><div><strong>Choisir la période</strong>Sélectionnez l'année puis le mois à déclarer — le tableau du mois se génère automatiquement.</div></div>
+      <div class="step"><span class="n">2</span><div><strong>Renseigner les jours de présence</strong>Uniquement les heures de présence effective des enfants (jamais congés, formation, absences). Une ligne = un enfant, jusqu'à 3 par jour.</div></div>
+      <div class="step"><span class="n">3</span><div><strong>Calcul automatique</strong>L'abattement est calculé par jour et par enfant, à partir du SMIC horaire brut de l'année et du forfait légal (3 × SMIC).</div></div>
+      <div class="step"><span class="n">4</span><div><strong>Récapitulatif mensuel</strong>Rapprochez le calcul avec la fiche de paie : net imposable comme référence, IRF pour information (hors base de calcul).</div></div>
+      <div class="step"><span class="n">5</span><div><strong>Sauvegarde et import</strong>Exportez l'année en <code>.json</code> une fois validée ; importez pour reprendre ou vérifier plus tard.</div></div>
+      <div class="step"><span class="n">6</span><div><strong>Impression / PDF</strong>Générez une version imprimable du mois, à conserver en complément des justificatifs officiels.</div></div>
+
+      <h3>✅ Résumé clé</h3>
+      <ul>
+        <li>Abattement calculé sur le temps de présence réel des enfants.</li>
+        <li>1 enfant = 1 ligne, jusqu'à 3 par jour.</li>
+        <li>IRF hors base de calcul (rapprochement paie uniquement).</li>
+        <li>Conservez toujours les feuilles de présence officielles.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+</body></html>

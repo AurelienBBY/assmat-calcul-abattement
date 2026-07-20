@@ -1,0 +1,73 @@
+<!-- @dsCard group="Documents" name="Récapitulatif annuel imprimé" subtitle="Gabarit PDF année complète : case 1AJ, 12 mois, mémo + règles — sobre/papier" -->
+<!doctype html><html lang="fr"><head><meta charset="utf-8">
+<link rel="stylesheet" href="./styles.css">
+<style>
+body{margin:0;padding:24px;font-family:system-ui,sans-serif;background:oklch(38% .015 var(--hue))}
+.sheet{background:#fff;color:oklch(16% .01 var(--hue));max-width:700px;margin:0 auto;padding:38px 44px;box-shadow:0 2px 6px rgba(0,0,0,.18),0 20px 46px rgba(0,0,0,.22);font-family:Charter,Georgia,"Times New Roman",serif;font-size:12px;line-height:1.45}
+.doc-head{display:flex;justify-content:space-between;gap:20px;border-bottom:3px double currentColor;padding-bottom:12px;margin-bottom:16px}
+.doc-who strong{display:block;font-size:15px}
+.doc-who span{display:block;font-size:11.5px;color:oklch(40% .015 var(--hue))}
+.doc-what{text-align:right}
+.doc-type{font-family:system-ui,sans-serif;font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:oklch(40% .015 var(--hue))}
+.doc-period{font-size:17px;font-weight:700;color:oklch(var(--l-dark) var(--c-dark) var(--hue))}
+.doc-declare{display:flex;justify-content:space-between;align-items:center;gap:16px;border:2px solid currentColor;padding:12px 16px;margin:0 0 18px}
+.doc-declare .lab{font-size:12px;max-width:60%}
+.doc-declare .amt{font-size:22px;font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums;color:oklch(var(--l-dark) var(--c-dark) var(--hue))}
+.doc-table{width:100%;border-collapse:collapse;font-size:11.5px}
+.doc-table th{border-bottom:1.5px solid currentColor;text-align:left;padding:4px 6px;font-family:system-ui,sans-serif;font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase}
+.doc-table td{border-bottom:1px solid oklch(70% .01 var(--hue));padding:4px 6px}
+.r{text-align:right;font-variant-numeric:tabular-nums}
+tr.doc-total td{border-top:2px solid currentColor;border-bottom:none;font-weight:700;padding-top:8px;color:oklch(var(--l-dark) var(--c-dark) var(--hue))}
+.doc-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:20px;margin-top:20px}
+.doc-synth h3{font-size:13px;margin:0 0 8px}
+.doc-synth .row{display:flex;justify-content:space-between;padding:3px 0}
+.doc-synth .row.final{border-top:2px solid currentColor;margin-top:6px;padding-top:7px;font-weight:700;font-size:14px;color:oklch(var(--l-dark) var(--c-dark) var(--hue))}
+.doc-rules{border:1px solid currentColor;padding:10px 12px;font-size:11px}
+.doc-rules h4{margin:0 0 6px;font-family:system-ui,sans-serif;font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.doc-rules p{margin:0 0 4px}
+.doc-foot{margin-top:18px;padding-top:8px;border-top:1px solid oklch(70% .01 var(--hue));font-size:9.5px;color:oklch(45% .015 var(--hue))}
+.note{max-width:700px;margin:14px auto 0;color:#fff;opacity:.75;font-size:12px;text-align:center}
+</style></head><body data-palette="prune">
+<div class="sheet">
+  <div class="doc-head">
+    <div class="doc-who"><strong>Martine Berger</strong><span>Assistante maternelle agréée</span><span>Employeur : CCAS de [Ville]</span></div>
+    <div class="doc-what"><div class="doc-type">Récapitulatif annuel — déclaration des revenus</div><div class="doc-period">Année 2026</div></div>
+  </div>
+
+  <div class="doc-declare">
+    <div class="lab">Montant à reporter case 1AJ « Traitements et salaires », à la place du montant prérempli :</div>
+    <div class="amt">1 402,95 €</div>
+  </div>
+
+  <table class="doc-table">
+    <tr><th>Mois</th><th class="r">Net imposable</th><th class="r">Indemnités</th><th class="r">Perçu</th><th class="r">Abattement</th><th class="r">À déclarer</th></tr>
+    <tr><td>Janvier</td><td class="r">1 178,40 €</td><td class="r">35,00 €</td><td class="r">1 213,40 €</td><td class="r">1 009,68 €</td><td class="r">203,72 €</td></tr>
+    <tr><td>Février</td><td class="r">1 178,40 €</td><td class="r">35,00 €</td><td class="r">1 213,40 €</td><td class="r">936,90 €</td><td class="r">276,50 €</td></tr>
+    <tr><td>Mars</td><td class="r">1 178,40 €</td><td class="r">35,00 €</td><td class="r">1 213,40 €</td><td class="r">1 009,68 €</td><td class="r">203,72 €</td></tr>
+    <tr><td>Avril</td><td class="r">1 178,40 €</td><td class="r">35,00 €</td><td class="r">1 213,40 €</td><td class="r">972,42 €</td><td class="r">240,98 €</td></tr>
+    <tr><td>Mai</td><td class="r">1 178,40 €</td><td class="r">165,30 €</td><td class="r">1 343,70 €</td><td class="r">1 106,65 €</td><td class="r">237,05 €</td></tr>
+    <tr><td>Juin</td><td class="r">1 178,40 €</td><td class="r">35,00 €</td><td class="r">1 213,40 €</td><td class="r">972,42 €</td><td class="r">240,98 €</td></tr>
+    <tr><td>Juillet — Décembre</td><td class="r">—</td><td class="r">—</td><td class="r">—</td><td class="r">—</td><td class="r">—</td></tr>
+    <tr class="doc-total"><td>Total 2026</td><td class="r">7 070,40 €</td><td class="r">340,30 €</td><td class="r">7 410,70 €</td><td class="r">6 007,75 €</td><td class="r">1 402,95 €</td></tr>
+  </table>
+
+  <div class="doc-grid">
+    <div class="doc-synth"><h3>Mémo déclaration</h3>
+      <div class="row"><span>Total perçu (salaires + indemnités)</span><span class="r">7 410,70 €</span></div>
+      <div class="row"><span>Abattement forfaitaire annuel</span><span class="r">− 6 007,75 €</span></div>
+      <div class="row final"><span>Revenu imposable 2026</span><span class="r">1 402,95 €</span></div>
+      <div class="row"><span>Jours de garde ≥ 8 h</span><span class="r">98</span></div>
+      <div class="row"><span>Jours de garde &lt; 8 h</span><span class="r">9</span></div>
+    </div>
+    <div class="doc-rules"><h4>Règles appliquées</h4>
+      <p>SMIC au 01/01/2026 : <strong>12,02 €</strong></p>
+      <p>Forfait (garde ≥ 8 h) : <strong>36,06 €</strong> (3 × SMIC)</p>
+      <p>Garde &lt; 8 h : forfait × heures ÷ 8</p>
+      <p>Article 80 sexies du CGI — fiche F1234</p>
+    </div>
+  </div>
+
+  <div class="doc-foot">Document d'aide au calcul établi le 19/07/2026 — sans valeur justificative. Conservez les relevés mensuels en annexe.</div>
+</div>
+<p class="note">Impression volontairement sobre : pas de verre/flou — seule l'app (l'écran) reçoit le traitement liquid glass.</p>
+</body></html>

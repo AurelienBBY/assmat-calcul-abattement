@@ -1,0 +1,28 @@
+<!-- @dsCard group="États" name="Restauration" subtitle="Bannière au démarrage sur un appareil sans données — liquid glass" -->
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="./styles.css">
+<style>
+body{margin:0;padding:36px 20px;min-height:100vh}
+.wrap{max-width:900px;margin:0 auto}
+.banner{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:16px 20px;justify-content:space-between}
+.banner .msg{display:flex;align-items:center;gap:12px;flex:1 1 320px;min-width:0}
+.banner .ic{flex:0 0 auto;width:38px;height:38px;border-radius:999px;background:oklch(var(--l-accent) var(--c-accent) var(--hue) / .16);color:oklch(var(--l-dark) var(--c-dark) var(--hue));display:flex;align-items:center;justify-content:center}
+.banner .ic svg{width:19px;height:19px}
+.banner p{margin:0;font-size:14px;color:var(--ink);line-height:1.45}
+.banner .actions{display:inline-flex;align-items:center;gap:8px;flex:0 0 auto}
+.close{width:34px;height:34px;border-radius:999px;border:.5px solid oklch(0% 0 0 / .1);background:oklch(100% 0 0 / .6);color:var(--muted);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+</style></head>
+<body data-palette="prune" data-intensity="medium">
+<div class="wrap">
+  <div class="banner glass-strong">
+    <div class="msg">
+      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></span>
+      <p>Vos données ne sont pas sur cet appareil. Si vous avez une sauvegarde (fichier <strong>abattement-assmat-….json</strong>), importez-la — sinon, commencez simplement à saisir.</p>
+    </div>
+    <span class="actions">
+      <button class="btn btn-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 21h16"/></svg>Importer ma sauvegarde</button>
+      <button class="close">✕</button>
+    </span>
+  </div>
+</div>
+</body></html>

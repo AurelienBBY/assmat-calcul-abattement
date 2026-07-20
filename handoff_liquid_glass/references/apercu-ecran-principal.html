@@ -1,0 +1,349 @@
+<!-- @dsCard group="Aperçu" viewport="1440x1500" name="Écran principal — redesign" subtitle="Structure réelle 1 colonne : toolbar+nav fusionnées, sections empilées, résultat en clôture" -->
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="./styles.css">
+<style>
+body{margin:0;min-height:100vh;font-size:16px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px 100px}
+.grid{display:grid;grid-template-columns:1.5fr 1fr;gap:20px;align-items:start;margin-top:20px}
+.aside{position:sticky;top:190px}
+.lab{position:relative;z-index:50;margin:14px 0 0 auto;width:fit-content;padding:10px 12px;font-size:12px;display:flex;gap:14px;border-radius:18px}
+.lab .grp{display:flex;flex-direction:column;gap:5px}
+.lab .ttl{font-weight:700;color:var(--muted);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase}
+.lab .opts{display:flex;gap:5px}
+.lab button{border:1px solid oklch(0% 0 0 / .12);background:#fff;border-radius:999px;padding:4px 10px;font-size:11.5px;font-weight:700;cursor:pointer;color:var(--muted)}
+.lab button.on{background:oklch(var(--l-accent) var(--c-accent) var(--hue));color:#fff;border-color:transparent}
+
+.topbar-group{position:sticky;top:14px;z-index:20;margin:14px 0 48px;display:flex;flex-direction:column;gap:12px;transition:gap .25s ease}
+.topbar-group.stuck{gap:0}
+.tb-row{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;transition:border-radius .25s ease,box-shadow .25s ease;position:relative;z-index:2}
+.topbar-group.stuck .tb-row{border-radius:24px 24px 0 0;box-shadow:0 .5px 0 rgba(255,255,255,.6) inset;border-bottom:none}
+.nav-row{padding:10px 14px;transition:border-radius .25s ease,margin .25s ease;position:relative;z-index:1}
+.topbar-group.stuck .nav-row{border-radius:0 0 24px 24px;margin-top:-1px;border-top:none}
+.tb-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0}
+.tb-title{font-weight:650;font-size:19px;white-space:nowrap;letter-spacing:-.01em}
+.tb-ctx{color:var(--muted);font-size:14px;white-space:nowrap}
+.tb-actions{display:flex;align-items:center;gap:8px;position:relative}
+.data-menu{position:absolute;top:52px;right:0;min-width:190px;padding:6px;border-radius:16px;display:none;flex-direction:column;gap:2px;z-index:60}
+.data-menu.open{display:flex}
+.data-menu button{display:flex;align-items:center;gap:9px;border:none;background:transparent;padding:9px 10px;border-radius:11px;font:inherit;font-size:13.5px;font-weight:600;color:var(--ink);cursor:pointer;text-align:left}
+.data-menu button:hover{background:oklch(0% 0 0 / .05)}
+.data-menu button svg{width:17px;height:17px;flex:0 0 auto;color:var(--muted)}
+.data-menu .status{font-size:11px;color:var(--muted);font-weight:500;padding:6px 10px 4px}
+.data-btn.ok::after{content:"";position:absolute;top:-2px;right:-2px;width:10px;height:10px;border-radius:999px;background:oklch(45% .12 152);border:2px solid #fff}
+.icon-btn{width:44px;height:44px;border-radius:999px;border:.5px solid oklch(100% 0 0 / var(--glass-border));background:linear-gradient(125deg,oklch(100% 0 0 / .55),transparent 40%),linear-gradient(180deg,oklch(100% 0 0 / .82),oklch(100% 0 0 / .58));display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink);position:relative;box-shadow:0 .5px 0 rgba(255,255,255,.8) inset,0 6px 14px rgba(20,30,60,.08);transition:transform .15s ease}
+.icon-btn:active{transform:scale(.94)}
+.icon-btn svg{width:19px;height:19px}
+.icon-btn .tip{position:absolute;top:50px;right:0;background:oklch(20% 0 0);color:#fff;font-size:11px;padding:4px 8px;border-radius:8px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s}
+.icon-btn:hover .tip{opacity:1}
+.pin{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:999px;background:oklch(var(--l-dark) var(--c-dark) var(--hue));color:#fff;font-size:10.5px;font-weight:800;position:absolute;top:-7px;right:-7px}
+
+.ylabel{font-weight:700;font-size:13px;color:var(--muted);margin-right:8px}
+.ytabs{display:inline-flex;gap:6px;margin-bottom:10px}
+.ytab{border:1px solid oklch(0% 0 0 / .08);background:#fff;color:var(--muted);border-radius:999px;padding:5px 12px;font-weight:700;font-size:12.5px;cursor:pointer}
+.ytab.on{background:oklch(var(--l-accent) var(--c-accent) var(--hue));border-color:transparent;color:#fff}
+.mtabs-wrap{position:relative}
+.mtabs-wrap::before,.mtabs-wrap::after{content:"";position:absolute;top:0;bottom:0;width:28px;z-index:2;pointer-events:none;transition:opacity .2s}
+.mtabs-wrap::before{left:0;background:linear-gradient(90deg,oklch(100% 0 0 / .55),transparent)}
+.mtabs-wrap::after{right:0;background:linear-gradient(270deg,oklch(100% 0 0 / .55),transparent)}
+.mtabs-wrap.at-start::before{opacity:0}
+.mtabs-wrap.at-end::after{opacity:0}
+.mtabs{display:flex;gap:4px;overflow-x:auto;scroll-snap-type:x proximity;padding:5px;border-radius:14px;background:oklch(0% 0 0 / .04)}
+.mtabs::-webkit-scrollbar{height:0}
+.mtab{scroll-snap-align:center;flex:0 0 auto;border:none;background:transparent;color:var(--muted);border-radius:10px;padding:9px 14px;font-weight:700;font-size:12px;cursor:pointer}
+.mtab.on{background:#fff;color:var(--ink);font-weight:800;box-shadow:0 4px 12px rgba(20,30,60,.12)}
+.mtab.special{color:oklch(var(--l-dark) var(--c-dark) var(--hue))}
+
+.card{padding:20px 22px;margin-bottom:18px}
+.card h2{margin:0 0 4px;font-size:16px}
+.card .sub{margin:0 0 14px;color:var(--muted);font-size:13.5px}
+.rules{border-radius:16px;padding:12px 14px;background:oklch(100% 0 0 / .35);font-size:13.5px;color:var(--muted)}
+.rules b{color:var(--ink)}
+
+.fold{padding:0;margin-bottom:18px}
+.fold-head{cursor:pointer;padding:16px 22px;display:flex;align-items:center;justify-content:space-between;font-weight:700;font-size:15px;user-select:none}
+.fold-head .chev{transition:transform .2s ease;color:var(--muted)}
+.fold.open .fold-head .chev{transform:rotate(180deg)}
+.fold-body{max-height:0;overflow:hidden;transition:max-height .2s ease}
+.fold.open .fold-body{max-height:300px}
+.fold-body .inner{padding:0 22px 20px;color:var(--muted);font-size:14px;line-height:1.55}
+
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:14px}
+th{text-align:left;padding:8px 8px;font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid oklch(0% 0 0 / .08)}
+td{padding:10px 8px;border-bottom:1px solid oklch(0% 0 0 / .06);vertical-align:middle}
+.week td{background:oklch(var(--l-accent) var(--c-accent) var(--hue) / .08);font-weight:700;font-size:12.5px;border-radius:10px}
+.child{font-weight:700;display:block;font-size:13.5px}
+.abs{font-size:11.5px;color:var(--muted)}
+input[type=time]{font:inherit;font-size:13px;padding:5px 7px;border:1px solid oklch(0% 0 0 / .12);border-radius:8px;background:oklch(100% 0 0 / .7)}
+.num{font-variant-numeric:tabular-nums}
+.r{text-align:right}
+.wtotal td{font-weight:800;border-bottom:none;padding-top:14px}
+
+.days{display:flex;flex-direction:column;gap:8px}
+.wk-head{display:flex;align-items:center;justify-content:space-between;padding:10px 4px 2px;font-size:12.5px;font-weight:700;color:oklch(var(--l-dark) var(--c-dark) var(--hue))}
+.wk-head:first-child{padding-top:2px}
+.wk-copy{border:none;background:transparent;color:oklch(var(--l-accent) var(--c-accent) var(--hue));font:inherit;font-size:12px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+.wk-copy svg{width:13px;height:13px}
+.day-row{display:grid;grid-template-columns:60px 1fr auto;gap:14px;align-items:start;padding:10px 14px;border-radius:16px;background:oklch(100% 0 0 / .4);border:.5px solid oklch(100% 0 0 / .5);transition:background .15s ease}
+.day-row:hover{background:oklch(100% 0 0 / .62)}
+.day-row .d{text-align:center;padding-top:2px}
+.day-row .d b{display:block;font-size:15px;font-weight:800}
+.day-row .d span{display:block;font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+.ferie{display:block;margin-top:4px;font-size:8.5px;font-weight:700;color:oklch(48% .12 70);background:oklch(48% .12 70 / .14);border-radius:6px;padding:2px 4px;line-height:1.25;white-space:normal}
+.addchild{display:block;margin-top:6px;border:1px dashed oklch(0% 0 0 / .18);background:transparent;color:var(--muted);border-radius:999px;padding:2px 7px;font-size:10px;font-weight:700;cursor:pointer;width:100%}
+.kids{display:flex;flex-direction:column;gap:8px}
+.kidline{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.avatar{width:22px;height:22px;border-radius:999px;background:oklch(var(--l-accent) var(--c-accent) var(--hue) / .18);color:oklch(var(--l-dark) var(--c-dark) var(--hue));font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.slot-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 8px 4px 9px;border-radius:999px;background:oklch(100% 0 0 / .7);border:1px solid oklch(0% 0 0 / .08);font-size:12px;font-variant-numeric:tabular-nums}
+.slot-chip input[type=time]{border:none;background:transparent;padding:0;width:84px;min-width:84px;font:inherit;font-size:12px}
+.slot-x{border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:11px;padding:0 2px}
+.addslot{border:1px dashed oklch(0% 0 0 / .18);background:transparent;color:var(--muted);border-radius:999px;padding:4px 10px;font-size:11.5px;font-weight:700;cursor:pointer}
+.abs-toggle{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--muted);cursor:pointer}
+.abs-toggle input{accent-color:oklch(var(--l-accent) var(--c-accent) var(--hue))}
+.motif-sel{border:1px solid oklch(0% 0 0 / .12);border-radius:999px;padding:4px 9px;font:inherit;font-size:11.5px;background:oklch(48% .12 70 / .1);color:oklch(48% .12 70);font-weight:700}
+.day-row .r2{text-align:right;padding-top:2px}
+.day-row .r2 .amt{font-weight:800;font-variant-numeric:tabular-nums;font-size:14.5px;color:oklch(var(--l-dark) var(--c-dark) var(--hue))}
+.day-row .r2 .hrs{display:block;font-size:11px;color:var(--muted);margin-top:1px}
+.wtot{display:flex;justify-content:space-between;padding:8px 14px 4px;font-size:13px;font-weight:800;color:var(--muted)}
+.wtot b{color:var(--ink);font-variant-numeric:tabular-nums;margin-left:6px}
+
+.field{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid oklch(0% 0 0 / .06)}
+.field:last-child{border-bottom:none}
+.field label{font-weight:700;font-size:14.5px}
+.field .h{display:block;font-weight:400;color:var(--muted);font-size:13px;margin-top:2px}
+.field input{width:130px;text-align:right;font:inherit;font-size:15px;font-variant-numeric:tabular-nums;padding:8px 10px;border:1px solid oklch(0% 0 0 / .12);border-radius:10px;background:oklch(100% 0 0 / .7)}
+
+.hero{padding:24px}
+.hero .lbl{font-weight:700;font-size:15px}
+.hero .hint{color:var(--muted);font-size:13px;margin:2px 0 16px}
+.hero .val{font-size:40px;font-weight:900;color:oklch(var(--l-dark) var(--c-dark) var(--hue));font-variant-numeric:tabular-nums}
+.hero .note{font-size:13px;color:var(--muted);margin-top:4px}
+.hero .det{margin-top:18px;border-top:1px solid oklch(0% 0 0 / .08);padding-top:14px;display:flex;gap:24px;flex-wrap:wrap}
+.hero .row{font-size:13.5px}
+.hero .row span{display:block;color:var(--muted);margin-bottom:2px}
+.hero .row b{font-variant-numeric:tabular-nums;font-size:15px}
+.hero .cta{margin-top:20px}
+
+.legend{margin-top:36px;padding:20px 22px}
+.legend h3{margin:0 0 12px;font-size:14px}
+.legend li{display:flex;gap:10px;margin-bottom:10px;font-size:13.5px;color:var(--muted);align-items:flex-start}
+.legend .n{flex:0 0 auto;width:20px;height:20px;border-radius:999px;background:oklch(var(--l-dark) var(--c-dark) var(--hue));color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px}
+
+.fab{position:fixed;right:20px;bottom:20px;width:56px;height:56px;border-radius:999px;display:none;align-items:center;justify-content:center;color:#fff;background:linear-gradient(160deg,oklch(calc(var(--l-accent) + 6%) var(--c-accent) var(--hue)),oklch(var(--l-dark) var(--c-dark) var(--hue)));box-shadow:0 12px 26px oklch(var(--l-dark) var(--c-dark) var(--hue) / .4);z-index:30}
+.fab svg{width:24px;height:24px}
+
+@media (max-width:640px){
+  .tb-ctx{display:none}
+  .tb-row{padding:8px 12px}
+  .tb-actions{gap:5px}
+  .icon-btn{width:36px;height:36px}
+  .icon-btn svg{width:16px;height:16px}
+  .pill{padding:5px 10px;font-size:11.5px}
+  .hero .val{font-size:32px}
+}
+@media (max-width:860px){
+  .grid{grid-template-columns:1fr}
+  .aside{position:static}
+  .tb-title{font-size:16px}
+  .fab{display:flex}
+  .wrap{padding:0 14px 100px}
+}
+</style></head>
+<body data-palette="prune" data-intensity="medium">
+<div class="wrap">
+  <div class="lab glass">
+    <div class="grp"><span class="ttl">Verre</span><div class="opts" id="ri">
+      <button class="on" data-v="subtle">Subtile</button><button data-v="medium">Médium</button><button data-v="assume">Assumée</button>
+    </div></div>
+    <div class="grp"><span class="ttl">Teinte</span><div class="opts" id="rp">
+      <button data-v="encre">Encre</button><button data-v="sauge">Sauge</button><button class="on" data-v="prune">Prune</button>
+    </div></div>
+  </div>
+
+  <div class="topbar-group" id="topbarGroup">
+  <div class="tb-row glass-strong">
+    <div class="tb-left">
+      <span class="tb-title">Abattement Ass-Mat</span>
+      <span class="tb-ctx">• Juillet 2026</span>
+      <span class="pill pill-accent">Abattement : 1 106,65 €</span>
+    </div>
+    <div class="tb-actions">
+      <button class="icon-btn data-btn ok" id="dataBtn" style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11l3 3v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M8 4v5h7V4"/><path d="M7 21v-7h10v7"/></svg><span class="tip">Données — enregistré à 14:32</span></button>
+      <div class="data-menu glass-strong" id="dataMenu">
+        <div class="status">✓ Enregistré à 14:32</div>
+        <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Sauvegarder l'année</button>
+        <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 21h16"/></svg>Importer une sauvegarde</button>
+      </div>
+      <button class="icon-btn" style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span class="tip">Mes infos — enfants, identité, semaines types</span></button>
+    </div>
+  </div>
+
+  <div class="nav-row glass">
+    <span class="ylabel">Année</span>
+    <span class="ytabs"><button class="ytab">2024</button><button class="ytab">2025</button><button class="ytab on">2026</button></span>
+    <div class="mtabs-wrap" id="mtabsWrap">
+    <div class="mtabs" id="mtabs">
+      <button class="mtab">JAN</button><button class="mtab">FÉV</button><button class="mtab">MAR</button><button class="mtab">AVR</button>
+      <button class="mtab">MAI</button><button class="mtab">JUIN</button><button class="mtab on">JUIL</button><button class="mtab">AOÛ</button>
+      <button class="mtab">SEP</button><button class="mtab">OCT</button><button class="mtab">NOV</button><button class="mtab">DÉC</button>
+      <button class="mtab special">RÉCAP</button>
+    </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="card glass fold" id="foldTuto">
+    <div class="fold-head">Comment fonctionne cet outil ? <span class="chev">▾</span></div>
+    <div class="fold-body"><div class="inner">Vous remplissez vos jours de garde mois par mois ; l'outil calcule l'abattement (par jour et par enfant) puis affiche le récapitulatif. Choisissez la période, renseignez les jours et la fiche de paie, vérifiez le résultat, puis sauvegardez ou imprimez.</div></div>
+  </div>
+
+  <div class="card glass fold" id="foldExplain">
+    <div class="fold-head">Explication — règles générales <span class="chev">▾</span></div>
+    <div class="fold-body"><div class="inner">Abattement calculé par jour et par enfant. Garde ≥ 8h : forfait = 3 × SMIC horaire brut. Garde &lt; 8h : prorata = (forfait ÷ 8) × heures de présence. Revenu imposable = (net imposable + IRF) − abattement, plancher à 0.</div></div>
+  </div>
+
+  <div class="grid">
+    <div>
+      <div class="card glass">
+        <h2>Paramètres de calcul</h2>
+        <p class="sub">Somme forfaitaire à déduire pour l'année 2026.</p>
+        <div class="rules"><b>Forfait (garde ≥ 8h) : 36,06 €</b> (3 × SMIC horaire brut) — <b>garde &lt; 8h</b> : (forfait ÷ 8) × heures de présence.</div>
+      </div>
+
+      <div class="card glass">
+        <h2>Temps de présence des enfants</h2>
+        <p class="sub">Juillet 2026 — mois complet (jours ouvrés uniquement)</p>
+        <div class="days">
+          <div class="wk-head"><span>Semaine du 01/07 au 03/07</span></div>
+          <div class="day-row"><div class="d"><b>01</b><span>Mer.</span></div><div class="kids">
+            <div class="kidline"><span class="avatar">E1</span><span class="slot-chip"><input type="time" value="08:00"> → <input type="time" value="16:00"></span><button class="addslot">+ créneau</button></div>
+          </div><div class="r2"><span class="amt">36,06 €</span><span class="hrs">8h00</span></div></div>
+          <div class="day-row"><div class="d"><b>02</b><span>Jeu.</span></div><div class="kids">
+            <div class="kidline"><span class="avatar">E1</span><span class="slot-chip"><input type="time" value="08:00"> → <input type="time" value="16:00"></span><button class="addslot">+ créneau</button></div>
+          </div><div class="r2"><span class="amt">36,06 €</span><span class="hrs">8h00</span></div></div>
+          <div class="day-row"><div class="d"><b>03</b><span>Ven.</span><button class="addchild">+ enfant</button></div><div class="kids">
+            <div class="kidline"><span class="avatar">E1</span><span class="slot-chip"><input type="time" value="08:00"> → <input type="time" value="16:00"></span><button class="addslot">+ créneau</button></div>
+          </div><div class="r2"><span class="amt">36,06 €</span><span class="hrs">8h00</span></div></div>
+          <div class="wtot"><span>Total semaine</span><b>108,18 €</b></div>
+
+          <div class="wk-head"><span>Semaine du 06/07 au 10/07</span><button class="wk-copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v6h6M20 20v-6h-6"/><path d="M5 15a7 7 0 0 0 12 3l3-3M19 9a7 7 0 0 0-12-3L4 9"/></svg>Recopier la semaine précédente</button></div>
+          <div class="day-row"><div class="d"><b>06</b><span>Lun.</span></div><div class="kids">
+            <div class="kidline"><span class="avatar">E1</span><span class="slot-chip"><input type="time" value="08:00"> → <input type="time" value="16:00"></span><button class="addslot">+ créneau</button></div>
+            <div class="kidline"><span class="avatar">E2</span><span class="slot-chip"><input type="time" value="09:00"> → <input type="time" value="12:00"></span><button class="addslot">+ créneau</button></div>
+          </div><div class="r2"><span class="amt">49,58 €</span><span class="hrs">8h + 3h</span></div></div>
+          <div class="day-row"><div class="d"><b>07</b><span>Mar.</span></div><div class="kids">
+            <div class="kidline"><span class="avatar">E1</span><span class="slot-chip"><input type="time" value="07:30"> → <input type="time" value="12:00"></span><span class="slot-chip"><input type="time" value="14:00"> → <input type="time" value="17:30"><button class="slot-x">✕</button></span><button class="addslot">+ créneau</button></div>
+          </div><div class="r2"><span class="amt">36,06 €</span><span class="hrs">8h00</span></div></div>
+          <div class="day-row"><div class="d"><b>08</b><span>Mer.</span></div><div class="kids">
+            <div class="kidline"><span class="avatar">E1</span><label class="abs-toggle"><input type="checkbox" checked> Absent</label><select class="motif-sel"><option>Congés</option></select></div>
+          </div><div class="r2"><span class="amt">0,00 €</span><span class="hrs">—</span></div></div>
+          <div class="day-row"><div class="d"><b>09</b><span>Jeu.</span></div><div class="kids">
+            <div class="kidline"><span class="avatar">E1</span><span class="slot-chip"><input type="time" value="08:00"> → <input type="time" value="16:00"></span><button class="addslot">+ créneau</button></div>
+          </div><div class="r2"><span class="amt">36,06 €</span><span class="hrs">8h00</span></div></div>
+          <div class="day-row"><div class="d"><b>10</b><span>Ven.</span></div><div class="kids">
+            <div class="kidline"><span class="avatar">E1</span><span class="slot-chip"><input type="time" value="08:00"> → <input type="time" value="16:00"></span><button class="addslot">+ créneau</button></div>
+          </div><div class="r2"><span class="amt">36,06 €</span><span class="hrs">8h00</span></div></div>
+          <div class="wtot"><span>Total semaine</span><b>157,76 €</b></div>
+
+          <div class="wk-head"><span>Semaine du 13/07 au 17/07</span><button class="wk-copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v6h6M20 20v-6h-6"/><path d="M5 15a7 7 0 0 0 12 3l3-3M19 9a7 7 0 0 0-12-3L4 9"/></svg>Recopier la semaine précédente</button></div>
+          <div class="day-row"><div class="d"><b>13</b><span>Lun.</span></div><div class="kids">
+            <div class="kidline"><span class="avatar">E1</span><span class="slot-chip"><input type="time" value="08:00"> → <input type="time" value="16:00"></span><button class="addslot">+ créneau</button></div>
+          </div><div class="r2"><span class="amt">36,06 €</span><span class="hrs">8h00</span></div></div>
+          <div class="day-row"><div class="d"><b>14</b><span>Mar.</span><span class="ferie">Férié</span></div><div class="kids">
+            <div class="kidline"><span class="avatar">E1</span><span class="slot-chip"><input type="time" value="08:00"> → <input type="time" value="16:00"></span><button class="addslot">+ créneau</button></div>
+          </div><div class="r2"><span class="amt">36,06 €</span><span class="hrs">8h00</span></div></div>
+          <div class="day-row"><div class="d"><b>15</b><span>Mer.</span></div><div class="kids">
+            <div class="kidline"><span class="avatar">E1</span><span class="slot-chip"><input type="time" value="08:00"> → <input type="time" value="16:00"></span><button class="addslot">+ créneau</button></div>
+          </div><div class="r2"><span class="amt">36,06 €</span><span class="hrs">8h00</span></div></div>
+          <div class="day-row"><div class="d"><b>16</b><span>Jeu.</span></div><div class="kids">
+            <div class="kidline"><span class="avatar">E1</span><span class="slot-chip"><input type="time" value="08:00"> → <input type="time" value="16:00"></span><button class="addslot">+ créneau</button></div>
+            <div class="kidline"><span class="avatar">E2</span><span class="slot-chip"><input type="time" value="13:00"> → <input type="time" value="17:00"></span><button class="addslot">+ créneau</button></div>
+          </div><div class="r2"><span class="amt">54,09 €</span><span class="hrs">8h + 4h</span></div></div>
+          <div class="day-row"><div class="d"><b>17</b><span>Ven.</span></div><div class="kids">
+            <div class="kidline"><span class="avatar">E1</span><label class="abs-toggle"><input type="checkbox" checked> Absent</label><select class="motif-sel"><option>Malade</option></select></div>
+          </div><div class="r2"><span class="amt">0,00 €</span><span class="hrs">—</span></div></div>
+          <div class="wtot"><span>Total semaine</span><b>162,27 €</b></div>
+
+          <div class="wk-head"><span>Semaine du 20/07 au 24/07</span><button class="wk-copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v6h6M20 20v-6h-6"/><path d="M5 15a7 7 0 0 0 12 3l3-3M19 9a7 7 0 0 0-12-3L4 9"/></svg>Recopier la semaine précédente</button></div>
+          <div class="day-row"><div class="d"><b>20</b><span>Lun.</span></div><div class="kids">
+            <div class="kidline"><span class="avatar">E1</span><span class="slot-chip"><input type="time" value="08:00"> → <input type="time" value="16:00"></span><button class="addslot">+ créneau</button></div>
+          </div><div class="r2"><span class="amt">36,06 €</span><span class="hrs">8h00</span></div></div>
+          <div class="day-row"><div class="d"><b>21</b><span>Mar.</span></div><div class="kids">
+            <div class="kidline"><span class="avatar">E1</span><span class="slot-chip"><input type="time" value="08:00"> → <input type="time" value="16:00"></span><button class="addslot">+ créneau</button></div>
+          </div><div class="r2"><span class="amt">36,06 €</span><span class="hrs">8h00</span></div></div>
+          <div class="day-row"><div class="d"><b>22</b><span>Mer.</span></div><div class="kids">
+            <div class="kidline"><span class="avatar">E1</span><span class="slot-chip"><input type="time" value="08:00"> → <input type="time" value="16:00"></span><button class="addslot">+ créneau</button></div>
+          </div><div class="r2"><span class="amt">36,06 €</span><span class="hrs">8h00</span></div></div>
+          <div class="day-row"><div class="d"><b>23</b><span>Jeu.</span></div><div class="kids">
+            <div class="kidline"><span class="avatar">E1</span><span class="slot-chip"><input type="time" value="08:00"> → <input type="time" value="16:00"></span><button class="addslot">+ créneau</button></div>
+          </div><div class="r2"><span class="amt">36,06 €</span><span class="hrs">8h00</span></div></div>
+          <div class="day-row"><div class="d"><b>24</b><span>Ven.</span></div><div class="kids">
+            <div class="kidline"><span class="avatar">E1</span><span class="slot-chip"><input type="time" value="08:00"> → <input type="time" value="16:00"></span><button class="addslot">+ créneau</button></div>
+          </div><div class="r2"><span class="amt">36,06 €</span><span class="hrs">8h00</span></div></div>
+          <div class="wtot"><span>Total semaine</span><b>180,30 €</b></div>
+
+          <div class="wk-head"><span>Semaine du 27/07 au 31/07</span><button class="wk-copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v6h6M20 20v-6h-6"/><path d="M5 15a7 7 0 0 0 12 3l3-3M19 9a7 7 0 0 0-12-3L4 9"/></svg>Recopier la semaine précédente</button></div>
+          <div class="day-row"><div class="d"><b>27</b><span>Lun.</span></div><div class="kids">
+            <div class="kidline"><span class="avatar">E1</span><span class="slot-chip"><input type="time" value="08:00"> → <input type="time" value="16:00"></span><button class="addslot">+ créneau</button></div>
+          </div><div class="r2"><span class="amt">36,06 €</span><span class="hrs">8h00</span></div></div>
+          <div class="day-row"><div class="d"><b>28</b><span>Mar.</span></div><div class="kids">
+            <div class="kidline"><span class="avatar">E1</span><span class="slot-chip"><input type="time" value="08:00"> → <input type="time" value="16:00"></span><button class="addslot">+ créneau</button></div>
+          </div><div class="r2"><span class="amt">36,06 €</span><span class="hrs">8h00</span></div></div>
+          <div class="day-row"><div class="d"><b>29</b><span>Mer.</span></div><div class="kids">
+            <div class="kidline"><span class="avatar">E1</span><span class="slot-chip"><input type="time" value="08:00"> → <input type="time" value="16:00"></span><button class="addslot">+ créneau</button></div>
+          </div><div class="r2"><span class="amt">36,06 €</span><span class="hrs">8h00</span></div></div>
+          <div class="day-row"><div class="d"><b>30</b><span>Jeu.</span></div><div class="kids">
+            <div class="kidline"><span class="avatar">E1</span><span class="slot-chip"><input type="time" value="08:00"> → <input type="time" value="16:00"></span><button class="addslot">+ créneau</button></div>
+          </div><div class="r2"><span class="amt">36,06 €</span><span class="hrs">8h00</span></div></div>
+          <div class="day-row"><div class="d"><b>31</b><span>Ven.</span></div><div class="kids">
+            <div class="kidline"><span class="avatar">E1</span><span class="slot-chip"><input type="time" value="08:00"> → <input type="time" value="16:00"></span><button class="addslot">+ créneau</button></div>
+          </div><div class="r2"><span class="amt">36,06 €</span><span class="hrs">8h00</span></div></div>
+          <div class="wtot"><span>Total semaine</span><b>180,30 €</b></div>
+        </div>
+      </div>
+
+      <div class="card glass">
+        <h2>Déclaration du mois — Juillet 2026</h2>
+        <p class="sub">Montants de la fiche de paie (net imposable et IRF).</p>
+        <div class="field"><label>Revenu net imposable<span class="h">Montant « net imposable » du bulletin</span></label><input value="0 €"></div>
+        <div class="field"><label>Indemnités (IRF)<span class="h">Laissez 0 si vous n'en avez pas</span></label><input value="0 €"></div>
+      </div>
+    </div>
+
+    <div class="aside">
+      <div class="hero glass-strong">
+        <div class="lbl">Revenu imposable après abattement</div>
+        <div class="hint">À reporter sur votre déclaration.</div>
+        <div class="val">0,00 €</div>
+        <div class="note">Renseignez votre fiche de paie pour obtenir le montant.</div>
+        <div class="det">
+          <div class="row"><span>Total perçu</span><b>0,00 €</b></div>
+          <div class="row"><span>Abattement de juillet</span><b>35,76 €</b></div>
+        </div>
+        <button class="btn btn-primary cta" style="position:relative;width:100%;justify-content:center"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Imprimer ce mois<span class="pin">2</span></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend glass">
+    <h3>Repositionnement des actions — pourquoi</h3>
+    <ul style="list-style:none;margin:0;padding:0">
+      <li><span class="n">1</span>« Sauvegarder » et le statut « Enregistré » fusionnent en une seule pastille : moins de boutons, l'état est visible en continu (cliquable pour forcer une sauvegarde).</li>
+      <li><span class="n">2</span>« Importer » devient une icône secondaire (usage rare, une fois la sauvegarde restaurée) au lieu d'un bouton pleine largeur en permanence.</li>
+      <li><span class="n">3</span>« Imprimer » se rapproche du résultat, là où l'on décide vraiment d'imprimer, plutôt que de rester dans la barre du haut en permanence.</li>
+      <li><span class="n">4</span>Tuto et explication restent repliés par défaut (comme aujourd'hui) mais avec un chevron animé pour un état d'ouverture plus lisible.</li>
+      <li><span class="n">5</span>« Mes infos » quitte la barre de mois (ce n'est pas une période) pour une icône ⚙ dans la toolbar, à côté des autres réglages.</li>
+      <li><span class="n">6</span>Sur mobile, un bouton flottant « Imprimer » reste accessible au pouce même en scrollant tout en haut du tableau.</li>
+    </ul>
+  </div>
+</div>
+<button class="fab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></button>
+<script>
+(()=>{const sentinel=document.createElement('div');sentinel.style.cssText='position:absolute;top:0;height:1px';document.querySelector('.wrap').prepend(sentinel);const group=document.getElementById('topbarGroup');new IntersectionObserver(([e])=>group.classList.toggle('stuck',!e.isIntersecting),{threshold:1}).observe(sentinel);})();
+document.getElementById('ri').onclick=e=>{if(e.target.dataset.v){document.body.dataset.intensity=e.target.dataset.v;[...e.currentTarget.children].forEach(c=>c.classList.toggle('on',c===e.target))}};
+document.getElementById('rp').onclick=e=>{if(e.target.dataset.v){document.body.dataset.palette=e.target.dataset.v;[...e.currentTarget.children].forEach(c=>c.classList.toggle('on',c===e.target))}};
+document.getElementById('dataBtn').onclick=e=>{e.stopPropagation();document.getElementById('dataMenu').classList.toggle('open')};
+document.addEventListener('click',()=>document.getElementById('dataMenu').classList.remove('open'));
+(()=>{const w=document.getElementById('mtabsWrap'),t=document.getElementById('mtabs');const upd=()=>{w.classList.toggle('at-start',t.scrollLeft<4);w.classList.toggle('at-end',t.scrollLeft+t.clientWidth>t.scrollWidth-4)};t.addEventListener('scroll',upd);window.addEventListener('resize',upd);upd();})();
+document.querySelectorAll('.fold-head').forEach(h=>h.onclick=()=>h.parentElement.classList.toggle('open'));
+</script>
+</body></html>

@@ -86,6 +86,19 @@ Périmètre d'origine :
 - La fusion horodatée sert aussi le mono-appareil (une restauration ne peut plus régresser des données) → **à construire d'office au lot 6**, logique de fusion pure et testée.
 - **Serveur de synchronisation toujours rejeté** ; ne serait rediscuté (mini-API chiffrée sur mesure, jamais un CMS) que si la friction des 2 gestes iPhone se révélait bloquante à l'usage réel.
 
+## Lot 8 — Redesign visuel "Liquid Glass" — ✅ fait le 2026-07-19
+
+**Origine** : handoff externe préparé par l'utilisateur (`handoff_liquid_glass/` à la racine du repo — maquettes HTML + README détaillé, teinte Prune et intensité Médium déjà validées en amont). Détail technique complet dans `CLAUDE.md` (section « Design Liquid Glass »).
+
+- ✅ Système de tokens oklch (`00-vars-base.css`) — glass/glass-strong, btn, pill — noms de variables historiques conservés (aucune régression CSS ailleurs).
+- ✅ Toolbar consolidée : bouton « Données » (menu Sauvegarder/Importer/sauvegarde auto), icône « Mes informations » sortie de la barre des mois, icône Imprimer généralisée (peut exister à 2 endroits).
+- ✅ Navigation : années en pastilles verre, mois en rangée scrollable avec dégradés de bord.
+- ✅ Tableau mensuel réécrit en cartes glass (`day-rows.js`/`month-table.js`), contrat `data-*` strictement conservé — zéro changement dans les handlers de calcul d'`app.js`. 44 tests toujours verts.
+- ✅ Tous les écrans restants reskinnés (héros, récap annuel + tableau propre indépendant, Mes informations, tuto/modale, paramètres SMIC, fiche de paie).
+- ✅ Icônes et `theme-color` de la PWA alignés sur la teinte Prune.
+- ✅ PDF et impression **non touchés** (décision du handoff).
+- ⚠️ **Vérification navigateur non encore faite par l'utilisateur** — c'est le plus gros changement DOM du projet après le tableau v2 du lot 3.
+
 ## Lot 7 — Pièces justificatives (décidé le 2026-07-19, à faire après le lot 6)
 
 **Besoin** : les heures proviennent d'une fiche papier signée par les parents ; en cas de contrôle il faut retrouver, par mois, le calcul ET la pièce signée.

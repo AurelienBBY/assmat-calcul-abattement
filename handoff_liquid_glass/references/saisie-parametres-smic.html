@@ -1,0 +1,49 @@
+<!-- @dsCard group="Saisie" name="Paramètres SMIC" subtitle="Forfait, formule prorata, SMIC de référence — liquid glass" -->
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="./styles.css">
+<style>
+body{margin:0;padding:36px 20px;min-height:100vh}
+.wrap{max-width:720px;margin:0 auto}
+.card{padding:22px 24px;margin-bottom:18px}
+.card h2{margin:0 0 4px;font-size:16px}
+.card .sub{margin:0 0 14px;color:var(--muted);font-size:13.5px}
+.recap{border-radius:14px;padding:14px 16px;background:oklch(100% 0 0 / .4);border:.5px solid oklch(100% 0 0 / .5)}
+.recap ul{margin:0;padding-left:18px}
+.recap li{margin:9px 0;font-size:13.5px;line-height:1.5}
+.recap li .hint{color:var(--muted);font-size:12.5px}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;padding:2px 7px;border-radius:8px;background:oklch(100% 0 0 / .7);border:1px solid oklch(0% 0 0 / .1)}
+.missing{margin-top:14px;border-radius:14px;padding:14px 16px;background:oklch(48% .12 70 / .1)}
+.missing .t{font-weight:700;font-size:13.5px;color:oklch(40% .1 70)}
+.missing .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px}
+.missing input{font:inherit;font-size:13.5px;padding:7px 10px;border:1px solid oklch(0% 0 0 / .12);border-radius:8px;background:#fff;width:100px}
+.missing label{font-size:13px;font-weight:600}
+.missing .h{color:var(--muted);font-size:12px}
+</style></head>
+<body data-palette="prune" data-intensity="medium">
+<div class="wrap">
+  <div class="card glass">
+    <h2>Paramètres de calcul</h2>
+    <p class="sub">Somme forfaitaire à déduire pour l'année 2026.</p>
+    <div class="recap">
+      <ul>
+        <li><strong>Forfait (par enfant, garde ≥ 8h)</strong> : <strong>36,06 €</strong> <span class="hint">(= 3 × SMIC horaire brut au 01/01/2026)</span></li>
+        <li><strong>Forfait (par enfant, garde &lt; 8h)</strong> : <span class="hint">(forfait ÷ 8) × heures de présence</span></li>
+        <li class="hint">Calcul par jour et par enfant. SMIC au 01/01/2026 : <strong>12,02 €</strong>.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card glass">
+    <h2>Si le SMIC n'est pas encore connu</h2>
+    <p class="sub">Cas d'une année future ou non renseignée dans la table de référence.</p>
+    <div class="missing">
+      <div class="t">SMIC manquant pour l'année 2027</div>
+      <div class="row">
+        <label for="smic">Saisir le SMIC horaire brut au 1er janvier 2027 :</label>
+        <input id="smic" placeholder="Ex : 12,02">
+      </div>
+      <p class="h" style="margin:8px 0 0">Cette valeur sert à calculer le forfait journalier (3 × SMIC).</p>
+    </div>
+  </div>
+</div>
+</body></html>

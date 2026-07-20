@@ -1,0 +1,73 @@
+<!-- @dsCard group="Aperçu" viewport="1000x1200" name="Onglet Mes infos" subtitle="Identité + enfants + semaine type — liquid glass" -->
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="./styles.css">
+<style>
+body{margin:0;min-height:100vh;font-size:16px}
+.wrap{max-width:820px;margin:0 auto;padding:56px 20px 80px}
+.h1title{margin:0 0 48px;font-size:20px;font-weight:700;line-height:1.5}
+.card{padding:22px 24px;margin-bottom:20px}
+.card h2{margin:0 0 4px;font-size:16px}
+.card .sub{margin:0 0 30px;color:var(--muted);font-size:13.5px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:12px 0;border-bottom:1px solid oklch(0% 0 0 / .06)}
+.row:last-child{border-bottom:none}
+.row label{font-weight:700;font-size:14.5px}
+.row .h{display:block;font-weight:400;color:var(--muted);font-size:13px;margin-top:2px}
+.row input{min-width:240px;text-align:left;font:inherit;font-size:14.5px;padding:9px 12px;border:1px solid oklch(0% 0 0 / .12);border-radius:10px;background:oklch(100% 0 0 / .7)}
+
+.child{padding:16px 18px;margin-bottom:14px}
+.child.off{opacity:.65}
+.chead{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.cname{font:inherit;font-weight:700;font-size:15px;padding:9px 12px;border:1px solid oklch(0% 0 0 / .12);border-radius:10px;background:oklch(100% 0 0 / .7);min-width:180px}
+.toggle{border:1px solid oklch(0% 0 0 / .12);background:oklch(100% 0 0 / .5);color:var(--muted);border-radius:999px;padding:7px 15px;font-size:12.5px;font-weight:700;cursor:pointer}
+.wt{margin-top:16px}
+.wt-title{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.day{display:flex;flex-direction:column;gap:6px}
+.day b{font-size:12.5px;font-weight:700;color:var(--muted)}
+.day input{font:inherit;font-size:12.5px;padding:6px 7px;border:1px solid oklch(0% 0 0 / .12);border-radius:8px;background:oklch(100% 0 0 / .7);width:100%}
+.hint{color:var(--muted);font-size:13px;margin:10px 0 0}
+
+@media (max-width:640px){
+  .grid{grid-template-columns:repeat(2,1fr)}
+  .row{flex-direction:column;align-items:stretch}
+  .row input{min-width:0;width:100%}
+}
+</style></head>
+<body data-palette="prune" data-intensity="medium">
+<div class="wrap">
+  <div class="h1title">Mes infos</div>
+
+  <div class="card glass">
+    <h2>Qui suis-je</h2>
+    <p class="sub">Rempli une seule fois — ces informations apparaissent en en-tête des documents imprimés.</p>
+    <div class="row"><label>Nom et prénom</label><input value="Marie Dubois"></div>
+    <div class="row"><label>Employeur<span class="h">Nom du CCAS ou de la crèche familiale</span></label><input value="CCAS de Grenoble"></div>
+    <div class="row"><label>Mention sur les documents<span class="h">Facultatif — ex. n° d'agrément</span></label><input placeholder="—"></div>
+  </div>
+
+  <div class="card glass">
+    <h2>Les enfants</h2>
+    <p class="sub">Les prénoms remplacent « Enfant 1/2/3 » dans la saisie et sur les relevés. La semaine type permet de pré-remplir un mois vide en un clic.</p>
+
+    <div class="child glass-strong">
+      <div class="chead"><input class="cname" value="Lina"><button class="toggle">Désactiver</button></div>
+      <div class="wt">
+        <div class="wt-title">Semaine type</div>
+        <div class="grid">
+          <div class="day"><b>Lundi</b><input type="time" value="08:30"><input type="time" value="17:30"></div>
+          <div class="day"><b>Mardi</b><input type="time" value="08:30"><input type="time" value="17:30"></div>
+          <div class="day"><b>Mercredi</b><input type="time" value="08:30"><input type="time" value="12:30"></div>
+          <div class="day"><b>Jeudi</b><input type="time" value="08:30"><input type="time" value="17:30"></div>
+          <div class="day"><b>Vendredi</b><input type="time"><input type="time"></div>
+        </div>
+        <p class="hint">Laissez un jour vide si l'enfant ne vient pas ce jour-là.</p>
+      </div>
+    </div>
+
+    <div class="child glass off">
+      <div class="chead"><input class="cname" value="Théo"><button class="toggle">Réactiver</button></div>
+      <p class="hint">Enfant désactivé : il reste visible sur les mois passés, mais n'est plus pré-rempli.</p>
+    </div>
+  </div>
+</div>
+</body></html>
