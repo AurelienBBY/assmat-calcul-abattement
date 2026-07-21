@@ -1,0 +1,80 @@
+/* ============================================================================
+   61-reference.css — Fiche de référence (app/modals/reference.html)
+   ----------------------------------------------------------------------------
+   Chargée uniquement par la page iframe de la modale "Points d'attention" —
+   pas par index.html. Réutilise .glass/.glass-strong et les tokens de
+   00-vars-base.css (déjà liée par reference.html).
+   ========================================================================== */
+
+.ref-hero{ padding: 20px 22px; margin-bottom: 14px; }
+.ref-hero .eyebrow{
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--accent-dark);
+}
+.ref-hero h2{ font-size: 18px; margin: 6px 0 8px; }
+.ref-hero p{ margin: 0; color: var(--muted); font-size: 13.5px; max-width: 70ch; }
+
+.ref-warn{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--warn-pale);
+  color: var(--warn);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.ref-section-title{
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 20px 2px 10px;
+}
+
+.ref-grid{
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.ref-card{ padding: 16px 18px; }
+.ref-card .icon{
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--accent-pale);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+.ref-card h4{ font-size: 14px; margin: 0 0 6px; }
+.ref-card p{ margin: 0 0 8px; font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+.ref-card ul{ margin: 0; padding-left: 18px; font-size: 12.5px; color: var(--ink); }
+.ref-card li{ margin-bottom: 4px; }
+
+.ref-card .callout{
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--warn-pale);
+  color: var(--warn);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+.ref-card .callout.ok{ background: var(--ok-pale); color: var(--ok); }
+
+.ref-card.wide{ grid-column: 1 / -1; }
+
+@media (max-width: 620px){
+  .ref-grid{ grid-template-columns: 1fr; }
+}

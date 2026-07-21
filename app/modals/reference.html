@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Points d’attention — Calcul abattement</title>
+
+  <!-- Styles de l’app (chemins relatifs depuis app/modals/) -->
+  <link rel="stylesheet" href="../styles/00-vars-base.css" />
+  <link rel="stylesheet" href="../styles/10-layout-cards.css" />
+  <link rel="stylesheet" href="../styles/61-reference.css" />
+
+  <style>
+    /* Page chargée dans l’iframe : neutre + lisible, le verre du panneau
+       parent (.modal__panel) reste visible à travers. */
+    html, body { margin: 0; padding: 0; }
+    body { background: transparent; }
+    .ref-embed-wrap { padding: 4px 4px 14px; }
+  </style>
+</head>
+<body>
+  <div class="ref-embed-wrap">
+
+    <section class="ref-hero glass-strong">
+      <div class="eyebrow">Fiche de référence</div>
+      <h2>Comment bien utiliser le calcul de l’abattement</h2>
+      <p>
+        Le geste mensuel se découvre dans Accueil (« Comment ça marche ») — cette fiche rassemble les points
+        d’attention et les cas particuliers, à consulter quand besoin. Elle sert aussi à vérifier la cohérence
+        entre feuilles de présence, fiche de paie et calcul.
+      </p>
+      <div class="ref-warn">⚠️ Aide au calcul — sans valeur justificative en cas de contrôle</div>
+    </section>
+
+    <div class="ref-section-title">Ce qu’il faut savoir</div>
+    <div class="ref-grid">
+      <div class="ref-card glass">
+        <div class="icon">🕐</div>
+        <h4>Uniquement les heures réellement travaillées</h4>
+        <p>
+          L’abattement se calcule sur le <strong>temps de présence effectif</strong> des enfants — jamais sur le
+          temps de travail de l’assistante maternelle, ni sur les indemnités de frais (IRF).
+        </p>
+        <div class="callout">Ne pas renseigner : formation, congés, RTT, absences, heures non effectuées.</div>
+      </div>
+
+      <div class="ref-card glass">
+        <div class="icon">👧</div>
+        <h4>1 enfant = 1 ligne</h4>
+        <p>
+          Jusqu’à 3 enfants par jour. Une journée avec 1 seul enfant présent ? Seule la 1ʳᵉ ligne se remplit,
+          les autres restent vides et ne comptent pas dans le calcul.
+        </p>
+      </div>
+
+      <div class="ref-card glass">
+        <div class="icon">📎</div>
+        <h4>Les feuilles signées restent l’original</h4>
+        <p>
+          Les tableaux et documents imprimés par cet outil aident au calcul mais n’ont aucune valeur justificative.
+        </p>
+        <div class="callout">En cas de contrôle, seules les feuilles de présence signées font foi.</div>
+      </div>
+
+      <div class="ref-card glass">
+        <div class="icon">💶</div>
+        <h4>Net imposable, pas le net versé</h4>
+        <p>
+          Le montant à comparer avec le résultat de l’outil est le <strong>net imposable</strong> de la fiche de
+          paie — pas le montant viré sur le compte, ni le « net à payer ».
+        </p>
+      </div>
+    </div>
+
+    <div class="ref-section-title">Cas particuliers</div>
+    <div class="ref-grid">
+      <div class="ref-card wide glass">
+        <div class="icon">📆</div>
+        <h4>Versements décalés (ex. CCAS de Grenoble)</h4>
+        <p>
+          Les IRF se rattachent au <strong>mois où elles sont versées</strong>, pas au mois de présence — en
+          fiscalité, ce sont les revenus encaissés qui comptent.
+        </p>
+        <div class="callout ok">Exemple : des IRF de janvier versées en février se déclarent avec le mois de février.</div>
+      </div>
+
+      <div class="ref-card glass">
+        <div class="icon">📊</div>
+        <h4>SMIC de l’année</h4>
+        <p>
+          Déjà renseigné la plupart du temps. S’il manque (tout début d’année), le champ apparaît dans
+          « Paramètres de calcul » — le résultat se met à jour aussitôt.
+        </p>
+      </div>
+
+      <div class="ref-card glass">
+        <div class="icon">🧮</div>
+        <h4>IRF hors calcul de l’abattement</h4>
+        <p>
+          Elles servent uniquement au rapprochement avec la fiche de paie, jamais à l’abattement lui-même.
+        </p>
+      </div>
+    </div>
+
+    <div class="ref-section-title">Sauvegarde &amp; impression</div>
+    <div class="ref-grid">
+      <div class="ref-card glass">
+        <div class="icon">💾</div>
+        <h4>Sauvegarde</h4>
+        <p>
+          Si un dossier de sauvegarde automatique est activé (ex. OneDrive), tout s’enregistre seul à chaque
+          modification. Sinon, le menu « Données » permet de sauvegarder ou d’importer l’<strong>année complète</strong>
+          — un import fusionne avec vos données, il ne les remplace jamais.
+        </p>
+      </div>
+
+      <div class="ref-card glass">
+        <div class="icon">🖨️</div>
+        <h4>Impression</h4>
+        <p>
+          Le bouton Imprimer génère le relevé du mois (Déclaration) ou le récapitulatif annuel (Ma déclaration).
+          « Imprimer le dossier complet », dans Ma déclaration, assemble le récap et tous les relevés mensuels
+          renseignés en un seul document.
+        </p>
+      </div>
+    </div>
+
+    <div class="ref-section-title">Bonnes pratiques</div>
+    <div class="ref-grid">
+      <div class="ref-card wide glass">
+        <div class="icon">✅</div>
+        <h4>À conserver, mois après mois</h4>
+        <ul>
+          <li>Les feuilles de présence officielles signées</li>
+          <li>Les fichiers de sauvegarde exportés</li>
+          <li>Les documents imprimés (relevés, récap)</li>
+          <li>Les fiches de paie correspondantes</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

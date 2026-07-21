@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="app/styles/30-year-params.css" />
   <link rel="stylesheet" href="app/styles/40-table.css" />
   <link rel="stylesheet" href="app/styles/45-accueil.css" />
+  <link rel="stylesheet" href="app/styles/46-onboarding.css" />
 
   <link rel="stylesheet" href="app/styles/60-tuto.css" />
   <link rel="stylesheet" href="app/styles/70-modal.css" />
@@ -121,7 +122,7 @@
   </div>
 
   <!-- =========================================================
-       ACCUEIL — bienvenue + raccourcis (JS) + tuto + règles (statiques)
+       ACCUEIL — bienvenue + raccourcis + onboarding (JS) + règles (statique)
        Visible uniquement quand le pilier actif est "accueil" (app.js).
        ========================================================= -->
   <div id="accueil-section" class="no-print">
@@ -132,33 +133,9 @@
       </div>
     </section>
 
-    <section id="tuto-section">
-      <h2>Comment fonctionne cet outil ?</h2>
-
-      <p class="hint">
-        Cet outil vous aide à calculer l’<strong>abattement fiscal des assistantes maternelles</strong> pour préparer votre déclaration.
-      </p>
-
-      <p>
-        Le principe est simple : vous remplissez vos <strong>jours de garde mois par mois</strong>, et l’outil calcule automatiquement
-        l’abattement correspondant (par jour et par enfant), puis affiche un récapitulatif.
-      </p>
-
-      <ol class="tuto-steps">
-        <li><strong>Choisissez la période</strong> à compléter (année et mois).</li>
-        <li><strong>Renseignez vos jours</strong> : heures de présence, nombre d’enfants, indemnités si nécessaire.</li>
-        <li><strong>Vérifiez le récapitulatif</strong> (abattement total + montant à déclarer).</li>
-        <li><strong>Sauvegardez</strong> ou <strong>imprimez</strong> pour archiver le mois.</li>
-      </ol>
-
-      <p class="hint">
-        💡 Astuce : exportez le mois une fois terminé, puis importez-le plus tard si vous devez le modifier ou le vérifier.
-      </p>
-
-      <div class="tuto-actions">
-        <button type="button" class="btn-secondary" data-open-tuto>
-          Voir le tutoriel détaillé
-        </button>
+    <section id="onboarding-section">
+      <div id="accueil-onboarding">
+        <!-- Généré dynamiquement par app.js (R.renderOnboarding) -->
       </div>
     </section>
 
@@ -310,7 +287,7 @@
 
   <div class="modal__panel glass-strong" role="dialog" aria-modal="true" aria-labelledby="tuto-modal-title" tabindex="-1">
     <header class="modal__header">
-      <h2 id="tuto-modal-title">Tutoriel détaillé</h2>
+      <h2 id="tuto-modal-title">Points d’attention</h2>
       <button type="button" class="modal__close" data-close-tuto aria-label="Fermer">✕</button>
     </header>
 
@@ -318,7 +295,7 @@
       <iframe
         id="tuto-modal-frame"
         class="tuto-embed"
-        title="Tutoriel détaillé"
+        title="Points d’attention"
         src=""
         loading="lazy"
     ></iframe>
@@ -364,6 +341,7 @@
   <script src="app/lib/render/index.js"></script>
   <script src="app/lib/render/explain.js"></script>
   <script src="app/lib/render/accueil.js"></script>
+  <script src="app/lib/render/onboarding.js"></script>
   <script src="app/lib/render/period.js"></script>
   <script src="app/lib/render/rules.js"></script>
   <script src="app/lib/render/day-rows.js"></script>
@@ -383,14 +361,16 @@
   <script src="app/app.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-    const openBtn = document.querySelector('[data-open-tuto]');
     const frame = document.getElementById('tuto-modal-frame');
+    if (!frame) return;
 
-    if (!openBtn || !frame) return;
-
-    openBtn.addEventListener('click', () => {
+    // Délégation : le bouton [data-open-tuto] vit maintenant dans Accueil
+    // (render/onboarding.js), recréé à chaque affichage — jamais présent au
+    // DOMContentLoaded si Accueil n'est pas le premier pilier ouvert.
+    document.addEventListener('click', (e) => {
+      if (!(e.target instanceof Element) || !e.target.closest('[data-open-tuto]')) return;
       if (frame.dataset.loaded) return;
-      frame.src = 'app/modals/tuto.html';
+      frame.src = 'app/modals/reference.html';
       frame.dataset.loaded = '1';
     });
   });

@@ -1,15 +1,9 @@
 /* ============================================================================
-   60-tuto.css — Box tutoriel (aperçu) — verre
+   60-tuto.css — Bouton "Voir les points d'attention" (Accueil)
    ----------------------------------------------------------------------------
-   IMPORTANT :
-   - Le conteneur #tuto-section hérite du style "carte" (verre) commun.
-   - Ce fichier ne contient que la mise en forme interne de la box.
+   Bouton ouvrant la modale de la fiche de référence (render/onboarding.js),
+   partagé aussi par le raccourci "book" des cartes d'Accueil (accueil.js).
    ========================================================================== */
-
-#tuto-section h2{ margin: 0 0 8px 0; }
-
-.tuto-steps{ margin: 0; padding-left: 18px; }
-.tuto-steps li{ margin: 6px 0; }
 
 .tuto-actions{
   margin-top: 10px;

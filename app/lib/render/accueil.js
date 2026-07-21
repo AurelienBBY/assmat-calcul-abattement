@@ -107,8 +107,8 @@
       }));
       grid.appendChild(quickCard({
         icon: "book",
-        title: "Voir le tutoriel",
-        hint: "Comment fonctionne l'outil",
+        title: "Voir les points d'attention",
+        hint: "Cas particuliers, justificatifs, sauvegarde",
         onClick: handlers.onOpenTuto
       }));
     } else {

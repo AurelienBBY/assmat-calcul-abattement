@@ -1,9 +1,10 @@
 /* ============================================================================
-   45-accueil.css — Écran d'accueil (bienvenue, raccourcis, tuto, règles)
+   45-accueil.css — Écran d'accueil (bienvenue, raccourcis, règles)
    ----------------------------------------------------------------------------
-   #tuto-section / #explain-section : contenu inchangé (déplacé depuis les
-   vues mensuelles), plus jamais repliable — l'écran Accueil n'est visité
-   qu'occasionnellement, pas besoin de le condenser.
+   #explain-section : contenu inchangé (déplacé depuis les vues mensuelles),
+   plus jamais repliable — l'écran Accueil n'est visité qu'occasionnellement,
+   pas besoin de le condenser. Le "comment ça marche" en 3 étapes vit dans
+   46-onboarding.css (#onboarding-section).
    ========================================================================== */
 
 .hero-home{ padding: 26px 24px; }

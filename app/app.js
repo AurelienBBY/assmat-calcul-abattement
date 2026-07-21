@@ -1011,6 +1011,11 @@
                 if (btn) btn.click();
             }
         });
+
+        const onboardingEl = document.getElementById("accueil-onboarding");
+        if (onboardingEl && typeof R.renderOnboarding === "function") {
+            R.renderOnboarding(onboardingEl, ctx);
+        }
     }
 
     // --- Écran Ma déclaration : récap annuel + sélecteur d'année dédié ------
@@ -1324,7 +1329,6 @@ function initTutoModal() {
     if (!modal) return;
 
     const panel = modal.querySelector(".modal__panel");
-    const openBtns = document.querySelectorAll("[data-open-tuto]");
     const closeBtns = modal.querySelectorAll("[data-close-tuto]");
 
     let lastActiveEl = null;
@@ -1343,7 +1347,13 @@ function initTutoModal() {
 
     const isOpen = () => modal.getAttribute("aria-hidden") === "false";
 
-    openBtns.forEach((btn) => btn.addEventListener("click", () => setOpen(true)));
+    // Délégation : le bouton [data-open-tuto] vit dans Accueil (render/
+    // onboarding.js), recréé à chaque affichage — jamais garanti présent au
+    // moment de cette liaison unique.
+    document.addEventListener("click", (e) => {
+        if (!(e.target instanceof Element) || !e.target.closest("[data-open-tuto]")) return;
+        setOpen(true);
+    });
     closeBtns.forEach((btn) => btn.addEventListener("click", () => setOpen(false)));
 
     document.addEventListener("keydown", (e) => {
