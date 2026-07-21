@@ -1,6 +1,6 @@
 # Feuille de route — Assmat Calcul abattement
 
-Mise à jour : 2026-07-19. Ce document fixe **où on va et pourquoi**. Le « comment coder » vit dans `CLAUDE.md` ; ici on ne liste que les objectifs et les décisions produit.
+Mise à jour : 2026-07-21. Ce document fixe **où on va et pourquoi**. Le « comment coder » vit dans `CLAUDE.md` ; ici on ne liste que les objectifs et les décisions produit.
 
 ## Cap produit
 
@@ -50,7 +50,7 @@ Cible de distribution : **GitHub Pages + PWA** (lot 6) — elle a un raccourci, 
 
 - ✅ **Gabarit dédié** `#print-doc` généré en JS (bouton Imprimer + `beforeprint` pour Cmd+P) ; l'app entière est masquée à l'impression. Pas de lib PDF.
 - ✅ **Deux documents** : relevé mensuel (semaines → enfants → créneaux « 8h30 – 17h30 », absences motivées, fériés, sous-totaux, synthèse + règles) et récap annuel (encadré **case 1AJ** en tête, 12 mois, mémo, mention « conservez les relevés en annexe »). En-tête d'identité branché sur `abmat:profile` (fallback générique tant que le lot 5 n'est pas fait). Modèle mensuel testé (`compute/month-print.js`).
-- ✅ **On imprime ce qu'on regarde** (décision 2026-07-19) : vue mensuelle → relevé du mois, vue RÉCAP → récap de l'année. Option ultérieure conservée : « Imprimer le dossier complet de l'année » (12 relevés + récap, sauts de page).
+- ✅ **On imprime ce qu'on regarde** (décision 2026-07-19) : relevé du mois en Déclaration, récap de l'année en Ma déclaration. « Imprimer le dossier complet de l'année » (relevés renseignés + récap, sauts de page) : fait au lot 10.
 
 ## Lot 5 — Parcours utilisateur — ✅ cœur fait le 2026-07-19
 
@@ -111,6 +111,16 @@ Périmètre d'origine :
 - ✅ Pilier mémorisé (`abmat:ui:pillar`) : Accueil par défaut sur un appareil vierge, Déclaration sinon (n'interrompt pas une habitude déjà prise après mise à jour de l'outil).
 - ✅ Nettoyage : `explain.js` perd un paramètre mort depuis l'origine ; le mécanisme de pliage première-visite (`abmat:ui:visited`) est retiré, devenu sans objet.
 - 48 tests verts (dont 4 nouveaux pour les années déclarées). ⚠️ **Vérification navigateur non encore faite** — changement de navigation structurel, à tester en priorité (les 3 onglets, le contexte adaptatif d'Accueil selon le profil, le badge déclarée).
+
+## Lot 10 — 4ᵉ pilier « Ma déclaration » + dossier complet — ✅ fait le 2026-07-21
+
+**Origine** : retour utilisateur après validation du lot 9 — le RÉCAP, enterré comme 13ᵉ onglet de Déclaration, méritait sa propre destination avec des résultats bien visibles. Discussion en plusieurs temps (nom du pilier, style de navigation par année, portée du dossier complet), tranchée avant code : **« Ma déclaration »**, mêmes pastilles d'années qu'aujourd'hui, **dossier complet inclus dans ce lot** (pas différé). Maquette artifact validée avant implémentation. Détail technique complet dans `CLAUDE.md` (section « Navigation à 4 piliers »).
+
+- ✅ **Promotion du RÉCAP** : contenu strictement inchangé (encart 1AJ, détail par mois cliquable, comparaison des régimes — `render/year-recap.js` non touché), retiré de la sous-navigation de Déclaration (`period.js`), déplacé dans son propre pilier `#ma-declaration-section` avec un sélecteur d'années dédié sans onglets de mois (`R.renderYearOnlySelector`, nouveau, dans `period.js`). Année partagée avec Déclaration (`state.year`) — clic sur un mois du tableau renvoie l'éditer dans Déclaration, comme avant.
+- ✅ **Dossier complet** : bouton dédié « Imprimer le dossier complet » (texte dynamique : compte les mois renseignés) assemblant récap annuel + relevés des mois non vides, un par page (nouveau `render/print-full-year.js`, réutilise tel quel `print-year.js`/`print-month.js` refactorés pour exposer un « builder » de feuille séparé de leur rendu direct dans `#print-doc`). `Compute.forfaitJourForMonth` exposé (déjà utilisé en interne par le récap) pour que chaque relevé du dossier respecte un `smicOverride` propre à son mois.
+- ✅ Toolbar à 4 onglets ; icône Imprimer visible sous Déclaration **et** Ma déclaration (relevé du mois ou récap seul — le dossier complet a son propre bouton, non concerné par cette icône).
+- ✅ Simplification : `state.pillar` porte maintenant toute la logique de vue (plus de sentinel `monthIndex===12`) ; `#content-grid` n'a plus qu'un seul mode d'affichage (`.content-grid--single` retirée avec le récap qui la justifiait).
+- ✅ 48 tests toujours verts (aucune logique pure nouvelle, seulement une fonction existante exposée). Vérifié en Chrome headless piloté par CDP (script Node jetable, sans dépendance ajoutée au projet) : 4 onglets, changement d'année dans Ma déclaration, clic sur un mois (retour en Déclaration), case « déclarée », impression simple et dossier complet multi-pages — zéro exception JS.
 
 ## Lot 7 — Pièces justificatives (décidé le 2026-07-19, à faire après le lot 6)
 
