@@ -150,14 +150,6 @@
   box-shadow: 0 4px 12px rgba(20,30,60,.12);
 }
 
-/* Onglet RÉCAP : distinct des mois mais bien cliquable */
-.month-tab--recap{
-  color: var(--accent-dark);
-}
-.month-tab--recap.is-active{
-  background: var(--accent-pale);
-}
-
 @media (max-width: 720px){
   .month-tab{
     padding: 8px 11px;

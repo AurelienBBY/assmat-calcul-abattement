@@ -121,14 +121,17 @@ footer{
 }
 
 /* --- Grille de contenu : colonne résultat pleine hauteur --------------------
-   En vue mensuelle (2 colonnes), .content-grid__aside est un seul panneau de
-   verre qui s'étire sur toute la hauteur de la ligne (= hauteur de la
-   colonne de gauche, souvent longue) grâce à align-items:stretch — il
-   "descend jusqu'en bas de la page" au lieu de flotter avec du vide en
-   dessous. Le contenu réel (le héros du résultat) reste collant (position:
-   sticky) PRÈS DU HAUT de ce panneau pendant le défilement ; le panneau lui-
-   même n'a donc plus besoin de son propre habillage carte, transféré au
-   panneau (cf. .glass posé directement sur .content-grid__aside en HTML).
+   Le pilier Déclaration n'affiche plus que la saisie du mois (le récap
+   annuel vit dans son propre pilier, Ma déclaration) : #content-grid est
+   donc toujours en vue mensuelle 2 colonnes. .content-grid__aside est un
+   seul panneau de verre qui s'étire sur toute la hauteur de la ligne (=
+   hauteur de la colonne de gauche, souvent longue) grâce à
+   align-items:stretch — il "descend jusqu'en bas de la page" au lieu de
+   flotter avec du vide en dessous. Le contenu réel (le héros du résultat)
+   reste collant (position:sticky) PRÈS DU HAUT de ce panneau pendant le
+   défilement ; le panneau lui-même n'a donc plus besoin de son propre
+   habillage carte, transféré au panneau (cf. .glass posé directement sur
+   .content-grid__aside en HTML).
    ========================================================================== */
 
 .content-grid{
@@ -139,11 +142,6 @@ footer{
   display: grid;
   grid-template-columns: 1.5fr 1fr;
   gap: 20px;
-  align-items: start; /* la vue RÉCAP/INFOS (1 colonne) n'a pas besoin d'étirement */
-}
-
-/* Vue mensuelle (2 colonnes) uniquement : le panneau de droite s'étire. */
-.content-grid:not(.content-grid--single){
   align-items: stretch;
 }
 
@@ -155,16 +153,6 @@ footer{
   min-width: 0;
 }
 
-/* Le panneau (.glass, posé en HTML) reste neutre en 1 colonne : la carte
-   intérieure garde alors son propre habillage, comme avant le panneau. */
-.content-grid--single .content-grid__aside{
-  background: none;
-  border: none;
-  box-shadow: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-}
-
 .content-grid__main > section,
 .content-grid__aside > section{
   max-width: none;
@@ -172,9 +160,9 @@ footer{
 }
 .content-grid__main > section:last-child{ margin-bottom: 0; }
 
-/* En 2 colonnes : le panneau porte le verre, la carte intérieure devient un
-   simple bloc collant sans son propre fond/bordure (pas de carte-dans-carte). */
-.content-grid:not(.content-grid--single) .content-grid__aside > section{
+/* Le panneau porte le verre, la carte intérieure devient un simple bloc
+   collant sans son propre fond/bordure (pas de carte-dans-carte). */
+.content-grid__aside > section{
   background: none;
   border: none;
   box-shadow: none;

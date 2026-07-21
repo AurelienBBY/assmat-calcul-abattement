@@ -13,6 +13,29 @@
 
 .card__title{ margin: 0 0 14px; font-size: 16px; }
 
+/* --- Pilier "Ma déclaration" : sélecteur d'année + dossier complet -------- */
+
+#ma-declaration-year-selector{ margin: 4px 0; }
+
+.dossier-complet{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 22px;
+  margin: 14px 0;
+  flex-wrap: wrap;
+}
+
+.dossier-complet__text{
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.dossier-complet__text strong{ font-size: 15px; }
+.dossier-complet__text .hint{ margin: 0; }
+
 /* --- Encart « Case 1AJ » --------------------------------------------------- */
 
 .year-declare{

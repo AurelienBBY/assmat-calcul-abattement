@@ -46,6 +46,11 @@
     return CFG.computeForfaitJourFromSmic(smic, CFG.coefficient);
   }
 
+  // Exposé : réutilisé par app.js pour construire les relevés mensuels du
+  // dossier complet avec le même forfait que celui utilisé ici (respecte un
+  // éventuel smicOverride posé sur ce mois précis).
+  Compute.forfaitJourForMonth = forfaitJourForMonth;
+
   /**
    * Compte les jours-enfant du mois (un enfant présent un jour = un jour-enfant,
    * quel que soit son nombre de créneaux), ventilés < 8 h / ≥ 8 h.

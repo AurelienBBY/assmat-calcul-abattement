@@ -61,8 +61,6 @@ R.renderPeriodSelector = function renderPeriodSelector(container, state, onPerio
   const effectiveMonth = Number.isFinite(Number(state.monthIndex)) ? Number(state.monthIndex) : now.getMonth();
   const effectiveYear = Number.isFinite(Number(state.year)) ? Number(state.year) : currentYear;
 
-  const isRecapActive = (effectiveMonth === 12);
-
   // Emit function
   const emit = (nextMonthIndex, nextYear) => {
     const next = {
@@ -126,7 +124,7 @@ R.renderPeriodSelector = function renderPeriodSelector(container, state, onPerio
   U.MONTHS_FR.forEach((name, idx) => {
     const btn = document.createElement("button");
     btn.type = "button";
-    const isActive = (!isRecapActive && idx === effectiveMonth);
+    const isActive = (idx === effectiveMonth);
     btn.className = "month-tab" + (isActive ? " is-active" : "");
     btn.setAttribute("data-month", String(idx));
     btn.setAttribute("aria-label", name);
@@ -135,16 +133,6 @@ R.renderPeriodSelector = function renderPeriodSelector(container, state, onPerio
     btn.addEventListener("click", () => emit(idx));
     tabs.appendChild(btn);
   });
-
-  // Onglet RÉCAP (vue annuelle)
-  const recapBtn = document.createElement("button");
-  recapBtn.type = "button";
-  recapBtn.className = "month-tab month-tab--recap" + (isRecapActive ? " is-active" : "");
-  recapBtn.textContent = "RÉCAP";
-  recapBtn.setAttribute("aria-label", "Récapitulatif annuel");
-
-  recapBtn.addEventListener("click", () => emit(12));
-  tabs.appendChild(recapBtn);
 
   // Assemble elements
   yearWrap.appendChild(yearLabel);
@@ -165,11 +153,73 @@ R.renderPeriodSelector = function renderPeriodSelector(container, state, onPerio
   };
   tabs.addEventListener("scroll", updateEdges);
   updateEdges();
-  // L'onglet actif peut être hors champ (ex: retour depuis RÉCAP) : le centrer.
+  // L'onglet actif peut être hors champ (ex: retour depuis Ma déclaration) : le centrer.
   const activeTab = tabs.querySelector(".month-tab.is-active");
   if (activeTab && typeof activeTab.scrollIntoView === "function") {
     activeTab.scrollIntoView({ block: "nearest", inline: "center" });
   }
 };
+
+  // -----------------------------------------------------------------------------
+  // 2) Sélecteur d'année seul (pilier "Ma déclaration" — pas de mois ici)
+  // -----------------------------------------------------------------------------
+
+  /**
+   * @param {HTMLElement} container
+   * @param {Object} state {year, declaredYears}
+   * @param {(year:number)=>void} onYearChange
+   */
+  R.renderYearOnlySelector = function renderYearOnlySelector(container, state, onYearChange) {
+    container.innerHTML = "";
+
+    const YEAR_MIN = 2023;
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const effectiveYear = Number.isFinite(Number(state.year)) ? Number(state.year) : currentYear;
+    const declaredYears = Array.isArray(state.declaredYears) ? state.declaredYears : [];
+
+    const yearWrap = document.createElement("div");
+    yearWrap.className = "period-year";
+
+    const yearLabel = document.createElement("span");
+    yearLabel.className = "period-year__label";
+    yearLabel.textContent = "Année";
+    yearWrap.appendChild(yearLabel);
+
+    const yearTabs = document.createElement("div");
+    yearTabs.className = "year-tabs";
+    yearTabs.setAttribute("role", "group");
+    yearTabs.setAttribute("aria-label", "Année");
+
+    const minYear = Math.min(YEAR_MIN, effectiveYear);
+    const maxYear = Math.max(currentYear, effectiveYear);
+    for (let y = minYear; y <= maxYear; y++) {
+      const yearWrapItem = document.createElement("span");
+      yearWrapItem.className = "year-tab-wrap";
+
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "year-tab" + (y === effectiveYear ? " is-active" : "");
+      btn.textContent = String(y);
+      btn.setAttribute("aria-pressed", y === effectiveYear ? "true" : "false");
+      const yy = y;
+      btn.addEventListener("click", () => onYearChange && onYearChange(yy));
+      yearWrapItem.appendChild(btn);
+
+      if (declaredYears.includes(y)) {
+        const badge = document.createElement("span");
+        badge.className = "year-declared-badge";
+        badge.textContent = "✓";
+        badge.setAttribute("aria-label", `Année ${y} déclarée`);
+        badge.title = `Année ${y} déclarée`;
+        yearWrapItem.appendChild(badge);
+      }
+
+      yearTabs.appendChild(yearWrapItem);
+    }
+
+    yearWrap.appendChild(yearTabs);
+    container.appendChild(yearWrap);
+  };
 
 })();

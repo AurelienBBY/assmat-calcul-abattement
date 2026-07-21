@@ -28,8 +28,8 @@
 
     const state = {
         year: null,
-        monthIndex: null,     // 0..11 (mois) ; 12 = RÉCAP annuel — pertinent seulement si pillar === "declaration"
-        pillar: "declaration", // "accueil" | "infos" | "declaration" — 3 destinations de la toolbar
+        monthIndex: null,     // 0..11 — pertinent seulement si pillar === "declaration"
+        pillar: "declaration", // "accueil" | "infos" | "declaration" | "ma-declaration" — 4 destinations de la toolbar
         key: null,            // abmat:YYYY-MM
         data: null            // monthData
     };
@@ -59,7 +59,7 @@
     function loadInitialPillar() {
         try {
             const saved = localStorage.getItem(PILLAR_KEY);
-            if (saved === "accueil" || saved === "infos" || saved === "declaration") return saved;
+            if (saved === "accueil" || saved === "infos" || saved === "declaration" || saved === "ma-declaration") return saved;
         } catch (e) { /* fallback ci-dessous */ }
         return hasAnyMonthData() ? "declaration" : "accueil";
     }
@@ -386,22 +386,30 @@
         loadAndRenderMonth(true);
     }
 
-    // Bascule entre les 3 destinations de la toolbar (onglets texte).
+    const VALID_PILLARS = ["accueil", "infos", "declaration", "ma-declaration"];
+
+    // Bascule entre les 4 destinations de la toolbar (onglets texte).
     function switchPillar(pillar) {
-        if (pillar !== "accueil" && pillar !== "infos" && pillar !== "declaration") return;
+        if (VALID_PILLARS.indexOf(pillar) === -1) return;
         state.pillar = pillar;
         persistPillar();
         loadAndRenderMonth(true);
     }
 
-    function goToMonth(monthIndex) {
+    function goToMonth(monthIndex, year) {
         state.pillar = "declaration";
         state.monthIndex = Number(monthIndex);
+        if (Number.isFinite(Number(year))) state.year = Number(year);
         persistPillar();
         loadAndRenderMonth(true);
     }
 
-    function goToRecap() { goToMonth(12); }
+    function goToRecap(year) {
+        state.pillar = "ma-declaration";
+        if (Number.isFinite(Number(year))) state.year = Number(year);
+        persistPillar();
+        loadAndRenderMonth(true);
+    }
 
     function onSmicOverrideChange(nextOverride) {
         if (!state.data) return;
@@ -419,7 +427,7 @@
     // puis recalcul complet. Utilisé par tous les handlers qui changent la forme.
     function rerenderTableAndRecalc() {
         const tableEl = document.getElementById("month-table");
-        if (tableEl && !isRecapMode() && !isInfosMode()) {
+        if (tableEl && isMonthMode()) {
             R.renderMonthTable(tableEl, buildTableState(), tableHandlers);
         }
         const monthAbatt = computeMonthTotalAbattAndRefreshTable();
@@ -576,26 +584,70 @@
         };
     }
 
-    function buildPrintDoc() {
-        // Aucune cible d'impression hors Déclaration (l'icône y est masquée).
-        if (state.pillar !== "declaration") return;
+    // Règles d'une année donnée, indépendamment du mois affiché en
+    // Déclaration (utilisé par Ma déclaration : pas de smicOverride mensuel
+    // à ce niveau, seulement le SMIC de référence de l'année).
+    function buildRulesLabelsForYear(year) {
+        const smic = getSmicFromConfig(year);
+        const smicNum = Number.isFinite(Number(smic)) ? Number(smic) : null;
+        const coeff = getCoefficient();
+        const forfait = (window.ABMAT_CONFIG && typeof window.ABMAT_CONFIG.computeForfaitJourFromSmic === "function")
+            ? U.round2(window.ABMAT_CONFIG.computeForfaitJourFromSmic(smicNum || 0, coeff))
+            : U.round2((smicNum || 0) * coeff);
+        return {
+            year,
+            smicLabel: (smicNum !== null) ? U.fmtEuro(smicNum) : "non renseigné",
+            forfaitLabel: U.fmtEuro(forfait)
+        };
+    }
 
+    function buildPrintDoc() {
         const root = document.getElementById("print-doc");
         if (!root) return;
 
         const Compute = window.ABMAT.compute;
 
-        if (isRecapMode()) {
-            R.renderPrintYear(root, Compute.computeYearRecap(state.year), buildRulesLabels());
+        if (isMaDeclarationMode()) {
+            R.renderPrintYear(root, Compute.computeYearRecap(state.year), buildRulesLabelsForYear(state.year));
             return;
         }
 
+        // Aucune autre cible d'impression hors Déclaration (l'icône y est masquée).
+        if (state.pillar !== "declaration") return;
         if (!state.data) return;
+
         const model = Compute.buildMonthPrintModel(
             state.year, state.monthIndex, state.data, computeForfaitJour()
         );
         model.rules = buildRulesLabels();
         R.renderPrintMonth(root, model);
+    }
+
+    // Assemble récap annuel + relevés des mois renseignés en un seul document
+    // (bouton dédié dans Ma déclaration, distinct de l'icône imprimer).
+    function printFullDossier() {
+        const root = document.getElementById("print-doc");
+        if (!root) return;
+
+        const Compute = window.ABMAT.compute;
+        const year = state.year;
+        const rules = buildRulesLabelsForYear(year);
+        const recap = Compute.computeYearRecap(year);
+
+        const monthModels = [];
+        for (let m = 0; m < 12; m++) {
+            const monthRecap = recap.months[m];
+            if (!monthRecap || monthRecap.status === "vide") continue;
+
+            const monthData = S.loadMonth(year, m).data;
+            const forfaitJour = Compute.forfaitJourForMonth(year, monthData);
+            const model = Compute.buildMonthPrintModel(year, m, monthData, forfaitJour);
+            model.rules = rules;
+            monthModels.push(model);
+        }
+
+        R.renderPrintFullYear(root, recap, monthModels, rules);
+        window.print();
     }
 
     function onPrint() {
@@ -623,7 +675,7 @@
             }
         }
 
-        // La sauvegarde de référence est l'année complète (fonctionne aussi depuis le RÉCAP).
+        // La sauvegarde de référence est l'année complète (fonctionne aussi depuis Ma déclaration).
         S.exportYearToJsonFile(state.year);
     }
 
@@ -655,9 +707,8 @@
                     lastMergedAt: S.getLastMergedAt(),
                     resolveConflict: makeConflictResolver(y)
                 });
-                state.pillar = "declaration"; // montre le résultat même importé depuis Accueil/Infos
+                state.pillar = "ma-declaration"; // montre d'un coup le résultat de la fusion, même importé depuis Accueil/Infos
                 state.year = res.year;
-                state.monthIndex = 12; // vue RÉCAP : montre d'un coup le résultat de la fusion
                 persistPillar();
                 loadAndRenderMonth(false);
                 hideRestoreBanner();
@@ -667,7 +718,7 @@
             }
 
             // --- Fichier "mois" (ancien format) -----------------------------
-            // Depuis RÉCAP/Accueil/Infos, on bascule d'abord sur le mois du fichier.
+            // Depuis Ma déclaration/Accueil/Infos, on bascule d'abord sur le mois du fichier.
             if (!isMonthMode()) {
                 const my = Number(parsed.year);
                 const mi = Number(parsed.monthIndex);
@@ -727,7 +778,7 @@
         if (!ctx) return;
         const totalEl = document.querySelector("[data-toolbar-total]");
 
-        if (state.pillar !== "declaration") {
+        if (state.pillar === "accueil" || state.pillar === "infos") {
             // Accueil / Mes informations : l'onglet actif suffit, pas de contexte
             // supplémentaire à afficher (et pas de total mensuel hors Déclaration).
             ctx.textContent = "";
@@ -736,8 +787,8 @@
         }
 
         const y = Number(state.year);
-        if (isRecapMode()) {
-            ctx.textContent = `• Récap ${y}`;
+        if (isMaDeclarationMode()) {
+            ctx.textContent = `• Ma déclaration ${y}`;
             if (totalEl) totalEl.hidden = true; // le total mensuel n'a pas de sens ici
             return;
         }
@@ -864,8 +915,8 @@
         el.style.display = visible ? "" : "none";
     }
 
-    function isRecapMode() {
-        return state.pillar === "declaration" && Number(state.monthIndex) === 12;
+    function isMaDeclarationMode() {
+        return state.pillar === "ma-declaration";
     }
 
     function isInfosMode() {
@@ -877,7 +928,7 @@
     }
 
     function isMonthMode() {
-        return state.pillar === "declaration" && !isRecapMode();
+        return state.pillar === "declaration";
     }
 
     // Un mois affiché sans aucune donnée peut être pré-rempli depuis les
@@ -962,7 +1013,61 @@
         });
     }
 
-    // Reflète le pilier actif sur les 3 onglets texte de la toolbar.
+    // --- Écran Ma déclaration : récap annuel + sélecteur d'année dédié ------
+    //
+    // Reprend à l'identique le contenu de l'ancien onglet RÉCAP de
+    // Déclaration (encart 1AJ, détail par mois, comparaison des régimes),
+    // promu au rang de pilier — même année que Déclaration (state.year
+    // partagé), mais sans les onglets de mois : ici, on ne saisit pas, on
+    // consulte et on imprime.
+
+    function updateDossierCard(recap) {
+        const yearEl = document.querySelector("[data-dossier-year]");
+        const hintEl = document.querySelector("[data-dossier-hint]");
+        if (yearEl) yearEl.textContent = String(state.year);
+        if (!hintEl) return;
+
+        const filled = recap.months.filter((m) => m.status !== "vide").length;
+        hintEl.textContent = (filled > 0)
+            ? `Récapitulatif annuel + ${filled} relevé${filled > 1 ? "s" : ""} mensuel${filled > 1 ? "s" : ""} renseigné${filled > 1 ? "s" : ""}, en un seul document avec sauts de page.`
+            : "Aucun mois renseigné pour l'instant — le dossier ne contiendra que le récapitulatif annuel.";
+    }
+
+    function renderMaDeclarationScreen() {
+        const yearSelEl = document.getElementById("ma-declaration-year-selector");
+        const contentEl = document.getElementById("ma-declaration-content");
+        if (!contentEl) return;
+
+        const Compute = window.ABMAT.compute;
+        const recap = Compute.computeYearRecap(state.year);
+        const declared = S.isYearDeclared(state.year);
+
+        if (yearSelEl && typeof R.renderYearOnlySelector === "function") {
+            R.renderYearOnlySelector(
+                yearSelEl,
+                { year: state.year, declaredYears: S.getDeclaredYears() },
+                (nextYear) => {
+                    state.year = Number(nextYear);
+                    renderAll(false); // rafraîchit aussi le contexte toolbar (« • Ma déclaration {année} »)
+                }
+            );
+        }
+
+        R.renderYearRecap(
+            contentEl,
+            recap,
+            (monthIdx) => goToMonth(Number(monthIdx)),
+            declared,
+            (checked) => {
+                S.setYearDeclared(state.year, checked);
+                renderAll(false); // rafraîchit aussi le badge « déclarée » (Déclaration comme Ma déclaration)
+            }
+        );
+
+        updateDossierCard(recap);
+    }
+
+    // Reflète le pilier actif sur les 4 onglets texte de la toolbar.
     function updatePillarTabs() {
         document.querySelectorAll(".pillar-tab").forEach((btn) => {
             const active = btn.getAttribute("data-pillar") === state.pillar;
@@ -978,15 +1083,19 @@
         const accueilMode = isAccueilMode();
         const infosMode = isInfosMode();
         const declarationMode = state.pillar === "declaration";
+        const maDeclarationMode = isMaDeclarationMode();
 
         setElVisible(document.getElementById("accueil-section"), accueilMode);
         setElVisible(document.getElementById("infos-section"), infosMode);
+        setElVisible(document.getElementById("ma-declaration-section"), maDeclarationMode);
         setElVisible(document.getElementById("period-section"), declarationMode);
         setElVisible(document.getElementById("content-grid"), declarationMode);
 
-        // Imprimer n'a de cible valable que sous Déclaration (mois ou récap).
+        // Imprimer a une cible valable sous Déclaration (relevé du mois) et
+        // Ma déclaration (récap annuel) — le dossier complet a son propre bouton.
+        const printableMode = declarationMode || maDeclarationMode;
         document.querySelectorAll('[data-toolbar-action="print"]').forEach((btn) => {
-            setElVisible(btn, declarationMode);
+            setElVisible(btn, printableMode);
         });
 
         // Actions toolbar (Données, Imprimer, onglets) : liées une seule fois
@@ -1009,7 +1118,13 @@
             return;
         }
 
-        // --- Pilier Déclaration : navigation + mois/récap (inchangé) ---------
+        if (maDeclarationMode) {
+            renderMaDeclarationScreen();
+            if (initialRender) U.forceFrenchLocale();
+            return;
+        }
+
+        // --- Pilier Déclaration : saisie du mois (le récap vit dans Ma déclaration) ---
 
         const periodEl = U.safeEl("period-selector");
         const yearParamsEl = U.safeEl("year-params");
@@ -1021,75 +1136,26 @@
             onPeriodChange
         );
 
-        const recapMode = isRecapMode();
-        const overviewMode = recapMode; // Infos ne fait plus partie de ce groupe
-
         const payslipSection = document.getElementById("payslip-section");
         const resultsSection = document.getElementById("month-results-section");
-        const tableSection = document.getElementById("month-table-section");
-        const tableRoot = document.getElementById("month-table");
         const resultsHint = resultsSection ? resultsSection.querySelector(".hint") : null;
 
-        setElVisible(payslipSection, !overviewMode);
-        setElVisible(tableSection, !overviewMode);
-        setElVisible(tableRoot, !overviewMode);
+        if (resultsHint) {
+            resultsHint.textContent = "Résumé des montants calculés (abattement total et montant à déclarer).";
+        }
+        const monthLabel = getMonthLabelFR(state.monthIndex);
+        const yearLabel = state.year;
 
-        // Grille 2 colonnes (résultat collant) en vue mensuelle uniquement ;
-        // en RÉCAP le tableau/la fiche de paie sont masqués, une seule
-        // colonne pleine largeur est plus lisible pour son contenu.
-        const contentGrid = document.getElementById("content-grid");
-        if (contentGrid) contentGrid.classList.toggle("content-grid--single", overviewMode);
-
-        if (recapMode) {
-            if (resultsSection) {
-                const h2 = resultsSection.querySelector("h2");
-                if (h2) h2.textContent = `Récap annuel — ${state.year}`;
-            }
-            if (resultsHint) {
-                resultsHint.textContent = "Totaux annuels, détail par mois et comparaison des régimes.";
-            }
-
-            const resultsEl = document.getElementById("month-results");
-            const Compute = window.ABMAT && window.ABMAT.compute;
-
-            if (resultsEl) {
-                const recap = Compute.computeYearRecap(state.year);
-                const declared = S.isYearDeclared(state.year);
-
-                R.renderYearRecap(
-                    resultsEl,
-                    recap,
-                    (monthIdx) => goToMonth(Number(monthIdx)),
-                    declared,
-                    (checked) => {
-                        S.setYearDeclared(state.year, checked);
-                        // Rafraîchit le badge sur les pastilles d'années.
-                        R.renderPeriodSelector(
-                            U.safeEl("period-selector"),
-                            { year: state.year, monthIndex: state.monthIndex, declaredYears: S.getDeclaredYears() },
-                            onPeriodChange
-                        );
-                    }
-                );
-            }
-        } else {
-            if (resultsHint) {
-                resultsHint.textContent = "Résumé des montants calculés (abattement total et montant à déclarer).";
-            }
-            const monthLabel = getMonthLabelFR(state.monthIndex);
-            const yearLabel = state.year;
-
-            if (payslipSection) {
-                const h2 = payslipSection.querySelector("h2");
-                if (h2) h2.textContent = `Déclaration du mois — ${monthLabel} ${yearLabel}`;
-            }
-            if (resultsSection) {
-                const h2 = resultsSection.querySelector("h2");
-                if (h2) h2.textContent = `Résultats du mois — ${monthLabel} ${yearLabel}`;
-            }
+        if (payslipSection) {
+            const h2 = payslipSection.querySelector("h2");
+            if (h2) h2.textContent = `Déclaration du mois — ${monthLabel} ${yearLabel}`;
+        }
+        if (resultsSection) {
+            const h2 = resultsSection.querySelector("h2");
+            if (h2) h2.textContent = `Résultats du mois — ${monthLabel} ${yearLabel}`;
         }
 
-        // Paramètres année (toujours visibles sous Déclaration, mois comme récap)
+        // Paramètres année (toujours visibles sous Déclaration)
         const coeff = getCoefficient();
         const forfaitJour = computeForfaitJour();
 
@@ -1108,25 +1174,23 @@
             onSmicOverrideChange
         );
 
-        if (!overviewMode) {
-            R.renderMonthTable(tableEl, buildTableState(), tableHandlers);
+        R.renderMonthTable(tableEl, buildTableState(), tableHandlers);
 
-            const payslipEl = document.getElementById("payslip-inputs");
-            if (payslipEl && typeof R.renderPayslipInputs === "function") {
-                R.renderPayslipInputs(
-                    payslipEl,
-                    {
-                        netImposable: state.data ? state.data.netImposable : 0,
-                        irf: state.data ? state.data.irf : 0
-                    },
-                    onMoneyChange
-                );
-            }
+        const payslipEl = document.getElementById("payslip-inputs");
+        if (payslipEl && typeof R.renderPayslipInputs === "function") {
+            R.renderPayslipInputs(
+                payslipEl,
+                {
+                    netImposable: state.data ? state.data.netImposable : 0,
+                    irf: state.data ? state.data.irf : 0
+                },
+                onMoneyChange
+            );
+        }
 
-            const resultsEl = document.getElementById("month-results");
-            if (resultsEl && typeof R.renderMonthSummary === "function") {
-                R.renderMonthSummary(resultsEl, { year: state.year, monthIndex: state.monthIndex });
-            }
+        const resultsEl = document.getElementById("month-results");
+        if (resultsEl && typeof R.renderMonthSummary === "function") {
+            R.renderMonthSummary(resultsEl, { year: state.year, monthIndex: state.monthIndex });
         }
 
         if (typeof R.renderGeneratedDate === "function") {
@@ -1210,6 +1274,10 @@
         // AVANT le premier rendu (qui enregistre un mois vierge) : proposer la
         // restauration si l'appareil n'a aucune donnée.
         initRestoreBanner();
+
+        // Bouton statique (Ma déclaration) : jamais recréé, lié une seule fois.
+        const dossierBtn = document.getElementById("abmat-print-dossier");
+        if (dossierBtn) dossierBtn.addEventListener("click", printFullDossier);
 
         loadAndRenderMonth(true);
         if (typeof window.initTutoModal === "function") window.initTutoModal();

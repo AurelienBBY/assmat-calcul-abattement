@@ -11,7 +11,7 @@
    - [data-toolbar-action="print"] (1 ou plusieurs boutons "Imprimer")
    - #abmat-action-file  (input[type=file] caché, accept application/json)
    - #abmat-action-data-toggle + #abmat-data-menu (menu Données)
-   - .pillar-tab[data-pillar] (3 onglets : accueil / infos / declaration)
+   - .pillar-tab[data-pillar] (4 onglets : accueil / infos / declaration / ma-declaration)
 
    Dépendances :
    - window.ABMAT.render (R) — initialisé par render/index.js

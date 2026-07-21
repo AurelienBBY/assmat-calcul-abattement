@@ -23,9 +23,12 @@
     return `${p[2]}/${p[1]}`;
   }
 
-  R.renderPrintMonth = function renderPrintMonth(root, model) {
+  /**
+   * Construit la feuille (sans l'attacher au DOM) — réutilisé tel quel par
+   * render/print-full-year.js pour assembler le dossier complet.
+   */
+  R.buildPrintMonthSheet = function buildPrintMonthSheet(model) {
     const P = R.print;
-    root.innerHTML = "";
 
     const profile = P.getProfile();
     const sheet = P.el("div", "sheet");
@@ -126,6 +129,11 @@
     sheet.appendChild(grid);
 
     sheet.appendChild(P.docFooter());
-    root.appendChild(sheet);
+    return sheet;
+  };
+
+  R.renderPrintMonth = function renderPrintMonth(root, model) {
+    root.innerHTML = "";
+    root.appendChild(R.buildPrintMonthSheet(model));
   };
 })();

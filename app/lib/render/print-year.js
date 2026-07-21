@@ -18,10 +18,13 @@
     throw new Error("ABMAT.utils est requis avant ABMAT.render (charger utils.js en premier).");
   }
 
-  /** @param {Object} rules {year, smicLabel, forfaitLabel} */
-  R.renderPrintYear = function renderPrintYear(root, recap, rules) {
+  /**
+   * Construit la feuille (sans l'attacher au DOM) — réutilisé tel quel par
+   * render/print-full-year.js pour assembler le dossier complet.
+   * @param {Object} rules {year, smicLabel, forfaitLabel}
+   */
+  R.buildPrintYearSheet = function buildPrintYearSheet(recap, rules) {
     const P = R.print;
-    root.innerHTML = "";
 
     const sheet = P.el("div", "sheet");
     sheet.appendChild(P.docHead(
@@ -93,6 +96,12 @@
     sheet.appendChild(grid);
 
     sheet.appendChild(P.docFooter("Conservez les relevés mensuels en annexe."));
-    root.appendChild(sheet);
+    return sheet;
+  };
+
+  /** @param {Object} rules {year, smicLabel, forfaitLabel} */
+  R.renderPrintYear = function renderPrintYear(root, recap, rules) {
+    root.innerHTML = "";
+    root.appendChild(R.buildPrintYearSheet(recap, rules));
   };
 })();

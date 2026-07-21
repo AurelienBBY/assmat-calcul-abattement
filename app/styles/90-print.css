@@ -34,6 +34,14 @@
     color: #111;
   }
 
+  /* Dossier complet (render/print-full-year.js) : plusieurs .sheet dans
+     #print-doc, un par page — un seul document ne produit jamais deux
+     .sheet, cette règle ne s'applique donc que dans ce cas-là. */
+  #print-doc .sheet + .sheet{
+    break-before: page;
+    page-break-before: always;
+  }
+
   #print-doc .num{ font-variant-numeric: tabular-nums; }
 
   /* --- En-tête d'identité ------------------------------------------------- */

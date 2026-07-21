@@ -53,6 +53,7 @@
           <button type="button" class="pillar-tab" role="tab" data-pillar="accueil">Accueil</button>
           <button type="button" class="pillar-tab" role="tab" data-pillar="infos">Mes informations</button>
           <button type="button" class="pillar-tab" role="tab" data-pillar="declaration">Déclaration</button>
+          <button type="button" class="pillar-tab" role="tab" data-pillar="ma-declaration">Ma déclaration</button>
         </div>
         <div class="app-toolbar__context" data-toolbar-context aria-live="polite"></div>
         <span class="pill pill-accent toolbar-total" data-toolbar-total hidden></span>
@@ -185,11 +186,42 @@
   </section>
 
   <!-- =========================================================
+       MA DÉCLARATION — récap annuel + impression du dossier complet
+       Visible uniquement quand le pilier actif est "ma-declaration" (app.js).
+       Remplace l'ancien onglet RÉCAP de Déclaration : même contenu (encart
+       1AJ, détail par mois, comparaison des régimes), promu au rang de
+       pilier, avec un sélecteur d'années dédié (pas de mois ici) et la
+       nouvelle impression du dossier complet.
+       ========================================================= -->
+  <section id="ma-declaration-section" class="no-print">
+    <h2>Ma déclaration</h2>
+    <p class="hint">Résultats annuels prêts à reporter sur votre déclaration de revenus, et impression du dossier complet.</p>
+
+    <div id="ma-declaration-year-selector">
+      <!-- Généré dynamiquement par app.js (sélecteur d'année seul, cf. render/period.js) -->
+    </div>
+
+    <div class="dossier-complet glass-strong">
+      <div class="dossier-complet__text">
+        <strong>Dossier complet <span data-dossier-year></span></strong>
+        <span class="hint" data-dossier-hint></span>
+      </div>
+      <button type="button" class="btn btn-primary" id="abmat-print-dossier">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Imprimer le dossier complet
+      </button>
+    </div>
+
+    <div id="ma-declaration-content">
+      <!-- Généré dynamiquement par app.js (R.renderYearRecap) -->
+    </div>
+  </section>
+
+  <!-- =========================================================
        CONTENU : grille 2 colonnes sur ordinateur (résultat collant à
        droite pendant qu'on saisit) ; 1 colonne sur mobile (cf. .fab).
-       En mode RÉCAP/INFOS, app.js bascule sur #content-grid--single
-       (le tableau/la fiche de paie sont masqués, une seule colonne
-       suffit pour les résultats/infos).
+       Le pilier Déclaration n'affiche plus que la saisie du mois : le
+       récap annuel vit désormais dans Ma déclaration (ci-dessus).
        ========================================================= -->
   <div id="content-grid" class="content-grid">
     <div class="content-grid__main">
@@ -344,6 +376,7 @@
   <script src="app/lib/render/print-common.js"></script>
   <script src="app/lib/render/print-month.js"></script>
   <script src="app/lib/render/print-year.js"></script>
+  <script src="app/lib/render/print-full-year.js"></script>
   <script src="app/lib/render/toolbar-actions.js"></script>
   <script src="app/lib/render/footer.js"></script>
 
