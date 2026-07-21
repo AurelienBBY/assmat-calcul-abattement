@@ -122,6 +122,16 @@ Périmètre d'origine :
 - ✅ Simplification : `state.pillar` porte maintenant toute la logique de vue (plus de sentinel `monthIndex===12`) ; `#content-grid` n'a plus qu'un seul mode d'affichage (`.content-grid--single` retirée avec le récap qui la justifiait).
 - ✅ 48 tests toujours verts (aucune logique pure nouvelle, seulement une fonction existante exposée). Vérifié en Chrome headless piloté par CDP (script Node jetable, sans dépendance ajoutée au projet) : 4 onglets, changement d'année dans Ma déclaration, clic sur un mois (retour en Déclaration), case « déclarée », impression simple et dossier complet multi-pages — zéro exception JS.
 
+## Lot 11 — Onboarding (3 piliers) + fiche de référence — ✅ fait le 2026-07-21
+
+**Origine** : « faudrait un vrai onboarding à la place du tuto tout moche » — l'ancien tutoriel (liste à puces sur Accueil + modale en mur de texte légal) explique mal et ne se relie à rien de visible à l'écran. Deux maquettes de validation avant code : d'abord un concept de coachmarks pointant les champs réels de la saisie mensuelle, écarté par l'utilisateur au profit d'un explicatif directement sur Accueil, racontant l'enchaînement des piliers dans l'ordre d'usage — plus simple à construire (pas de positionnement dynamique sur des éléments réels) et plus robuste. Détail technique complet dans `CLAUDE.md` (section « Onboarding »).
+
+- ✅ **`render/onboarding.js`** (nouveau) : 3 cartes reliées par des flèches sur Accueil — Mes informations → Déclaration → Ma déclaration, mêmes icônes que les raccourcis existants. Toujours affichée ; l'étape 1 se met en avant (bordure verte) uniquement tant que le profil est vide, seule action possible à ce stade.
+- ✅ **Fiche de référence** (`app/modals/reference.html`, renommé depuis `tuto.html`) réécrite en cartes (icône, titre, texte court, encarts d'alerte) au lieu du mur de texte — et **mise à jour au passage** : le contenu original décrivait un export par mois (obsolète depuis le lot 2) et ne mentionnait ni la sauvegarde automatique (lot 6) ni le dossier complet (lot 10) ; la nouvelle fiche reflète l'état réel de l'outil.
+- ✅ Bouton renommé « Voir les points d'attention » (`[data-open-tuto]`), ouvert soit depuis le bloc onboarding, soit depuis la carte « book » des raccourcis (profil vide). **Piège corrigé** : ce bouton vit maintenant dans du contenu recréé à chaque affichage d'Accueil — `initTutoModal()` et le chargement paresseux de l'iframe sont passés d'un binding direct (posé une fois, perdu à la recréation) à une **délégation d'événement sur `document`**.
+- ✅ Nettoyage : `app/style.css` (739 lignes mortes depuis le tout premier commit, jamais chargé par `index.html`) supprimé.
+- ✅ 48 tests toujours verts (aucune logique pure touchée). Vérifié en Chrome headless CDP : les 3 étapes, la bascule de mise en avant profil-vide → profil-rempli (via la vraie saisie du champ nom, pas un contournement du storage), l'ouverture de la fiche par les deux chemins, le contenu de l'iframe (10 cartes, 4 sections) — zéro exception JS.
+
 ## Lot 7 — Pièces justificatives (décidé le 2026-07-19, à faire après le lot 6)
 
 **Besoin** : les heures proviennent d'une fiche papier signée par les parents ; en cas de contrôle il faut retrouver, par mois, le calcul ET la pièce signée.

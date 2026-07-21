@@ -14,7 +14,7 @@ Application **100 % statique et hors-ligne** : un fichier HTML + JS/CSS vanilla,
 
 Double-clic sur `index.html` (ou `open index.html`). Il n'y a ni build ni installation. Toute modification JS/CSS est visible au rechargement de la page. En production, l'outil est servi par **GitHub Pages** (déploiement automatique à chaque push sur `main`) en PWA — le service worker (`sw.js`, réseau d'abord / cache en secours) ne s'active qu'en http(s), jamais en ouverture locale.
 
-**Vérification manuelle minimale après toute modification** : ouvrir la page, vérifier les 4 onglets (Accueil, Mes informations, Déclaration, Ma déclaration), saisir des heures sur un mois (cas ≥ 8h et < 8h), renseigner net + IRF, vérifier le résultat mensuel, ouvrir Ma déclaration (encart 1AJ, tableau des mois, comparaison des régimes), tester l'aperçu d'impression du mois et du récap (Cmd+P), puis le bouton « Imprimer le dossier complet » — et que l'icône Imprimer disparaît bien hors Déclaration/Ma déclaration.
+**Vérification manuelle minimale après toute modification** : ouvrir la page, vérifier les 4 onglets (Accueil, Mes informations, Déclaration, Ma déclaration), l'onboarding en 3 étapes sur Accueil (étape 1 en avant tant que le profil est vide) et le bouton « Voir les points d'attention », saisir des heures sur un mois (cas ≥ 8h et < 8h), renseigner net + IRF, vérifier le résultat mensuel, ouvrir Ma déclaration (encart 1AJ, tableau des mois, comparaison des régimes), tester l'aperçu d'impression du mois et du récap (Cmd+P), puis le bouton « Imprimer le dossier complet » — et que l'icône Imprimer disparaît bien hors Déclaration/Ma déclaration.
 
 ## Règles métier (source de vérité)
 
@@ -41,7 +41,7 @@ window.ABMAT.render      app/lib/render/*.js        rendu DOM + événements (1 
 (orchestration)          app/app.js                 état, callbacks, cycle load→render→calc→save
 ```
 
-CSS découpé par zone dans `app/styles/` (préfixes numériques = ordre de chargement). Le tutoriel est une page séparée (`app/modals/tuto.html`) chargée en iframe.
+CSS découpé par zone dans `app/styles/` (préfixes numériques = ordre de chargement). La fiche de référence est une page séparée (`app/modals/reference.html`) chargée en iframe.
 
 ### Design "Liquid Glass" (2026-07-19)
 
@@ -63,7 +63,7 @@ Redesign visuel complet à partir d'un handoff externe (`handoff_liquid_glass/`,
 
 `state.pillar` = `"accueil" | "infos" | "declaration" | "ma-declaration"` — les 4 destinations de la toolbar (`.pillar-tab[data-pillar]`, texte, pas des icônes : changement rare, la clarté prime sur la compacité). Persisté dans `abmat:ui:pillar` ; au tout premier lancement (rien en mémoire) → `"accueil"` si l'appareil est vraiment vierge (`hasAnyMonthData()` false), sinon `"declaration"` pour ne pas perturber une habitude déjà prise (mise à jour de l'outil sur un appareil déjà utilisé).
 
-- **Accueil** (`render/accueil.js`) : message de bienvenue toujours affiché, puis raccourcis adaptés à l'état du profil (calculés à chaque affichage par `computeAccueilContext()` dans `app.js` — jamais figés). Héberge aussi le tutoriel et l'explication des règles (contenu statique dans `index.html`, **plus jamais replié** : Accueil n'étant plus une page visitée à chaque mois, condenser son contenu n'a plus de sens).
+- **Accueil** (`render/accueil.js`) : message de bienvenue toujours affiché, puis raccourcis adaptés à l'état du profil (calculés à chaque affichage par `computeAccueilContext()` dans `app.js` — jamais figés). Héberge aussi l'onboarding (`render/onboarding.js`, section suivante) et l'explication des règles (contenu statique dans `index.html`, **plus jamais replié** : Accueil n'étant plus une page visitée à chaque mois, condenser son contenu n'a plus de sens).
 - **Mes informations** (`#infos-section`, pleine largeur) : identité + enfants + semaines types, ne vit plus dans la colonne résultat de Déclaration.
 - **Déclaration** : saisie du mois uniquement (années/mois, tableau, fiche de paie, résultat collant) — `state.monthIndex` (0-11) n'a de sens que sous ce pilier. Ne contient plus d'onglet RÉCAP dans sa sous-navigation (`period.js`) : ce contenu a été promu au pilier suivant.
 - **Ma déclaration** (`#ma-declaration-section`, pleine largeur, `renderMaDeclarationScreen()` dans `app.js`) : reprend **à l'identique** l'ancien contenu du RÉCAP (encart 1AJ, détail par mois cliquable → `goToMonth()` bascule sur Déclaration, comparaison des régimes — `render/year-recap.js` inchangé) avec un sélecteur d'années dédié sans onglets de mois (`R.renderYearOnlySelector` dans `period.js` — mêmes pastilles/badge « déclarée » que Déclaration, `state.year` **partagé** entre les deux piliers). Ajoute le bouton **« Imprimer le dossier complet »** (`#abmat-print-dossier`, cf. section Impression) et son texte dynamique (`updateDossierCard()` compte les mois renseignés).
@@ -71,6 +71,15 @@ Redesign visuel complet à partir d'un handoff externe (`handoff_liquid_glass/`,
 Helpers dans `app.js` : `isAccueilMode()`, `isInfosMode()` (= `pillar==="infos"`), `isMaDeclarationMode()` (= `pillar==="ma-declaration"`), `isMonthMode()` (= `pillar==="declaration"`, plus simple depuis que le récap a son propre pilier). **`isMonthMode()` gouverne le chargement des données mensuelles** (`loadAndRenderMonth`) — ne jamais réintroduire un test basé sur `monthIndex` seul pour distinguer les autres piliers (les anciens sentinels `monthIndex===12`/`===13` n'existent plus). `#content-grid` (saisie du mois) n'a donc plus qu'un seul mode d'affichage — la classe `.content-grid--single` a été retirée avec le récap qui la justifiait.
 
 **Années déclarées** : case à cocher dans Ma déclaration (`year-recap.js`) → `S.setYearDeclared(year, bool)` (repère manuel local, volontairement **hors export/merge** — ce n'est pas une donnée fiscale) → badge ✓ sur la pastille correspondante, à la fois dans `period.js` (Déclaration) et `R.renderYearOnlySelector` (Ma déclaration), toutes deux lisant `S.getDeclaredYears()`.
+
+### Onboarding (2026-07-21) : explication des 3 piliers + fiche de référence
+
+Remplace l'ancien "tuto" (liste à puces générique + modale en mur de texte). Deux morceaux distincts, volontairement séparés :
+
+- **`#onboarding-section` (Accueil, `render/onboarding.js`)** : 3 cartes reliées par des flèches — Mes informations → Déclaration → Ma déclaration, dans l'ordre où on s'en sert, chacune avec l'icône et le nom exacts de son onglet. Toujours affichée (pas de logique de pliage/masquage) ; l'étape 1 est mise en avant (`.onb-current`, bordure verte) **uniquement** tant que `ctx.profileEmpty` est vrai — c'est alors la seule action possible. Recalculée à chaque affichage d'Accueil comme le reste du contexte (`computeAccueilContext()`), jamais figée.
+- **Fiche de référence (`app/modals/reference.html`, chargée en iframe dans la modale existante)** : cas particuliers et points d'attention qui ne collent pas à un moment précis de l'écran (versements décalés type CCAS de Grenoble, 1 enfant = 1 ligne, justificatifs, sauvegarde/impression à jour du lot 10…), en cartes (`app/styles/61-reference.css`, chargé uniquement par cette page, jamais par `index.html`). Ouverte via tout élément portant l'attribut `[data-open-tuto]` — aujourd'hui le bouton "Voir les points d'attention" du bloc onboarding et la carte "book" des raccourcis (profil vide uniquement).
+
+**Piège évité** : le bouton `[data-open-tuto]` vit désormais dans du contenu **recréé à chaque affichage d'Accueil** (`container.innerHTML=""` puis reconstruction), donc une liaison directe (`btn.addEventListener` posée une seule fois au chargement) serait perdue dès le second passage sur Accueil, voire absente d'entrée si Accueil n'est pas le pilier initial. `initTutoModal()` (app.js) et le script de chargement paresseux de l'iframe (bas d'`index.html`) écoutent donc les clics **par délégation sur `document`** (`e.target.closest('[data-open-tuto]')`) plutôt que sur l'élément lui-même — robuste à n'importe quel nombre de (re)créations. Ne jamais revenir à un binding direct sur ce bouton.
 
 ### Invariant : une seule source de calcul
 
