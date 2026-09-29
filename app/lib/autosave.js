@@ -22,7 +22,7 @@
     return new Promise((resolve, reject) => {
       const req = indexedDB.open(DB_NAME, 1);
       req.onupgradeneeded = () => req.result.createObjectStore(STORE);
-      req.onsuccess = () => resolve(req.result);
+      req.onsuccess = () => { req.result.onversionchange = () => req.result.close(); resolve(req.result); };
       req.onerror = () => reject(req.error);
     });
   }
@@ -43,6 +43,12 @@
       tx.onerror = () => reject(tx.error);
     }));
   }
+
+  /**
+   * Oublie le dossier choisi (« Tout effacer sur cet appareil ») : les
+   * fichiers de copie qu'il contient ne sont pas touchés.
+   */
+  A.forget = () => window.ABMAT.storage.deleteDatabase(DB_NAME);
 
   A.isSupported = function isSupported() {
     return typeof window.showDirectoryPicker === "function" && typeof indexedDB !== "undefined";

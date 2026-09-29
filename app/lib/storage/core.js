@@ -4,6 +4,7 @@
    Namespace window.ABMAT.storage, partagé par les autres fichiers storage/* :
    - writeRaw : écriture brute (préserve l'updatedAt fourni — fusion)
    - sameContent : comparaison de contenu sans l'horodatage
+   - deleteDatabase : suppression d'une base IndexedDB (« Tout effacer »)
    Remarques :
    - localStorage est lié au navigateur + machine (effacement possible).
    - L'export JSON (storage/sync.js) sert de sauvegarde durable.
@@ -53,5 +54,19 @@
       console.warn("Impossible de sauvegarder dans localStorage:", e);
       return false;
     }
+  };
+
+  /**
+   * Supprime une base IndexedDB. Nos propres connexions se ferment d'elles-mêmes
+   * (onversionchange) ; un autre onglet ouvert la bloque → message.
+   * @returns {Promise<void>}
+   */
+  S.deleteDatabase = function deleteDatabase(name) {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.deleteDatabase(name);
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error);
+      req.onblocked = () => reject(new Error("l'outil est ouvert dans un autre onglet ou une autre fenêtre : fermez-les, puis recommencez."));
+    });
   };
 })();

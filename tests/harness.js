@@ -23,7 +23,9 @@ function loadApp() {
   globalThis.localStorage = {
     getItem: (k) => (Object.prototype.hasOwnProperty.call(store, k) ? store[k] : null),
     setItem: (k, v) => { store[k] = String(v); },
-    removeItem: (k) => { delete store[k]; }
+    removeItem: (k) => { delete store[k]; },
+    key: (i) => Object.keys(store)[i] || null,
+    get length() { return Object.keys(store).length; }
   };
 
   [

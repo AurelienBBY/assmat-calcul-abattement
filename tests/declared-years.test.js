@@ -56,3 +56,19 @@ test("effacer une année : mois, réglages et repère « déclarée » ; le rest
   assert.equal(S.isYearDeclared(2023), false);
   assert.equal(S.loadMonth(2024, 0).data.irf, 7);
 });
+
+test("tout effacer sur cet appareil : toutes les clés de l'outil, rien d'autre", () => {
+  const { ABMAT: A2, store: st } = loadApp();
+  const S2 = A2.storage;
+  S2.saveProfile({ version: 2, firstName: "S", lastName: "M", employer: "", children: [] });
+  S2.saveMonth(S2.monthKey(2026, 8), S2.blankMonthData(2026, 8));
+  S2.saveYearSettings({ year: 2026, smic: 12.02, relais: true });
+  S2.setYearDeclared(2025, true);
+  st["abmat:ui:onboarding"] = JSON.stringify({ step: 6, done: true });
+  st["abmat:sync"] = "{}";
+  st["autre-site"] = "garde-moi";
+  S2.eraseAll();
+  assert.deepEqual(Object.keys(st), ["autre-site"]);
+  assert.equal(S2.loadProfile(), null);
+  assert.deepEqual(S2.loadOnboarding(), { step: 0, done: false });
+});

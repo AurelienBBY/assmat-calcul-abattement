@@ -85,7 +85,10 @@
             h("li", { text: "La copie contient les prénoms des enfants : ne l'envoyez pas par e-mail." }),
             h("li", { text: "Gardez chaque année au moins 3 ans après l'avoir déclarée (délai de contrôle des impôts) ; ensuite, vous pouvez l'effacer." })
           ]),
-          h("div", null, h("button", { type: "button", class: "btn", text: "Effacer une année…", on: { click: handlers.onEraseYear } }))
+          h("div", { class: "row" }, [
+            h("button", { type: "button", class: "btn", text: "Effacer une année…", on: { click: handlers.onEraseYear } }),
+            h("button", { type: "button", class: "btn btn-quiet", text: "Tout effacer sur cet appareil…", on: { click: handlers.onEraseAll } })
+          ])
         ])
       ])
     ];
