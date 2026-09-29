@@ -88,10 +88,11 @@
     container.innerHTML =
       `<div class="year-recap" aria-label="Récapitulatif annuel">` +
       `  <div class="year-declare">` +
-      `    <div class="year-declare__case">Case 1AJ</div>` +
+      `    <div class="year-declare__case">Case 1AJ ou 1BJ</div>` +
       `    <p class="year-declare__text">Au printemps ${Number.isFinite(year) ? year + 1 : ""}, reportez ` +
       `<strong class="year-declare__amount">${totalsImposable}</strong> dans la case ` +
-      `<strong>« Traitements et salaires » (1AJ)</strong> de votre déclaration, ` +
+      `<strong>« Traitements et salaires » 1AJ</strong> de votre déclaration ` +
+      `(<strong>1BJ</strong> si vous êtes le déclarant 2 du foyer), ` +
       `<strong>à la place du montant prérempli</strong> — celui-ci ne tient pas compte de l'abattement.</p>` +
       `    <label class="year-declare__checkbox">` +
       `      <input type="checkbox" data-year-declared-checkbox ${declared ? "checked" : ""} />` +

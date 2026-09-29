@@ -35,7 +35,7 @@
     // Encadré « case 1AJ »
     const declare = P.el("div", "doc-declare");
     declare.appendChild(P.el("div", "lab",
-      "Montant à reporter case 1AJ « Traitements et salaires », à la place du montant prérempli :"));
+      "Montant à reporter case 1AJ « Traitements et salaires » (1BJ si vous êtes le déclarant 2 du foyer), à la place du montant prérempli :"));
     declare.appendChild(P.el("div", "amt", U.fmtEuro(recap.totals.imposable)));
     sheet.appendChild(declare);
 
