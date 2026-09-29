@@ -34,6 +34,16 @@ window.ABMAT_CONFIG = {
   maxChildrenAtOnce: 4,
 
   /**
+   * Heures supplémentaires (règle validée le 2026-09-29, cf.
+   * docs/spec-heures-supplementaires.md) : au-delà de 10 h de journée
+   * (enfants + réunions), toute demi-heure commencée est due.
+   */
+  overtime: {
+    dailyThresholdMinutes: 600,
+    roundingStepMinutes: 30
+  },
+
+  /**
    * Table des SMIC horaires BRUTS au 1er janvier, par année.
    * Clé = année (nombre), valeur = SMIC horaire brut (nombre).
    *

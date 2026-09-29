@@ -30,6 +30,7 @@ function loadApp() {
     "app/config.js",
     "app/lib/utils.js",
     "app/lib/calc.js",
+    "app/lib/overtime.js",
     "app/lib/storage/core.js",
     "app/lib/storage/month.js",
     "app/lib/storage/profile.js",
