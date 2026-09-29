@@ -603,7 +603,13 @@
         };
     }
 
+    // Le dossier complet est assemblé juste avant window.print(), qui déclenche
+    // lui-même « beforeprint » : sans ce drapeau, buildPrintDoc() remplacerait
+    // le dossier par le seul récap affiché. Levé à « afterprint ».
+    let dossierPending = false;
+
     function buildPrintDoc() {
+        if (dossierPending) return;
         const root = document.getElementById("print-doc");
         if (!root) return;
 
@@ -649,16 +655,19 @@
         }
 
         R.renderPrintFullYear(root, recap, monthModels, rules);
+        dossierPending = true;
         window.print();
     }
 
     function onPrint() {
+        dossierPending = false;
         buildPrintDoc();
         window.print();
     }
 
     // Cmd/Ctrl+P sans passer par le bouton : on construit le document au vol.
     window.addEventListener("beforeprint", buildPrintDoc);
+    window.addEventListener("afterprint", () => { dossierPending = false; });
 
     function onExport() {
         saveNow();
