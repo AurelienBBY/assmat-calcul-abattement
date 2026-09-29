@@ -1,5 +1,6 @@
 /* ============================================================================
-   storage/declared.js — Années déclarées (repère manuel, non fiscal)
+   storage/declared.js — Années déclarées (repère manuel, non fiscal) et
+   effacement d'une année
    ----------------------------------------------------------------------------
    Simple pense-bête posé par l'utilisatrice dans le récap annuel une fois
    sa déclaration faite — PAS une date calculée (les fenêtres de
@@ -45,5 +46,17 @@
     } catch (e) {
       return false;
     }
+  };
+
+  /**
+   * Efface une année de cet appareil (RGPD : ne garder que le nécessaire) :
+   * ses 12 mois, ses réglages et son repère « déclarée ». Le profil et la
+   * copie de secours (fichier) ne sont pas touchés.
+   */
+  S.eraseYear = function eraseYear(year) {
+    const y = Number(year);
+    for (let m = 0; m < 12; m++) localStorage.removeItem(S.monthKey(y, m));
+    localStorage.removeItem(S.settingsKey(y));
+    S.setYearDeclared(y, false);
   };
 })();
