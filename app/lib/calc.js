@@ -7,8 +7,10 @@
    - Centraliser les règles de calcul (heures, abattement, totaux)
    - Garder un code testable et indépendant de l’UI
    ----------------------------------------------------------------------------
-   Rappels (schéma v2) :
-   - Abattement calculé par enfant ET par jour
+   Rappels (schéma v3) :
+   - Abattement calculé par enfant ET par jour ; enfants identifiés par id
+     (c1, c2… ou r1… pour l'accueil relais), sans limite de nombre
+   - Jour non travaillé (off) : aucun abattement
    - Un enfant peut avoir plusieurs créneaux dans la journée : les heures
      s'additionnent, puis la règle s'applique au TOTAL du jour
    - Si total >= 8h : forfait journalier ; sinon : forfait × (total / 8)
@@ -94,13 +96,15 @@
   };
 
   /**
-   * Total d'abattement d'une journée (3 enfants max).
+   * Total d'abattement d'une journée : tous les enfants présents ce jour-là.
    *
-   * @param {Object} dayObj - {children:{"1":{...},"2":{...},"3":{...}}}
+   * @param {Object} dayObj - {off, children:{"c1":{...}, "r1":{...}}}
    * @param {number} forfaitJour
    * @returns {{dayTotal:number, perChild:Object}}
    */
   C.computeDayTotal = function computeDayTotal(dayObj, forfaitJour) {
+    if (dayObj && dayObj.off === true) return { dayTotal: 0, perChild: {} };
+
     const children = (dayObj && dayObj.children && typeof dayObj.children === "object")
       ? dayObj.children
       : {};
@@ -108,14 +112,42 @@
     const perChild = {};
     let dayTotal = 0;
 
-    for (let i = 1; i <= 3; i++) {
-      const key = String(i);
+    Object.keys(children).forEach((key) => {
       const r = C.computeChildDay(children[key], forfaitJour);
       perChild[key] = r;
       if (r.status === "ok") dayTotal += r.abatt;
-    }
+    });
 
     return { dayTotal: U.round2(dayTotal), perChild };
+  };
+
+  /**
+   * Nombre maximum d'enfants présents en même temps dans la journée (agrément :
+   * cf. ABMAT_CONFIG.maxChildrenAtOnce). Un départ et une arrivée à la même
+   * minute ne se chevauchent pas. Absents et créneaux invalides ignorés.
+   *
+   * @param {Object} dayObj
+   * @returns {number}
+   */
+  C.maxSimultaneous = function maxSimultaneous(dayObj) {
+    if (!dayObj || dayObj.off === true) return 0;
+    const children = (dayObj.children && typeof dayObj.children === "object") ? dayObj.children : {};
+    const events = [];
+    Object.keys(children).forEach((key) => {
+      const c = children[key];
+      if (!c || c.absent === true) return;
+      (Array.isArray(c.slots) ? c.slots : []).forEach((s) => {
+        const a = U.parseTimeToMinutes(s && s.in);
+        const b = U.parseTimeToMinutes(s && s.out);
+        if (a === null || b === null || b <= a) return;
+        events.push([a, 1], [b, -1]);
+      });
+    });
+    events.sort((x, y) => (x[0] - y[0]) || (x[1] - y[1])); // départs avant arrivées
+    let current = 0;
+    let max = 0;
+    events.forEach(([, delta]) => { current += delta; max = Math.max(max, current); });
+    return max;
   };
 
   /**

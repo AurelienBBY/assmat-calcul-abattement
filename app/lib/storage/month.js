@@ -1,21 +1,21 @@
 /* ============================================================================
-   storage/month.js — Données d'un mois (clé abmat:YYYY-MM)
+   storage/month.js — Données d'un mois (clé abmat:YYYY-MM), schéma v3
    ----------------------------------------------------------------------------
-   Structure sauvegardée (par mois), schéma v2 :
    {
-     version: 2, year: 2026, monthIndex: 0,
-     smicOverride: 12.02 | null, netImposable: 0, irf: 0,
+     version: 3, year: 2026, monthIndex: 8,
+     netImposable: 0, irf: 0, verified: false, done: false,
      days: {
-       "2026-01-05": {
-         children: {
-           "1": { absent: false, motif: "", slots: [ {in:"08:00", out:"17:00"}, ... ] },
-           "2": { ... }, "3": { ... }
-         }
+       "2026-09-14": {
+         off: false,                       // jour non travaillé
+         children: {                       // seulement les enfants avec une donnée
+           "c1": { absent: false, motif: "", slots: [ {in:"08:00", out:"17:30"} ], punched: false },
+           "r1": { relais: true, name: "Nino", absent: false, motif: "", slots: [...], punched: false }
+         },
+         meetings: [ {in:"19:00", out:"21:00"} ]
        }
      }
    }
-   Migration v1 → v2 automatique : l'ancien { slots: {"1":{in,out}} } devient
-   un enfant avec un seul créneau.
+   Migrations v1 → v2 → v3 dans normalizeMonthData (cf. docs/schema-donnees-v3.md).
    ========================================================================== */
 
 (function () {
@@ -28,23 +28,31 @@
     throw new Error("storage/core.js doit être chargé avant storage/month.js.");
   }
 
+  const CHILD_ID = /^c\d+$/;
+  const RELAIS_ID = /^r\d+$/;
+  const LEGACY_ID = /^[123]$/; // schémas v1/v2 : enfants "1", "2", "3"
+  const MAX_SLOTS = 3;
+
+  S.isRelaisId = (id) => RELAIS_ID.test(String(id));
+
   S.monthKey = function monthKey(year, monthIndex) {
     return `abmat:${Number(year)}-${U.pad2(Number(monthIndex) + 1)}`;
   };
 
   S.blankMonthData = function blankMonthData(year, monthIndex) {
     return {
-      version: 2,
+      version: 3,
       year: Number(year),
       monthIndex: Number(monthIndex),
-      smicOverride: null,
       netImposable: 0,
       irf: 0,
+      verified: false,
+      done: false,
       days: {}
     };
   };
 
-  function normalizeSlotObj(slotObj) {
+  function normalizeSlot(slotObj) {
     const o = slotObj && typeof slotObj === "object" ? slotObj : {};
     return {
       in: (typeof o.in === "string") ? o.in : "",
@@ -52,75 +60,80 @@
     };
   }
 
-  function isEmptySlot(s) {
-    return s.in === "" && s.out === "";
+  const isEmptySlot = (s) => s.in === "" && s.out === "";
+
+  function normalizeSlots(list) {
+    return (Array.isArray(list) ? list : []).map(normalizeSlot).filter((s) => !isEmptySlot(s)).slice(0, MAX_SLOTS);
   }
 
-  function normalizeChildObj(childObj) {
-    const c = childObj && typeof childObj === "object" ? childObj : {};
-    const slotsIn = Array.isArray(c.slots) ? c.slots : [];
-    const slots = slotsIn.map(normalizeSlotObj).filter((s) => !isEmptySlot(s)).slice(0, 3);
-    return {
+  // Présence d'un enfant un jour ; null si elle ne porte aucune donnée.
+  function normalizePresence(raw, id) {
+    const c = raw && typeof raw === "object" ? raw : {};
+    const p = {
       absent: c.absent === true,
       motif: (typeof c.motif === "string") ? c.motif : "",
-      slots
+      slots: normalizeSlots(c.slots),
+      punched: c.punched === true
     };
+    if (RELAIS_ID.test(id)) {
+      p.relais = true;
+      p.name = (typeof c.name === "string") ? c.name.trim() : "";
+    }
+    if (p.absent) p.slots = [];
+    return (p.absent || p.slots.length > 0) ? p : null;
   }
 
-  function normalizeDayObj(dayObj) {
+  function normalizeDay(dayObj) {
     const d = dayObj && typeof dayObj === "object" ? dayObj : {};
+    const childrenIn = {};
 
-    // Migration v1 : { slots: {"1":{in,out}, ...} } → un créneau par enfant.
     if (d.slots && typeof d.slots === "object" && !d.children) {
-      const children = {};
-      for (let i = 1; i <= 3; i++) {
-        const s = normalizeSlotObj(d.slots[String(i)]);
-        children[String(i)] = { absent: false, motif: "", slots: isEmptySlot(s) ? [] : [s] };
-      }
-      return { children };
+      // v1 : { slots: {"1":{in,out}} } → un créneau par enfant
+      Object.keys(d.slots).forEach((k) => { childrenIn[k] = { slots: [d.slots[k]] }; });
+    } else if (d.children && typeof d.children === "object") {
+      Object.assign(childrenIn, d.children);
     }
 
-    const childrenIn = (d.children && typeof d.children === "object") ? d.children : {};
     const children = {};
-    for (let i = 1; i <= 3; i++) {
-      children[String(i)] = normalizeChildObj(childrenIn[String(i)]);
-    }
-    return { children };
+    Object.keys(childrenIn).forEach((rawId) => {
+      const id = LEGACY_ID.test(rawId) ? `c${rawId}` : rawId;
+      if (!CHILD_ID.test(id) && !RELAIS_ID.test(id)) return; // clé inconnue : ignorée
+      const p = normalizePresence(childrenIn[rawId], id);
+      if (p) children[id] = p;
+    });
+
+    return { off: d.off === true, children, meetings: normalizeSlots(d.meetings) };
   }
+
+  const dayIsEmpty = (day) => !day.off && Object.keys(day.children).length === 0 && day.meetings.length === 0;
 
   /**
-   * Normalise (et migre) les données d'un mois. Mute et retourne `data`.
+   * Normalise (et migre vers v3) les données d'un mois. Mute et retourne `data`.
+   * Le smicOverride mensuel (v1/v2) est abandonné : le SMIC se règle par année.
    */
   S.normalizeMonthData = function normalizeMonthData(data, year, monthIndex) {
     const out = (data && typeof data === "object") ? data : S.blankMonthData(year, monthIndex);
 
-    out.version = 2;
+    out.version = 3;
     out.year = Number(out.year);
     out.monthIndex = Number(out.monthIndex);
-
-    // Année/mois : si invalide, on force vers la cible
     if (!Number.isFinite(out.year)) out.year = Number(year);
     if (!Number.isFinite(out.monthIndex)) out.monthIndex = Number(monthIndex);
 
-    // Champs numériques
     out.netImposable = Number(out.netImposable);
     out.irf = Number(out.irf);
     if (!Number.isFinite(out.netImposable)) out.netImposable = 0;
     if (!Number.isFinite(out.irf)) out.irf = 0;
 
-    // SMIC override
-    if (out.smicOverride === null || out.smicOverride === undefined || out.smicOverride === "") {
-      out.smicOverride = null;
-    } else {
-      out.smicOverride = Number(out.smicOverride);
-      if (!Number.isFinite(out.smicOverride)) out.smicOverride = null;
-    }
+    out.verified = out.verified === true;
+    out.done = out.done === true;
+    delete out.smicOverride;
 
-    // Jours
     const daysIn = (out.days && typeof out.days === "object") ? out.days : {};
     const daysOut = {};
     Object.keys(daysIn).forEach((isoDate) => {
-      daysOut[isoDate] = normalizeDayObj(daysIn[isoDate]);
+      const day = normalizeDay(daysIn[isoDate]);
+      if (!dayIsEmpty(day)) daysOut[isoDate] = day;
     });
     out.days = daysOut;
 
@@ -138,8 +151,7 @@
       if (!raw) {
         return { key, data: S.blankMonthData(year, monthIndex) };
       }
-      const parsed = JSON.parse(raw);
-      const normalized = S.normalizeMonthData(parsed, year, monthIndex);
+      const normalized = S.normalizeMonthData(JSON.parse(raw), year, monthIndex);
 
       // Si l’enregistrement ne correspond pas au mois, on repart proprement
       if (normalized.year !== Number(year) || normalized.monthIndex !== Number(monthIndex)) {
@@ -166,22 +178,13 @@
   };
 
   /**
-   * Un mois est « vide » s'il n'a ni montants, ni override SMIC, ni horaire saisi.
+   * Un mois est « vide » s'il n'a ni montants, ni jour portant une donnée
+   * (présence, absence, jour non travaillé, réunion).
    */
   S.isBlankMonth = function isBlankMonth(data) {
     if (!data) return true;
     if (Number(data.netImposable) > 0 || Number(data.irf) > 0) return false;
-    if (data.smicOverride !== null && data.smicOverride !== undefined) return false;
-
     const days = (data.days && typeof data.days === "object") ? data.days : {};
-    return !Object.keys(days).some((iso) => {
-      const children = (days[iso] && days[iso].children) ? days[iso].children : {};
-      return ["1", "2", "3"].some((k) => {
-        const c = children[k] || {};
-        if (c.absent === true) return true; // une absence notée est une donnée
-        const slots = Array.isArray(c.slots) ? c.slots : [];
-        return slots.some((s) => (s && ((s.in && s.in !== "") || (s.out && s.out !== ""))));
-      });
-    });
+    return !Object.keys(days).some((iso) => !dayIsEmpty(normalizeDay(days[iso])));
   };
 })();

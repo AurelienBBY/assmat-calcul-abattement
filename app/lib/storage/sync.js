@@ -13,9 +13,10 @@
 
   const S = window.ABMAT && window.ABMAT.storage;
 
-  if (!S || !S.loadMonth || !S.loadProfile) {
-    throw new Error("storage/month.js et storage/profile.js doivent être chargés avant storage/sync.js.");
+  if (!S || !S.loadMonth || !S.loadProfile || !S.loadYearSettings) {
+    throw new Error("storage/month.js, profile.js et year-settings.js doivent être chargés avant storage/sync.js.");
   }
+  const U = window.ABMAT.utils;
 
   function downloadJson(filename, obj) {
     const blob = new Blob([JSON.stringify(obj, null, 2)], { type: "application/json;charset=utf-8" });
@@ -31,8 +32,8 @@
 
   /**
    * Construit l'objet d'export d'une année complète (seuls les mois non vides).
-   * Format « abmat-year » : enveloppe { year, months } où chaque mois garde
-   * exactement la structure mensuelle du storage.
+   * Format « abmat-year » v2 : enveloppe { year, months, profile, settings }
+   * où chaque mois garde exactement la structure mensuelle du storage.
    *
    * @param {number} year
    * @returns {Object}
@@ -49,14 +50,16 @@
       count++;
     }
 
+    const settings = S.loadYearSettings(y);
     return {
       format: "abmat-year",
-      version: 1,
+      version: 2,
       year: y,
       exportedAt: new Date().toISOString(),
       monthsCount: count,
       months,
-      profile: S.loadProfile()
+      profile: S.loadProfile(),
+      settings: S.isBlankYearSettings(settings) ? null : settings
     };
   };
 
@@ -166,12 +169,20 @@
       }
     }
 
-    // Profil : la version la plus récente gagne (pas d'arbitrage — rare et bénin).
+    // Profil et réglages d'année : la version la plus récente gagne (pas
+    // d'arbitrage — rare et bénin). Un profil v1 est migré au passage.
     if (parsed.profile && typeof parsed.profile === "object") {
-      const fileProfile = S.normalizeProfile(parsed.profile);
+      const fileProfile = S.normalizeProfile(parsed.profile, U.toIsoDate(new Date()));
       const localProfile = S.loadProfile();
       if (!localProfile || tsOf(fileProfile) > tsOf(localProfile)) {
         S.writeRaw(S.PROFILE_KEY, fileProfile);
+      }
+    }
+    if (parsed.settings && typeof parsed.settings === "object") {
+      const fileSettings = S.normalizeYearSettings(parsed.settings, y);
+      const localSettings = S.loadYearSettings(y);
+      if (S.isBlankYearSettings(localSettings) || tsOf(fileSettings) > tsOf(localSettings)) {
+        S.writeRaw(S.settingsKey(y), fileSettings);
       }
     }
 

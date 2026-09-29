@@ -28,6 +28,12 @@ window.ABMAT_CONFIG = {
   coefficient: 3,
 
   /**
+   * Nombre maximum d'enfants présents EN MÊME TEMPS (agrément) — contrôlé
+   * par calc.maxSimultaneous, pas par le nombre d'enfants dans la journée.
+   */
+  maxChildrenAtOnce: 4,
+
+  /**
    * Table des SMIC horaires BRUTS au 1er janvier, par année.
    * Clé = année (nombre), valeur = SMIC horaire brut (nombre).
    *

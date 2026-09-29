@@ -49,6 +49,12 @@
     return day === 0 || day === 6;
   };
 
+  U.isoToDate = function isoToDate(iso) {
+    // "YYYY-MM-DD" -> Date locale (minuit, sans décalage de fuseau)
+    const p = String(iso).split("-").map(Number);
+    return new Date(p[0], p[1] - 1, p[2]);
+  };
+
   U.toIsoDate = function toIsoDate(d) {
     // Date -> "YYYY-MM-DD"
     return `${d.getFullYear()}-${U.pad2(d.getMonth() + 1)}-${U.pad2(d.getDate())}`;

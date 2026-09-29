@@ -90,21 +90,21 @@ test("pas de conflit si un seul côté a bougé depuis la dernière synchro", ()
 test("profil : la version la plus récente gagne", () => {
   reset();
   const oldP = S.blankProfile();
-  oldP.name = "Ancien nom";
+  oldP.lastName = "Ancien nom";
   oldP.updatedAt = "2026-07-01T10:00:00Z";
   store["abmat:profile"] = JSON.stringify(oldP);
 
   const newP = S.blankProfile();
-  newP.name = "Nouveau nom";
+  newP.lastName = "Nouveau nom";
   newP.updatedAt = "2026-07-10T10:00:00Z";
 
   S.mergeYearFromJsonText(yearFile({}, newP));
-  assert.equal(S.loadProfile().name, "Nouveau nom");
+  assert.equal(S.loadProfile().lastName, "Nouveau nom");
 
   // L'inverse : un profil plus ancien dans le fichier ne régresse pas le local.
-  oldP.name = "Encore plus ancien";
+  oldP.lastName = "Encore plus ancien";
   S.mergeYearFromJsonText(yearFile({}, oldP));
-  assert.equal(S.loadProfile().name, "Nouveau nom");
+  assert.equal(S.loadProfile().lastName, "Nouveau nom");
 });
 
 test("saveMonth ne tamponne que si le contenu change", () => {
@@ -125,4 +125,34 @@ test("saveMonth ne tamponne que si le contenu change", () => {
   S.saveMonth("abmat:2026-06", m);
   assert.notEqual(JSON.parse(store["abmat:2026-06"]).updatedAt, undefined);
   assert.equal(JSON.parse(store["abmat:2026-06"]).netImposable, 60);
+});
+
+test("réglages d'année : voyagent dans le fichier, le plus récent gagne", () => {
+  reset();
+  S.saveYearSettings({ year: 2026, smic: 12.02, relais: true });
+  const text = JSON.stringify(S.buildYearExport(2026));
+  assert.equal(JSON.parse(text).settings.relais, true);
+
+  reset();
+  S.mergeYearFromJsonText(text);
+  assert.deepEqual([S.loadYearSettings(2026).smic, S.loadYearSettings(2026).relais], [12.02, true]);
+
+  // Plus ancien dans le fichier → le local gagne.
+  store["abmat:settings:2026"] = JSON.stringify({ version: 1, year: 2026, smic: 12.02, relais: false, updatedAt: "2099-01-01T00:00:00Z" });
+  S.mergeYearFromJsonText(text);
+  assert.equal(S.loadYearSettings(2026).relais, false);
+});
+
+test("un ancien fichier d'année (profil v1) se fusionne et migre le profil", () => {
+  reset();
+  const oldFile = JSON.stringify({ format: "abmat-year", version: 1, year: 2026, months: {},
+    profile: { version: 1, name: "Sylvie Martin", employer: "CCAS", mention: "Agrément 42",
+      children: { "1": { name: "Léa", active: true, week: { "1": { in: "08:00", out: "17:30" } } } },
+      updatedAt: "2026-07-01T10:00:00Z" } });
+  S.mergeYearFromJsonText(oldFile);
+  const p = S.loadProfile();
+  assert.equal(p.version, 2);
+  assert.equal(p.lastName, "Sylvie Martin");
+  assert.equal(p.children[0].id, "c1");
+  assert.equal(p.children[0].periods[0].week["1"].out, "17:30");
 });

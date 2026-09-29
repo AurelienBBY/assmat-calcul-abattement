@@ -1,4 +1,5 @@
-/* Tests de calc.js (schéma v2) — bornes 8 h, prorata, multi-créneaux, absences. */
+/* Tests de calc.js (schéma v3) — bornes 8 h, prorata, multi-créneaux, absences,
+   enfants par id, jour non travaillé, enfants présents en même temps. */
 
 "use strict";
 
@@ -93,4 +94,34 @@ test("computeMonthTotal somme les jours et détaille perDay", () => {
   assert.equal(r.monthTotal, 54.09); // 36,06 + 18,03
   assert.equal(r.perDay["2026-01-05"], 36.06);
   assert.equal(r.perDay["2026-01-06"], 18.03);
+});
+
+test("computeDayTotal : enfants par id (profil et relais), sans limite de nombre", () => {
+  const r = C.computeDayTotal({ children: {
+    c1: child([{ in: "08:00", out: "17:00" }]), c2: child([{ in: "08:00", out: "17:00" }]),
+    c3: child([{ in: "08:00", out: "17:00" }]), c7: child([{ in: "08:00", out: "12:00" }]),
+    r1: Object.assign(child([{ in: "13:00", out: "17:00" }]), { relais: true, name: "Nino" })
+  } }, FORFAIT);
+  assert.equal(r.dayTotal, 144.24); // 3 × 36,06 + 2 × 18,03
+  assert.equal(r.perChild.r1.abatt, 18.03);
+});
+
+test("jour non travaillé → aucun abattement", () => {
+  const r = C.computeDayTotal({ off: true, children: { c1: child([{ in: "08:00", out: "17:00" }]) } }, FORFAIT);
+  assert.deepEqual(r, { dayTotal: 0, perChild: {} });
+});
+
+test("maxSimultaneous : présence simultanée, pas nombre d'enfants dans la journée", () => {
+  const day = { children: {
+    c1: child([{ in: "08:00", out: "17:00" }]),
+    c2: child([{ in: "08:00", out: "12:00" }]),
+    c3: child([{ in: "08:30", out: "16:00" }]),
+    c4: child([{ in: "09:00", out: "11:00" }]),
+    r1: child([{ in: "12:00", out: "18:00" }]),   // arrive quand c2 part : pas de chevauchement
+    c5: child([{ in: "07:00", out: "18:00" }], true) // absent
+  } };
+  assert.equal(C.maxSimultaneous(day), 4);     // 9h-11h : c1, c2, c3, c4
+  day.children.r2 = child([{ in: "10:00", out: "10:30" }]);
+  assert.equal(C.maxSimultaneous(day), 5);     // 5 enfants en même temps : au-delà de l'agrément
+  assert.equal(C.maxSimultaneous({ off: true, children: day.children }), 0);
 });

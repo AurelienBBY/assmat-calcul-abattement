@@ -2,7 +2,7 @@
    compute/year-recap.js — Agrégats du récapitulatif annuel
    ----------------------------------------------------------------------------
    Relit les 12 mois depuis le storage et recalcule avec calc.js :
-   - abattement réel du mois (forfait de l'année, smicOverride du mois)
+   - abattement réel du mois (forfait de l'année : un seul SMIC par année)
    - compteurs de jours-enfant (< 8 h / ≥ 8 h)
    - statut du mois (vide / incomplet / ok)
    Le revenu imposable (case 1AJ) est ANNUEL : total perçu − abattement de
@@ -25,34 +25,27 @@
     throw new Error("ABMAT.compute : utils, calc et storage doivent être chargés avant compute/year-recap.js.");
   }
 
-  /**
-   * Forfait journalier applicable à un mois :
-   * smicOverride du mois s'il existe, sinon SMIC de l'année (config).
-   * Retourne 0 si aucun SMIC n'est connu (année absente du barème, pas d'override).
-   *
-   * @param {number} year
-   * @param {Object} data - données du mois (storage)
-   * @returns {number}
-   */
-  function forfaitJourForMonth(year, data) {
-    const CFG = window.ABMAT_CONFIG;
-    if (!CFG) {
-      throw new Error("ABMAT.compute : ABMAT_CONFIG est requis (charger config.js en premier).");
-    }
-
-    const override = (data && typeof data.smicOverride === "number" && Number.isFinite(data.smicOverride))
-      ? data.smicOverride
-      : null;
-    const smic = (override !== null) ? override : CFG.getSmicHoraireBrut(year);
-    if (typeof smic !== "number" || !Number.isFinite(smic)) return 0;
-
-    return CFG.computeForfaitJourFromSmic(smic, CFG.coefficient);
+  const CFG = window.ABMAT_CONFIG;
+  if (!CFG) {
+    throw new Error("ABMAT.compute : ABMAT_CONFIG est requis (charger config.js en premier).");
   }
 
-  // Exposé : réutilisé par app.js pour construire les relevés mensuels du
-  // dossier complet avec le même forfait que celui utilisé ici (respecte un
-  // éventuel smicOverride posé sur ce mois précis).
-  Compute.forfaitJourForMonth = forfaitJourForMonth;
+  /**
+   * SMIC horaire brut au 1er janvier retenu pour une année : réglage de
+   * l'année s'il existe, sinon barème de config.js, sinon null (« SMIC
+   * manquant » : l'interface le signale, aucun abattement n'est inventé).
+   * @returns {number|null}
+   */
+  Compute.smicForYear = function smicForYear(year) {
+    const settings = S.loadYearSettings(year);
+    return (settings.smic !== null) ? settings.smic : CFG.getSmicHoraireBrut(year);
+  };
+
+  /** Forfait journalier par enfant (3 × SMIC) de l'année, ou null. */
+  Compute.forfaitJourForYear = function forfaitJourForYear(year) {
+    const smic = Compute.smicForYear(year);
+    return (smic === null) ? null : CFG.computeForfaitJourFromSmic(smic, CFG.coefficient);
+  };
 
   /**
    * Compte les jours-enfant du mois (un enfant présent un jour = un jour-enfant,
@@ -67,13 +60,14 @@
 
     const d = (days && typeof days === "object") ? days : {};
     Object.keys(d).forEach((isoDate) => {
-      const children = (d[isoDate] && d[isoDate].children) ? d[isoDate].children : {};
-      for (let i = 1; i <= 3; i++) {
-        const r = C.computeChildDay(children[String(i)], 0);
-        if (r.status !== "ok") continue;
+      if (d[isoDate].off === true) return;
+      const children = d[isoDate].children || {};
+      Object.keys(children).forEach((id) => {
+        const r = C.computeChildDay(children[id], 0);
+        if (r.status !== "ok") return;
         if (r.hours >= 8) j_ge8 += 1;
         else j_lt8 += 1;
-      }
+      });
     });
 
     return { j_lt8, j_ge8 };
@@ -92,8 +86,9 @@
     const irf = Number.isFinite(Number(data.irf)) ? Number(data.irf) : 0;
     const percu = U.round2(net + irf);
 
-    const forfaitJour = forfaitJourForMonth(year, data);
-    const abatt = C.computeMonthTotal(data.days, forfaitJour).monthTotal;
+    const forfaitJour = Compute.forfaitJourForYear(year);
+    // SMIC manquant : pas d'abattement inventé, le drapeau smicMissing le signale.
+    const abatt = (forfaitJour === null) ? 0 : C.computeMonthTotal(data.days, forfaitJour).monthTotal;
     const apres = U.round2(percu - abatt); // négatif si l'abattement dépasse le perçu du mois
 
     const days = countChildDays(data.days);
@@ -113,7 +108,8 @@
       apres,
       j_lt8: days.j_lt8,
       j_ge8: days.j_ge8,
-      status
+      status,
+      smicMissing: forfaitJour === null
     };
   };
 
@@ -145,6 +141,7 @@
     }
 
     totals.imposable = Math.max(0, totals.apres);
+    totals.smicMissing = Compute.forfaitJourForYear(y) === null;
     return { year: y, totals, months };
   };
 })();

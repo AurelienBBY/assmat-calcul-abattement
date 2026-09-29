@@ -1,4 +1,4 @@
-/* Tests du récapitulatif annuel — abattement réel, override SMIC, statuts. */
+/* Tests du récapitulatif annuel — abattement réel, SMIC par année, statuts, case 1AJ. */
 
 "use strict";
 
@@ -24,7 +24,8 @@ store["abmat:2026-01"] = JSON.stringify({
   }
 });
 
-// Février 2026 : smicOverride 10 → forfait 30 ; 4 h → 15,00 ; pas d'argent saisi.
+// Février 2026 : ancien smicOverride 10 (ignoré en v3 : le SMIC est réglé par année)
+// → forfait 36,06 ; 4 h → 18,03 ; pas d'argent saisi.
 store["abmat:2026-02"] = JSON.stringify({
   version: 1, year: 2026, monthIndex: 1, smicOverride: 10,
   netImposable: 0, irf: 0,
@@ -51,11 +52,29 @@ test("mois complet (données v1 migrées) : abattement, imposable, jours et stat
   assert.equal(jan.status, "ok");
 });
 
-test("smicOverride du mois prioritaire sur le barème de l'année", () => {
+test("un seul SMIC par année : l'ancien smicOverride mensuel est ignoré", () => {
   const fev = Compute.computeMonthRecap(2026, 1);
-  assert.equal(fev.abatt, 15);
-  assert.equal(fev.apres, -15);          // abattement sans paie : solde négatif
+  assert.equal(fev.abatt, 18.03);
+  assert.equal(fev.apres, -18.03);       // abattement sans paie : solde négatif
   assert.equal(fev.status, "incomplet"); // jours sans argent
+});
+
+test("SMIC de l'année : réglage d'année prioritaire, sinon barème, sinon « manquant »", () => {
+  store["abmat:2027-01"] = JSON.stringify({ version: 3, year: 2027, monthIndex: 0, netImposable: 100, irf: 0,
+    days: { "2027-01-04": { children: { c1: { slots: [{ in: "08:00", out: "17:00" }] } } } } });
+
+  // 2027 absent du barème et non réglé : aucun abattement inventé, signalé.
+  assert.equal(Compute.smicForYear(2027), null);
+  const missing = Compute.computeYearRecap(2027);
+  assert.equal(missing.totals.smicMissing, true);
+  assert.equal(missing.totals.abatt, 0);
+
+  // Réglé au passage d'année : 12,20 → forfait 36,60.
+  ABMAT.storage.saveYearSettings({ year: 2027, smic: 12.2, relais: false });
+  const set = Compute.computeYearRecap(2027);
+  assert.equal(set.totals.smicMissing, false);
+  assert.equal(set.totals.abatt, 36.6);
+  assert.equal(Compute.smicForYear(2026), 12.02); // barème
 });
 
 test("mois sans données : vide, 0 partout", () => {
@@ -77,11 +96,11 @@ test("mois v2 : multi-créneaux au prorata, absence sans abattement", () => {
 test("totaux annuels agrégés sur 12 mois", () => {
   const year = Compute.computeYearRecap(2026);
   assert.equal(year.months.length, 12);
-  assert.equal(year.totals.abatt, 107.41);
+  assert.equal(year.totals.abatt, 110.44);
   assert.equal(year.totals.percu, 1950);
-  // 1950 − 107,41 : les 15 € d'abattement de février (sans paie) comptent.
-  assert.equal(year.totals.apres, 1842.59);
-  assert.equal(year.totals.imposable, 1842.59);
+  // 1950 − 110,44 : les 18,03 € d'abattement de février (sans paie) comptent.
+  assert.equal(year.totals.apres, 1839.56);
+  assert.equal(year.totals.imposable, 1839.56);
   assert.equal(year.totals.j_ge8, 1);
   assert.equal(year.totals.j_lt8, 3);
 });
@@ -117,4 +136,12 @@ test("case 1AJ : jamais négative sur l'année", () => {
   const y = Compute.computeYearRecap(2024);
   assert.equal(y.totals.apres, -24.95); // 10 − 34,95 (SMIC 2024 11,65 × 3)
   assert.equal(y.totals.imposable, 0);
+});
+
+test("jour non travaillé : ni abattement ni journée-enfant", () => {
+  store["abmat:2026-11"] = JSON.stringify({ version: 3, year: 2026, monthIndex: 10, netImposable: 0, irf: 0,
+    days: { "2026-11-02": { off: true, children: { c1: { slots: [{ in: "08:00", out: "17:00" }] } } } } });
+  const nov = Compute.computeMonthRecap(2026, 10);
+  assert.equal(nov.abatt, 0);
+  assert.equal(nov.j_ge8 + nov.j_lt8, 0);
 });
