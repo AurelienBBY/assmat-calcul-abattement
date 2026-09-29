@@ -63,6 +63,14 @@ test("pointage en cours : l'heure actuelle tient lieu de départ", () => {
   const r = O.computeDay(day({ c1: kid([["07:58", ""]]), c2: kid([["08:34", ""]]) }), { nowMin: 18 * 60 + 10 });
   assert.equal(r.status, "open");
   assert.deepEqual([r.totalMin, r.dueMin], [612, 30]);
+
+  // Réunion en cours (fin pas encore pointée) pendant que Léa est encore là.
+  const m = O.computeDay(day({ c1: kid([["07:58", ""]]) }, [["18:00", ""]]), { nowMin: 18 * 60 + 20 });
+  assert.equal(m.status, "open");
+  assert.deepEqual([m.totalMin, m.meetings[0].overlapMin, m.meetings[0].addedMin], [622, 20, 0]);
+  assert.equal(O.explainDay(m, () => "Léa").lines[0], "Enfants : de 7h58 (arrivée de Léa) à 18h20, pour l'instant = 10 h 22.");
+  // Sans heure actuelle (calcul du mois), une réunion sans fin reste à vérifier.
+  assert.equal(O.computeDay(day({ c1: kid([["08:00", "17:00"]]) }, [["18:00", ""]])).status, "invalid");
 });
 
 test("mois : total dû, jours avec heures sup., jours à vérifier", () => {

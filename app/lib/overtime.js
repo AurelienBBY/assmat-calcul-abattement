@@ -8,7 +8,8 @@
    - au-delà du seuil (10 h), toute demi-heure commencée est due ;
    - jour sans enfant : toute la durée de la réunion est due (arrondie).
    Un horaire incomplet ou incohérent → « invalid » : jamais de calcul
-   silencieux. Pointage en cours : opts.nowMin tient lieu de départ.
+   silencieux. Pointage en cours (enfant encore là, réunion pas finie) :
+   opts.nowMin tient lieu de départ ou de fin.
    ========================================================================== */
 
 (function () {
@@ -71,7 +72,8 @@
     const meetingIntervals = [];
     for (const s of (dayObj.meetings || [])) {
       const x = U.parseTimeToMinutes(s.in);
-      const y = U.parseTimeToMinutes(s.out);
+      let y = U.parseTimeToMinutes(s.out);
+      if (x !== null && !s.out && nowMin !== null && nowMin > x) { y = nowMin; open = true; } // réunion en cours
       if (x === null || y === null || y <= x) return Object.assign(result, { status: "invalid" });
       meetingIntervals.push([x, y]);
     }
@@ -142,6 +144,8 @@
     const lines = [];
     if (r.meetingOnly) {
       lines.push("Aucun enfant ce jour-là.");
+    } else if (r.status === "open") {
+      lines.push(`Enfants : de ${hm(r.start)} (arrivée ${de(labelOf(r.firstId))}) à ${hm(r.end)}, pour l'instant = ${d(r.kidsMin)}.`);
     } else if (r.firstId === r.lastId) {
       lines.push(`Enfants : de ${hm(r.start)} à ${hm(r.end)} (arrivée et départ ${de(labelOf(r.firstId))}) = ${d(r.kidsMin)}.`);
     } else {
