@@ -11,6 +11,7 @@ Statut : **règle de calcul validée le 29/09/2026** (points 1 à 5 ci-dessous) 
 1. **Temps « enfants »** = de la **première arrivée** d'un enfant au **dernier départ** d'un enfant, tous enfants confondus (accueil relais compris). Les enfants absents sont ignorés. Un creux sans enfant entre les deux **est compté** (décision du 29/09/2026 ; ça n'arrive en pratique jamais).
 2. **Réunions** (heure de début et de fin) : on ajoute le temps de réunion **en dehors** de la plage « enfants ». Une partie de réunion pendant que des enfants sont là n'est **pas comptée deux fois** ; le temps **entre le départ du dernier enfant et le début de la réunion** (ou entre la fin d'une réunion matinale et la première arrivée) **n'est pas compté**. Autrement dit : temps de la journée = union des plages « enfants » et « réunions ».
 3. **Seuil** : au-delà de 10 h 00 par jour (« heures au-dessus de 10 h ») ; exactement 10 h 00 = aucune heure supplémentaire.
+3 bis. **Réunion un jour sans enfant** (décision 2026-09-29) : compte en heures supplémentaires. Lecture retenue, à confirmer : **toute la durée de la réunion** est due en heures sup. (arrondie à la demi-heure commencée), puisque ce jour-là n'est pas travaillé. Il faudra pouvoir saisir une réunion un samedi (aujourd'hui masqué).
 4. **Arrondi** : le dépassement est arrondi à la **demi-heure supérieure** (1 min → 0 h 30 ; 30 min → 0 h 30 ; 31 min → 1 h 00).
 5. Le calcul se fait **jour par jour** ; semaine et mois additionnent des jours **déjà arrondis**.
 6. Un horaire invalide ou incomplet dans la journée → heures supplémentaires **« à vérifier »** pour ce jour, jamais un calcul silencieux (même principe que l'abattement).
@@ -31,6 +32,7 @@ Statut : **règle de calcul validée le 29/09/2026** (points 1 à 5 ci-dessous) 
 | Réunion 7h00 → 7h30, Léa 8h00 → 17h30 | 30 min + 9 h 30 = 10 h 00 (pause 7h30 → 8h00 non comptée) | 0 |
 | Léa absente, Tom 9h00 → 16h00 | 7 h 00 | 0 |
 | Léa 8h00 → ⚠ (sortie manquante) | — | à vérifier |
+| Samedi, aucun enfant, réunion 9h00 → 11h15 | 2 h 15 | 2 h 30 (lecture 3 bis, à confirmer) |
 
 ## Explication affichée pour chaque jour (demandé le 29/09/2026)
 
@@ -45,7 +47,6 @@ Chaque jour travaillé affiche **pourquoi** il y a, ou non, des heures suppléme
 
 ## Questions encore ouvertes
 
-- **Q2 bis — Réunion un jour sans enfant** (mercredi libre, samedi) : compte-t-elle seule ? Si oui, il faudra afficher les samedis, aujourd'hui masqués.
 - **Q4 — Autres seuils** : existe-t-il aussi un seuil **hebdomadaire** (ex. 45 h) ou un plafond ? Si oui, comment se combine-t-il avec le seuil journalier (sans compter deux fois les mêmes minutes) ?
 - **Q5 — Paiement** : quelle majoration, payée ou récupérée ? L'outil doit-il afficher un **montant en euros** (taux horaire à saisir) ou seulement des **heures** (recommandé pour commencer) ?
 - **Q6 — Temps hors enfants** : préparation, ménage, transmissions avant l'arrivée ou après le départ des enfants — exclus, comme le dit la définition ?
@@ -92,7 +93,7 @@ Tests `tests/overtime.test.js` : les 10 exemples ci-dessus + chevauchement de r�
 
 ### Ordre de réalisation
 
-1. Réponses aux questions Q2 bis et Q4-Q7.
+1. Réponses aux questions Q4-Q7 et confirmation de la lecture 3 bis.
 2. Calcul + tests (sans interface).
 3. Schéma v3 + migration + tests.
 4. Interface de saisie des réunions, badge, bloc résultat.
