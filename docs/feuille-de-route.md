@@ -143,7 +143,17 @@ Suite de `docs/revue-2026-09-29.md`, avant toute nouvelle fonction :
 - ✅ **Textes** : case 1AJ ou 1BJ ; fiche de référence (IRF, heures de présence, versements décalés).
 - Reste à confirmer sur impots.gouv avant la campagne 2027 : la case dédiée au montant de l'abattement (1GA/1HA) citée par plusieurs guides.
 
-## Lot 12 — Refonte « calendrier » + pointeuse — proposé le 2026-09-29 (rien de codé)
+## Lot 12 — Refonte « calendrier » + pointeuse — ✅ fait le 2026-09-29
+
+**Réalisé** (branche `claude/review-abattement-fiscal-tool-lamcwx`) : données v3 et migrations, heures supplémentaires expliquées, puis nouvelle interface à 4 onglets conforme à la maquette (pointeuse, calendrier par exceptions, fiche du jour, semaine de congés, 3 étapes du mois, Mon année avec « Préparer AAAA », Mon profil avec enfants datés et horaires « à partir du … », copie iCloud avec rappels iPhone, effacer une année). Décisions prises en cours de route :
+- un **jour pointé n'est jamais touché** par une action de masse (semaine de congés, journée habituelle) : ses heures sont réelles ;
+- la pointeuse compte une **réunion en cours** jusqu'à l'heure actuelle ; sans heure actuelle (calcul du mois), une réunion sans fin reste « à vérifier » ;
+- l'onglet de départ n'est pas mémorisé : **Aujourd'hui** sur téléphone et au premier lancement, **Mon mois** sur ordinateur ;
+- design **opaque** (fin du verre « Liquid Glass ») et mode sombre automatique.
+
+**Reste à faire (suite du lot)** : fusion **jour par jour** plutôt que mois par mois ; sur ordinateur, fusionner puis supprimer les doublons « abattement-assmat-AAAA 2.json » créés par erreur ; rappel d'envoi après un changement important du profil ; heures sup. dans le relevé imprimé ; arbitrage d'un conflit de fusion dans une fenêtre de l'outil (aujourd'hui `confirm()`).
+
+### Proposition initiale (2026-09-29)
 
 **Origine** : revue complète du 2026-09-29 (`docs/revue-2026-09-29.md`) — pages trop longues, 22 cartes de jours à parcourir chaque mois. Maquette cliquable validée par l'utilisateur (artifact privé « Calendrier Ass-Mat », v2), puis décisions ci-dessous.
 
@@ -173,6 +183,6 @@ Suite de `docs/revue-2026-09-29.md`, avant toute nouvelle fonction :
 ## Différé / décisions en attente
 
 - ~~Garde en deux fois~~ → **tranché le 2026-07-19** : multi-créneaux par enfant/jour (voir lot 3).
-- **SMIC : consultable, jamais modifiable** (décision 2026-07-19) : le barème s'affiche en lecture seule dans « Mes informations » ; il est maintenu dans `config.js` (livré automatiquement via GitHub Pages une fois le lot 6 fait). La saisie manuelle n'apparaît que si l'année n'est pas encore dans le barème (début janvier) — un champ modifiable en permanence serait un risque d'erreur fiscale.
-- Samedi travaillé, 4ᵉ enfant : hors périmètre tant que le besoin réel n'existe pas.
+- ~~**SMIC : consultable, jamais modifiable** (décision 2026-07-19)~~ → remplacé au lot 12 par le réglage du SMIC au passage d'année (« Préparer AAAA », pré-rempli par le barème de `config.js` quand il connaît l'année, avec contrôle de vraisemblance).
+- ~~Samedi travaillé, 4ᵉ enfant~~ → **tranché au lot 12** : jusqu'à 4 enfants présents en même temps ; samedi saisissable (réunions).
 - Design system Claude Design (claude.ai/design) : optionnel, seulement si on veut itérer visuellement sur les composants ; la maquette artifact suffit pour ce projet.

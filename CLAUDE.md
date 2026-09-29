@@ -4,136 +4,117 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Ce que fait l'outil
 
-Calculateur de l'**abattement fiscal des assistantes maternelles** (article 80 sexies du CGI, fiche service-public [F1234](https://www.service-public.gouv.fr/particuliers/vosdroits/F1234)). L'utilisatrice saisit les temps de présence des enfants mois par mois ; l'outil calcule l'abattement forfaitaire et le revenu imposable à reporter sur la déclaration.
+Calculateur de l'**abattement fiscal des assistantes maternelles** (article 80 sexies du CGI, fiche service-public [F1234](https://www.service-public.gouv.fr/particuliers/vosdroits/F1234)) et des **heures supplémentaires**. L'utilisatrice pointe les arrivées et départs au jour le jour sur son iPhone, ou vérifie chaque mois un calendrier pré-rempli avec les horaires habituels ; l'outil calcule l'abattement, le montant à déclarer (case 1AJ/1BJ) et les heures supplémentaires, expliquées jour par jour.
 
-**Utilisatrice unique** : assistante maternelle employée par un CCAS (hors Pajemploi — aucun récapitulatif fiscal fourni par ailleurs), non technicienne. Toute décision UI/UX se juge à cette aune : saisie minimale, feedback visible, documents imprimables crédibles. Le cap et les lots de travail sont dans `docs/feuille-de-route.md`.
+**Utilisatrice unique** : assistante maternelle employée par un CCAS (hors Pajemploi — aucun récapitulatif fiscal fourni par ailleurs), non technicienne, surtout sur iPhone. Toute décision UI/UX se juge à cette aune : saisie minimale (par exceptions), feedback visible, textes sans jargon, documents imprimables crédibles. Le cap et les lots de travail sont dans `docs/feuille-de-route.md`.
 
-Application **100 % statique et hors-ligne** : un fichier HTML + JS/CSS vanilla, aucune dépendance, aucun serveur, aucun réseau. C'est une **décision produit** — ne jamais introduire de CDN, de npm, de bundler ou d'appel réseau. Cible de distribution à terme : GitHub Pages + PWA (le hors-ligne reste non négociable).
+Application **100 % statique et hors-ligne** : un fichier HTML + JS/CSS vanilla, aucune dépendance, aucun serveur, aucun réseau. C'est une **décision produit** — ne jamais introduire de CDN, de npm, de bundler ou d'appel réseau (CloudKit rejeté pour cette raison, cf. feuille de route).
 
 ## Lancement
 
 Double-clic sur `index.html` (ou `open index.html`). Il n'y a ni build ni installation. Toute modification JS/CSS est visible au rechargement de la page. En production, l'outil est servi par **GitHub Pages** (déploiement automatique à chaque push sur `main`) en PWA — le service worker (`sw.js`, réseau d'abord / cache en secours) ne s'active qu'en http(s), jamais en ouverture locale.
 
-**Vérification manuelle minimale après toute modification** : ouvrir la page, vérifier les 4 onglets (Accueil, Mes informations, Déclaration, Ma déclaration), l'onboarding en 3 étapes sur Accueil (étape 1 en avant tant que le profil est vide) et le bouton « Voir les points d'attention », saisir des heures sur un mois (cas ≥ 8h et < 8h), renseigner net + IRF, vérifier le résultat mensuel, ouvrir Ma déclaration (encart 1AJ, tableau des mois, comparaison des régimes), tester l'aperçu d'impression du mois et du récap (Cmd+P), puis le bouton « Imprimer le dossier complet » — et que l'icône Imprimer disparaît bien hors Déclaration/Ma déclaration.
+**Vérification manuelle minimale après toute modification**, sur ordinateur ET en largeur iPhone (onglets en bas) : premier lancement vierge (carte de bienvenue) ; **Aujourd'hui** (arrivée, départ, absence, relais, début/fin de réunion, heures sup. « pour l'instant ») ; **Mon mois** (calendrier, fiche du jour avec une heure corrigée et une absence, « Semaine de congés » puis « Annuler », fiche de paie « 1 850,40 », « J'ai terminé ») ; **Mon année** (montant = récap, tuile → mois, « Préparer AAAA ») ; **Mon profil** (changer des horaires « à partir du… », ajouter un enfant) ; impression du mois, du récap et du dossier complet (Cmd+P) ; mode sombre ; aucun défilement horizontal à 390 px.
 
 ## Règles métier (source de vérité)
 
 - Abattement calculé **par jour ET par enfant**.
 - Garde **≥ 8h** : forfait = `coefficient (3) × SMIC horaire brut`.
 - Garde **< 8h** : prorata = `(forfait ÷ 8) × heures de présence`.
-- Le SMIC de référence est celui **au 1er janvier de l'année d'imposition** — les revalorisations en cours d'année (ex. 12,31 € au 01/06/2026) ne comptent pas.
-- Revenu imposable = `(net imposable + IRF) − abattement`, **calculé sur l'année** : le plancher à 0 s'applique **une seule fois**, au total annuel (case 1AJ, ou 1BJ pour le déclarant 2). Le solde d'un mois (`apres` dans `compute/`) peut être négatif et se déduit des autres mois — ne jamais additionner des mois plafonnés à 0 (bug corrigé le 2026-09-29, il surévaluait la case 1AJ).
-- Table des SMIC dans `app/config.js`, à mettre à jour une fois par an. Valeurs officielles au 1er janvier : 2023 = 11,27 / 2024 = 11,65 / 2025 = 11,88 / 2026 = 12,02.
-- **Hors périmètre assumé** (documenté dans l'UI, ne pas « corriger » sans décision) : garde ≥ 24h, enfant malade/handicapé (majorations spécifiques), samedi/dimanche, plus de 3 enfants par jour. (Décidé au lot 12, pas encore codé : jusqu'à 4 enfants **en même temps**, accueil relais, réunions — cf. `docs/feuille-de-route.md`.)
+- Le SMIC de référence est celui **au 1er janvier de l'année d'imposition** — les revalorisations en cours d'année (ex. 12,31 € au 01/06/2026) ne comptent pas. **Un seul SMIC par année** : réglage de l'année (`abmat:settings:AAAA`, écran « Préparer AAAA »), sinon barème de `app/config.js` (2023 = 11,27 / 2024 = 11,65 / 2025 = 11,88 / 2026 = 12,02, à compléter chaque année) ; SMIC inconnu → aucun abattement inventé, l'écran le signale.
+- Revenu imposable = `(net imposable + IRF) − abattement`, **calculé sur l'année** : le plancher à 0 s'applique **une seule fois**, au total annuel (case 1AJ, ou 1BJ pour le déclarant 2). Le solde d'un mois (`apres`) peut être négatif et se déduit des autres mois — ne jamais additionner des mois plafonnés à 0.
+- **Au plus 4 enfants présents en même temps** (`maxChildrenAtOnce`, contrôlé par `calc.maxSimultaneous` — c'est la simultanéité qui compte, pas le nombre d'enfants dans la journée). Enfants du profil datés (arrivée, départ), en nombre illimité sur l'année. **Accueil relais** : case par année ; prénom saisi le jour même (ids `r1`, `r2`…).
+- **Heures supplémentaires** (`app/lib/overtime.js`, `docs/spec-heures-supplementaires.md`) : journée = de la 1re arrivée au dernier départ (creux compris) + réunions hors de cette plage (union, sans double compte, la pause entre départ et réunion ne compte pas) ; au-delà de 10 h, toute demi-heure commencée est due ; réunion un jour sans enfant : toute la durée est due (arrondie). Horaire incomplet → « à vérifier », jamais calculé.
+- **Hors périmètre assumé** (ne pas « corriger » sans décision) : garde ≥ 24h, enfant malade/handicapé (majorations spécifiques), dimanche, majoration des heures sup. (questions ouvertes Q4–Q7 de la spec).
 
 ## Architecture
 
-Pas de modules ES : **l'ordre des `<script>` dans le HTML fait office de système de modules**. Chaque fichier est une IIFE qui augmente un namespace global. Toute nouvelle lib doit être insérée au bon endroit dans `index.html`.
+Pas de modules ES : **l'ordre des `<script>` dans `index.html` fait office de système de modules** (schéma : `docs/architecture-ecrans.md`). Chaque fichier est une IIFE qui augmente un namespace global et **lève une erreur** si une dépendance manque.
 
 ```
-window.ABMAT_CONFIG      app/config.js              SMIC par année, coefficient, forfait
-window.ABMAT.utils       app/lib/utils.js           dates, parsing HH:MM, formats FR
-window.ABMAT.calc        app/lib/calc.js            calculs purs (sans DOM) — testable
-window.ABMAT.storage     app/lib/storage.js         localStorage + export/import JSON
-window.ABMAT.compute     app/lib/compute/           agrégats (récap, print, prefill)
-window.ABMAT.autosave    app/lib/autosave.js        dossier d'auto-sauvegarde (FS Access API)
-window.ABMAT.render      app/lib/render/*.js        rendu DOM + événements (1 fichier = 1 zone)
-(orchestration)          app/app.js                 état, callbacks, cycle load→render→calc→save
+window.ABMAT_CONFIG      app/config.js              SMIC par année, coefficient, maxChildrenAtOnce, overtime
+window.ABMAT.utils       app/lib/utils.js           dates, fériés, HH:MM, montants FR (parseMoneyFR)
+window.ABMAT.calc        app/lib/calc.js            abattement jour/mois, maxSimultaneous — pur, testé
+window.ABMAT.overtime    app/lib/overtime.js        heures sup. + phrases d'explication — pur, testé
+window.ABMAT.storage     app/lib/storage/*.js       core, month (v3), profile (v2), year-settings,
+                                                    declared (+ eraseYear), sync (export/fusion), device
+window.ABMAT.autosave    app/lib/autosave.js        dossier de copie automatique (File System Access)
+window.ABMAT.compute     app/lib/compute/*.js       children, year-recap, month-print, prefill,
+                                                    month-view (calendrier), punch (pointeuse),
+                                                    backup-rules (rappels iPhone) — purs, testés
+window.ABMAT.render      app/lib/render/*.js        DOM uniquement, 1 fichier = 1 zone d'écran
+window.ABMAT.app         app/ctrl/*.js              état, données, gestes (1 fichier = 1 écran)
+(démarrage)              app/app.js                 onglets, aide, onglet de départ, service worker
 ```
 
-CSS découpé par zone dans `app/styles/` (préfixes numériques = ordre de chargement). La fiche de référence est une page séparée (`app/modals/reference.html`) chargée en iframe.
+- **`render/`** reçoit un modèle + des handlers et construit le DOM avec `R.h(tag, props, enfants)` (`render/dom.js`) : **jamais de donnée dans `innerHTML`**. Formats français dans `render/format.js` (`R.fmt`). Fenêtres et message du bas dans `render/sheet.js` (`R.openSheet`, `R.toast`).
+- **`app/ctrl/`** : `ctx.js` (état `A.state`, lecture/écriture, instantanés « Annuler », `A.render`), un contrôleur par écran (`today`, `month` + `day` pour la fiche du jour, `year` + « Préparer AAAA », `profile` + `profile-edit`), `backup` + `backup-folder` (copie de secours), `print`. Chaque écran s'enregistre dans `A.views[onglet] = { render(main) }`.
+- **Chaque geste relit le stockage, modifie, enregistre** (`A.loadMonth` → `Compute.*` → `A.saveMonth`) : aucune copie en mémoire qui pourrait diverger. Seule la fiche du jour garde le mois ouvert le temps de la fenêtre (modale).
+- **« Annuler »** (`A.snapshot` + `A.undoable`) restaure par un **nouvel enregistrement** (nouvel `updatedAt`) — jamais par écriture brute d'un ancien état, sinon la fusion entre appareils ré-appliquerait la version annulée.
 
-### Design "Liquid Glass" (2026-07-19)
+### Écrans (lot 12, 2026-09-29)
 
-Redesign visuel complet à partir d'un handoff externe (`handoff_liquid_glass/`, conservé à la racine comme référence — maquettes HTML + README détaillé). Teinte **Prune** (`--hue: 322`) et intensité de verre **Médium** fixées en dur dans `00-vars-base.css` (pas de sélecteur runtime en production). Les noms de variables historiques (`--accent`, `--card`, `--muted`…) sont conservés : tout le CSS les consommant récupère le nouveau rendu sans modification. Deux classes de verre réutilisables : `.glass` (cartes) et `.glass-strong` (toolbar, popovers, héros) — voir `00-vars-base.css`.
+4 onglets `[data-tab]` (en haut sur ordinateur, en bas sur iPhone ≤ 640 px), état `A.state.tab` = `today | month | year | profile`, non mémorisé : ouverture sur **Aujourd'hui** sur téléphone et au premier lancement (carte de bienvenue si aucune donnée), **Mon mois** sur ordinateur. `A.state.year` est partagé entre Mon mois et Mon année.
 
-**Invariant à respecter pour toute nouvelle UI** : ne jamais coder une couleur en dur pour une carte/bouton — utiliser `.glass`/`.glass-strong`/`.btn`/`.btn-primary`/`.pill` ou les tokens `var(--accent)`, `var(--ink)`, `var(--muted)`, etc.
+- **Aujourd'hui** (`ctrl/today.js`, `render/today.js` + `punch-card.js`) : pointeuse à l'heure du téléphone (`compute/punch.js`), heures corrigeables, heures sup. recalculées chaque minute (horloge et encart seulement, jamais pendant une saisie).
+- **Mon mois** (`ctrl/month.js`, `render/calendar.js` + `month-panel.js` + `overtime-view.js`) : calendrier `Compute.buildCalendar` (habituel / modifié / pointé / non travaillé / férié / à venir / aujourd'hui), « Semaine de congés », samedis (réunions), 3 étapes (`verified`, fiche de paie, `done`), heures sup. des jours passés (`A.hsDays`), résultat du mois. **Fiche du jour** (`ctrl/day.js`, `render/day-sheet.js` + `day-kid.js`) : une heure modifiée met à jour les chiffres sans reconstruire (`R.fillDayFigures`), le reste reconstruit.
+- **Mon année** (`ctrl/year.js`, `render/year-view.js` + `prepare-year.js`) : montant de `Compute.computeYearRecap`, tuiles des 12 mois, avec/sans abattement, réglages, documents, « Préparer AAAA » (SMIC, enfants qui continuent → date de départ au 31/12, relais).
+- **Mon profil** (`ctrl/profile.js` + `profile-edit.js`, `render/profile.js` + `profile-child.js`) : identité, relais de l'année, enfants (horaires en vigueur, historique, changement « à partir du … »), copie de secours, effacer une année. Un changement d'enfant est reporté par `Compute.rescheduleMonth` sur les mois enregistrés : **seuls les jours encore « comme d'habitude » d'un mois non terminé bougent** — jamais un jour pointé, modifié à la main ou non travaillé.
+- **Actions de masse** (« Semaine de congés », « Journée habituelle ») : un **jour pointé n'est jamais touché** (heures réelles).
+- **Aide** (`?` de l'en-tête) : `app/modals/reference.html` (styles `61-reference.css`, jamais chargés par `index.html`) en iframe dans une fenêtre.
 
-**Toolbar consolidée** : Sauvegarder + Importer fusionnés dans un bouton « Données » (`#abmat-action-data-toggle` → menu `#abmat-data-menu`, contient le statut d'enregistrement et la sauvegarde auto) ; 4 onglets texte piliers (voir section Navigation ci-dessous) ; icône Imprimer. Le bouton Imprimer peut exister à **plusieurs endroits** (icône toolbar + bouton flottant mobile `.fab` + CTA dans le héros du résultat) : `toolbar-actions.js` lie tous les éléments `[data-toolbar-action="print"]` via `querySelectorAll` à chaque appel (indépendant de la garde `abmatBound` qui ne concerne que Sauvegarder/Importer/le fichier caché) — **ne jamais revenir à un `getElementById` unique pour Imprimer**. Les boutons sont montrés/masqués ensemble selon `declarationMode || maDeclarationMode` dans `renderAll` (l'icône imprime le relevé du mois ou le récap annuel seul ; le dossier complet a son propre bouton statique, `#abmat-print-dossier`, non concerné par cette garde).
+### Copie de secours (iCloud Drive, décision 2026-09-29)
 
-**Tableau mensuel en cartes** : `day-rows.js`/`month-table.js` génèrent des `<div>` (`.day-row`, `.kids`, `.kidline`…) au lieu de `<tr>/<td>`. Le contrat `data-*` (data-date, data-child, data-slot-index, data-time, data-absent, data-motif, data-action, data-hours, data-abatt, data-day-total, data-week-total) est **strictement identique** à l'ancien tableau — c'est ce qui a permis la réécriture sans toucher aux handlers d'`app.js`. La racine du conteneur garde la classe `abmat-table` (historique, sert aux 2 sélecteurs `document.querySelector(".abmat-table")` dans `app.js` — ne pas la renommer sans mettre à jour ces 2 endroits + l'itération `.day-row[data-date]`). Le tableau **annuel** (`year-recap.js`) est un vrai `<table>` qui partage aussi la classe `abmat-table` par coïncidence de nom historique : son habillage complet vit désormais dans `85-year-recap.css` sous `.year-recap__table`, indépendamment de `.abmat-table`.
+- **Ordinateur** (`AS.isSupported()` : File System Access) : dossier choisi une fois (iCloud Drive via « iCloud pour Windows », ou OneDrive) ; `abattement-assmat-AAAA.json` réécrit 0,6 s après chaque modification, relu et fusionné à l'ouverture de chaque année (`ctrl/backup-folder.js`). Aucun rappel.
+- **iPhone** (pas d'accès aux dossiers) : « Envoyer ma copie » (feuille de partage → Enregistrer dans Fichiers → iCloud Drive → Remplacer) et « Reprendre la copie » (fichier choisi → fusion). Rappels selon `Compute.backupPrompt` : question de reprise à l'ouverture (dernière reprise > 7 jours, « Non » = une semaine de calme), envoi proposé au mois terminé, en fin de journée pointée (≥ 3 jours en attente, simple message) et à l'ouverture si la copie a plus de 7 jours (« Plus tard » = 3 jours). **Au plus une fenêtre par jour, jamais pendant qu'un enfant est pointé présent** (bandeau à la place). État dans `abmat:sync` (`storage/device.js`, jamais exporté) ; `A.saveMonth` y note les jours réellement modifiés (« 5 j. à envoyer »).
 
-`90-print.css` et les gabarits `print-*.js` : **non touchés** par le redesign (décision explicite du handoff — le liquid glass ne s'applique qu'à l'écran, jamais à l'impression).
+### Design (lot 12, maquette validée le 2026-09-29)
 
-**Impression** : on n'imprime jamais l'écran. `app.js` (`buildPrintDoc`, déclenché par le bouton Imprimer et par `beforeprint`) génère un document dans `#print-doc` — relevé mensuel (`compute/month-print.js` → `render/print-month.js`) ou récap annuel (`computeYearRecap` → `render/print-year.js`) selon la vue. `90-print.css` masque tout sauf `#print-doc` à l'impression (`body > :not(#print-doc)`) et le style en document serif. Socle commun `render/print-common.js` (en-tête d'identité lisant `abmat:profile`, règles, pied de page) — données via `textContent` uniquement.
+Fonds **opaques**, teinte **Prune** (`--hue: 322`), mode sombre automatique (`prefers-color-scheme`), base 17 px, boutons ≥ 44 px. Jetons et composants communs dans `app/styles/00-vars-base.css` (`--bg`, `--surface`, `--surface-2`, `--ink`, `--muted`, `--line`, `--accent`, `--accent-soft`, `--ok`, `--warn`… ; `.card`, `.btn`, `.btn-primary`, `.btn-quiet`, `.chip`, `.field`, `.money`, `.check`). **Invariant** : aucune couleur en dur hors de `00-vars-base.css` (et du document imprimé) — uniquement ces jetons et composants. Le verre (« Liquid Glass » de 2026-07, dossier `handoff_liquid_glass/`) est abandonné : ce dossier n'est plus qu'un historique.
 
-`print-year.js`/`print-month.js` exposent chacun deux fonctions : `buildPrintYearSheet`/`buildPrintMonthSheet` **construisent** la `.sheet` sans la rattacher au DOM, `renderPrintYear`/`renderPrintMonth` (utilisées pour l'impression simple) vident `#print-doc` puis y attachent la feuille construite. `render/print-full-year.js` (**dossier complet**, bouton dédié `#abmat-print-dossier` dans Ma déclaration) réutilise ces deux builders tels quels pour assembler dans `#print-doc` : récap annuel puis, pour chaque mois au statut différent de « vide », son relevé (forfait recalculé via `Compute.forfaitJourForMonth`, exposé par `compute/year-recap.js`, pour respecter un `smicOverride` propre à ce mois). `90-print.css` insère un saut de page (`break-before: page`) entre deux `.sheet` consécutives — une impression simple ne produit jamais qu'une seule `.sheet`, la règle ne s'applique donc que dans ce cas d'assemblage. **Piège** : `window.print()` déclenche lui-même `beforeprint`, dont l'écouteur (`buildPrintDoc`) reconstruirait `#print-doc` avec le seul récap ; le drapeau `dossierPending` (posé par `printFullDossier`, levé à `afterprint` et par l'impression simple) l'en empêche — ne jamais le retirer.
+**Pièges de noms de classes** : la fenêtre s'appelle `.dlg` (pas `.sheet`, réservé aux feuilles imprimées de `#print-doc`) ; `.row` existe à l'écran et dans le document imprimé (neutralisé dans `90-print.css`). Avant toute nouvelle classe, vérifier qu'elle n'existe pas dans `render/print-*.js`.
 
-### Navigation à 4 piliers (2026-07-19, étendue le 2026-07-21)
+### Impression
 
-`state.pillar` = `"accueil" | "infos" | "declaration" | "ma-declaration"` — les 4 destinations de la toolbar (`.pillar-tab[data-pillar]`, texte, pas des icônes : changement rare, la clarté prime sur la compacité). Persisté dans `abmat:ui:pillar` ; au tout premier lancement (rien en mémoire) → `"accueil"` si l'appareil est vraiment vierge (`hasAnyMonthData()` false), sinon `"declaration"` pour ne pas perturber une habitude déjà prise (mise à jour de l'outil sur un appareil déjà utilisé).
-
-- **Accueil** (`render/accueil.js`) : message de bienvenue toujours affiché, puis raccourcis adaptés à l'état du profil (calculés à chaque affichage par `computeAccueilContext()` dans `app.js` — jamais figés). Héberge aussi l'onboarding (`render/onboarding.js`, section suivante) et l'explication des règles (contenu statique dans `index.html`, **plus jamais replié** : Accueil n'étant plus une page visitée à chaque mois, condenser son contenu n'a plus de sens).
-- **Mes informations** (`#infos-section`, pleine largeur) : identité + enfants + semaines types, ne vit plus dans la colonne résultat de Déclaration.
-- **Déclaration** : saisie du mois uniquement (années/mois, tableau, fiche de paie, résultat collant) — `state.monthIndex` (0-11) n'a de sens que sous ce pilier. Ne contient plus d'onglet RÉCAP dans sa sous-navigation (`period.js`) : ce contenu a été promu au pilier suivant.
-- **Ma déclaration** (`#ma-declaration-section`, pleine largeur, `renderMaDeclarationScreen()` dans `app.js`) : reprend **à l'identique** l'ancien contenu du RÉCAP (encart 1AJ, détail par mois cliquable → `goToMonth()` bascule sur Déclaration, comparaison des régimes — `render/year-recap.js` inchangé) avec un sélecteur d'années dédié sans onglets de mois (`R.renderYearOnlySelector` dans `period.js` — mêmes pastilles/badge « déclarée » que Déclaration, `state.year` **partagé** entre les deux piliers). Ajoute le bouton **« Imprimer le dossier complet »** (`#abmat-print-dossier`, cf. section Impression) et son texte dynamique (`updateDossierCard()` compte les mois renseignés).
-
-Helpers dans `app.js` : `isAccueilMode()`, `isInfosMode()` (= `pillar==="infos"`), `isMaDeclarationMode()` (= `pillar==="ma-declaration"`), `isMonthMode()` (= `pillar==="declaration"`, plus simple depuis que le récap a son propre pilier). **`isMonthMode()` gouverne le chargement des données mensuelles** (`loadAndRenderMonth`) — ne jamais réintroduire un test basé sur `monthIndex` seul pour distinguer les autres piliers (les anciens sentinels `monthIndex===12`/`===13` n'existent plus). `#content-grid` (saisie du mois) n'a donc plus qu'un seul mode d'affichage — la classe `.content-grid--single` a été retirée avec le récap qui la justifiait.
-
-**Années déclarées** : case à cocher dans Ma déclaration (`year-recap.js`) → `S.setYearDeclared(year, bool)` (repère manuel local, volontairement **hors export/merge** — ce n'est pas une donnée fiscale) → badge ✓ sur la pastille correspondante, à la fois dans `period.js` (Déclaration) et `R.renderYearOnlySelector` (Ma déclaration), toutes deux lisant `S.getDeclaredYears()`.
-
-### Onboarding (2026-07-21) : explication des 3 piliers + fiche de référence
-
-Remplace l'ancien "tuto" (liste à puces générique + modale en mur de texte). Deux morceaux distincts, volontairement séparés :
-
-- **`#onboarding-section` (Accueil, `render/onboarding.js`)** : 3 cartes reliées par des flèches — Mes informations → Déclaration → Ma déclaration, dans l'ordre où on s'en sert, chacune avec l'icône et le nom exacts de son onglet. Toujours affichée (pas de logique de pliage/masquage) ; l'étape 1 est mise en avant (`.onb-current`, bordure verte) **uniquement** tant que `ctx.profileEmpty` est vrai — c'est alors la seule action possible. Recalculée à chaque affichage d'Accueil comme le reste du contexte (`computeAccueilContext()`), jamais figée.
-- **Fiche de référence (`app/modals/reference.html`, chargée en iframe dans la modale existante)** : cas particuliers et points d'attention qui ne collent pas à un moment précis de l'écran (versements décalés type CCAS de Grenoble, 1 enfant = 1 ligne, justificatifs, sauvegarde/impression à jour du lot 10…), en cartes (`app/styles/61-reference.css`, chargé uniquement par cette page, jamais par `index.html`). Ouverte via tout élément portant l'attribut `[data-open-tuto]` — aujourd'hui le bouton "Voir les points d'attention" du bloc onboarding et la carte "book" des raccourcis (profil vide uniquement).
-
-**Piège évité** : le bouton `[data-open-tuto]` vit désormais dans du contenu **recréé à chaque affichage d'Accueil** (`container.innerHTML=""` puis reconstruction), donc une liaison directe (`btn.addEventListener` posée une seule fois au chargement) serait perdue dès le second passage sur Accueil, voire absente d'entrée si Accueil n'est pas le pilier initial. `initTutoModal()` (app.js) et le script de chargement paresseux de l'iframe (bas d'`index.html`) écoutent donc les clics **par délégation sur `document`** (`e.target.closest('[data-open-tuto]')`) plutôt que sur l'élément lui-même — robuste à n'importe quel nombre de (re)créations. Ne jamais revenir à un binding direct sur ce bouton.
+On n'imprime jamais l'écran : `ctrl/print.js` construit un document dans `#print-doc` — relevé du mois (`compute/month-print.js` → `render/print-month.js`), récap de l'année (`render/print-year.js`) ou **dossier complet** (`render/print-full-year.js` : récap puis chaque mois renseigné, un par page). `90-print.css` masque tout le reste (`body > :not(#print-doc)`) et met en page en serif. Cmd/Ctrl+P construit le document de l'onglet affiché (`beforeprint`), **sauf** si un bouton vient de le faire (drapeau levé à `afterprint`) — sans ce drapeau, `window.print()` (qui déclenche lui-même `beforeprint`) remplacerait le dossier complet par le seul récap.
 
 ### Invariant : une seule source de calcul
 
-Depuis le lot 2, **le DOM n'est jamais lu pour calculer** : `state.data` (mensuel) et le localStorage (récap annuel) alimentent `calc.js`, et le DOM ne fait qu'afficher. Ne jamais réintroduire de lecture d'`<input>` dans un calcul — c'est la divergence entre les deux anciens chemins qui avait produit le bug « abattement annuel = 0 € ». Le récap annuel utilise le forfait de l'année **et le `smicOverride` propre à chaque mois**.
+**Le DOM n'est jamais lu pour calculer** : le stockage alimente `calc.js`/`overtime.js`/`compute/`, et le DOM ne fait qu'afficher (les formulaires du profil transmettent leurs valeurs aux handlers, rien d'autre). C'est la divergence entre deux chemins de calcul qui avait produit le bug « abattement annuel = 0 € ».
 
 ## Données & stockage
 
-**Montants de la fiche de paie** : champs texte (`inputmode="decimal"`), lus par `U.parseMoneyFR` (virgule ou point, espaces ignorés, 2 décimales ; toute saisie ambiguë est refusée et signalée, jamais convertie). Ne jamais revenir à `<input type="number">` : sa lecture dépend de la langue du navigateur (en anglais, « 1234,56 » devenait 123456).
+Schéma détaillé et migrations : `docs/schema-donnees-v3.md`. Clés localStorage :
 
-Une entrée localStorage par mois, clé `abmat:YYYY-MM`. Le bouton Sauvegarder exporte **l'année complète** (`abattement-assmat-AAAA.json`, format `abmat-year` : enveloppe `{format, version, year, months, profile}`, mois vides exclus). **L'import d'un fichier d'année est une FUSION** (`mergeYearFromJsonText`) : chaque mois porte un `updatedAt` posé par `saveMonth` **uniquement quand le contenu change** — la version la plus récente gagne mois par mois, et un mois modifié des deux côtés depuis `abmat:lastMergedAt` déclenche un arbitrage explicite (callback `resolveConflict`), jamais un écrasement silencieux. Ne jamais réintroduire d'import-remplacement ni de tampon d'horodatage à la consultation. Les anciens fichiers de mois restent importables. Structure mensuelle, normalisée par `storage.js` :
-
-```json
-{
-  "version": 2,
-  "year": 2026,
-  "monthIndex": 0,
-  "smicOverride": null,
-  "netImposable": 0,
-  "irf": 0,
-  "days": {
-    "2026-01-05": {
-      "children": {
-        "1": { "absent": false, "motif": "", "slots": [ { "in": "08:00", "out": "17:00" } ] },
-        "2": { "absent": true, "motif": "malade", "slots": [] },
-        "3": { "absent": false, "motif": "", "slots": [] }
-      }
-    }
-  }
-}
+```
+abmat:AAAA-MM          un mois (v3) : netImposable, irf, verified, done, days
+abmat:profile          profil (v2) : firstName, lastName, employer, children datés + periods
+abmat:settings:AAAA    réglages d'une année : smic (ou null), relais
+abmat:declaredYears    années marquées « déclarées » (repère local, hors export)
+abmat:lastMergedAt     dernière synchro (arbitrage des conflits de fusion)
+abmat:sync             état de la copie manuelle sur CET appareil (hors export)
+IndexedDB abmat-autosave : le dossier de copie choisi (ordinateur)
 ```
 
-⚠️ **`days` est un objet indexé par date ISO, pas un tableau** (le bug historique du récap annuel venait d'un `Array.isArray` sur cette structure). `children` = enfants 1 à 3 ; chaque enfant porte une **liste de créneaux** (max 3, les heures s'additionnent sur la journée avant la règle ≥ 8 h) et un éventuel marquage d'absence. La **migration v1 → v2** (ancien `slots: {"1":{in,out}}`) est automatique dans `normalizeData()` — tout nouveau changement de schéma incrémente `version` et ajoute sa migration au même endroit.
+Un mois v3 : `days` est un **objet indexé par date ISO** (jamais un tableau) ; chaque jour `{ off, children: { c1: { absent, motif, slots: [{in,out}] ≤ 3, punched }, r1: { …, relais, name } }, meetings: [{in,out}] }`. Les jours et présences vides sont retirés à la lecture. Les migrations v1/v2 → v3 (clés `"1"` → `"c1"`, `smicOverride` abandonné) et profil v1 → v2 sont faites **à la lecture** ; tout nouveau changement de schéma incrémente `version` et ajoute sa migration au même endroit.
+
+`updatedAt` n'est posé **que si le contenu change** (`S.sameContent`). La sauvegarde est **l'année complète** (`abattement-assmat-AAAA.json`, format `abmat-year` v2 : `{format, version, year, months, profile, settings}`) et **l'import est une FUSION** (`S.mergeYearFromJsonText`) : la version la plus récente gagne mois par mois, un mois modifié des deux côtés depuis `abmat:lastMergedAt` est arbitré (`resolveConflict`), jamais écrasé en silence. Ne jamais réintroduire d'import-remplacement ni d'horodatage à la consultation. Les anciens fichiers d'un seul mois restent importables.
+
+**Montants** : champs texte (`inputmode="decimal"`) lus par `U.parseMoneyFR` (virgule ou point, espaces ignorés, 2 décimales ; saisie ambiguë refusée et signalée). Ne jamais revenir à `<input type="number">` (lecture dépendante de la langue du navigateur).
 
 ## Documentation (docs/)
 
-- `docs/feuille-de-route.md` — **où on va et pourquoi** : cap produit, lots 1 à 6 (fiabilité → moteur unifié → UI → PDF → parcours → distribution PWA), décisions en attente. À mettre à jour quand un lot avance ou qu'une décision est prise.
-- `docs/revue-2026-09-29.md` — revue complète (justesse, saisie, RGPD, design, éco-conception, textes, code) avec bugs reproduits et plan d'action priorisé ; captures dans `docs/revue-2026-09-29/`.
-- `docs/spec-heures-supplementaires.md` — proposition de règle et de conception pour le décompte des heures supplémentaires (brouillon, questions à faire valider par le CCAS).
+- `docs/feuille-de-route.md` — **où on va et pourquoi** : cap produit, lots, décisions (et celles en attente). À mettre à jour quand un lot avance ou qu'une décision est prise.
+- `docs/revue-2026-09-29.md` — revue complète (justesse, saisie, RGPD, design, éco-conception, textes, code) ; captures dans `docs/revue-2026-09-29/`.
+- `docs/spec-heures-supplementaires.md` — règle des heures supplémentaires validée, exemples, questions ouvertes.
+- `docs/schema-donnees-v3.md` — schéma des données (Mermaid) et migrations.
+- `docs/architecture-ecrans.md` — ordre de chargement et dépendances des modules (Mermaid).
 
-## État connu (audit du 2026-07-19, lot 1 corrigé le même jour)
+## État connu
 
-**Corrigés (lot 1)** : récap annuel réécrit (`compute/year-recap.js` recalcule via `S.loadMonth` + `C.computeMonthTotal`, avec le `smicOverride` du mois — abattement, jours-enfant et statuts réels) ; SMIC 2023 corrigé à 11,27 ; sentinel toolbar (`#period-sentinel`) ; garde utils réelle dans `render/index.js`. Côté renderers, l'audit initial s'était trompé de sens : c'était **`rules.js` qui n'était pas chargé** (le `<script>` pointait encore sur `year-abattement.js`, provoquant un affichage en double de l'explication). Le HTML charge désormais `rules.js` ; `year-abattement.js` est supprimé. Vérification hors navigateur : harnais node sur les vrais fichiers (15 assertions).
-
-**Lot 2 fait le 2026-07-19** : calculs mensuels depuis `state.data` (le DOM n'est plus lu), export/import de l'année complète (corrige l'export « null » depuis le RÉCAP), suite `node --test`.
-
-**Lot 5 (cœur) fait le 2026-07-19** : vue Mes informations — profil `abmat:profile` (identité, enfants `{name, active, week}`, semaine type lun→ven un créneau/jour), pré-remplissage d'un mois vide (`compute/prefill.js`, action volontaire — jamais automatique), profil embarqué dans l'export d'année, prénoms dans tableau et PDF, encart 1AJ + comparaison des régimes au RÉCAP.
-
-**Lot 9 fait le 2026-07-19** : navigation à 3 piliers (Accueil / Mes informations / Déclaration). `monthIndex===13` (ancien sentinel Infos) a disparu, remplacé par `state.pillar`.
-
-**Lot 10 fait le 2026-07-21** : 4ᵉ pilier « Ma déclaration » — promotion du RÉCAP (retiré de la sous-navigation de Déclaration) au rang de pilier à part entière, détaillée dans la section « Navigation à 4 piliers » ci-dessus, + impression du **dossier complet** (récap annuel + relevés mensuels renseignés, un par page). Vérifié en Chrome headless piloté via CDP (WebSocket natif Node, sans dépendance) : les 4 onglets, le changement d'année dans Ma déclaration, le clic sur un mois du tableau (retour en Déclaration), la case « déclarée », l'impression simple et le dossier complet (assemblage de plusieurs `.sheet`) — aucune exception JS, aucune régression sur les 48 tests.
-
-**Lot 3 fait le 2026-07-19** (3 étapes) : schéma v2 (multi-créneaux + absences, migration auto) ; nouveau tableau de saisie (`render/day-rows.js` + `render/month-table.js` : enfants visibles + « + enfant », « + créneau »/✕, absence avec motif, fériés calculés `U.getFrenchHolidays`, « Recopier la semaine précédente », total du jour — valeurs remplies depuis `state.data` via `createElement`, **jamais de donnée dans innerHTML**) ; thème (accent unique `--accent` #23458c, base 17 px, héros du résultat avec note « au lieu de X € perçus », pilules toolbar « ✓ Enregistré » + total du mois, tuto/explication en `<details>` repliés après première visite — flag `abmat:ui:visited` —, années en pastilles fixes 2023 → courante). 29 tests verts. ⚠️ **Les étapes DOM (tableau + thème) n'ont pas encore été vérifiées dans un navigateur.**
-
-**Corrections de la revue du 2026-09-29** (`docs/revue-2026-09-29.md`) : case 1AJ calculée sur l'année (plancher unique), dossier complet qui n'imprimait que le récap (drapeau `dossierPending`), montants en champs texte (`U.parseMoneyFR`), défauts visuels (icônes `.btn svg`, cartes de Ma déclaration, iPhone sans défilement horizontal, JUIN/JUIL.), textes (1AJ ou 1BJ, fiche de référence). Vérifié dans Chromium piloté par Playwright (vérification minimale ci-dessus, en ordinateur et en largeur iPhone) — 52 tests.
+- **Lots 1 à 5, 9, 10 (2026-07)** : récap annuel recalculé depuis le stockage, calculs sans lecture du DOM, export/fusion de l'année, profil et pré-remplissage, navigation par piliers, dossier complet.
+- **Revue du 2026-09-29** : corrections P0 (case 1AJ calculée sur l'année, dossier complet, montants en texte, défauts visuels, textes).
+- **Lot 12 (2026-09-29)** : données v3 (enfants datés, horaires versionnés, relais, jours non travaillés, réunions, SMIC par année), heures supplémentaires, puis nouvelle interface (pointeuse, calendrier, fiche du jour, passage d'année, copie iCloud avec rappels, effacer une année). Vérifié dans Chromium piloté par Playwright (ordinateur, iPhone 13, mode sombre, impression, anciennes données v1/v2) — scripts ponctuels, non conservés dans le dépôt.
 
 Copies **obsolètes** à ne jamais éditer : `~/Downloads/assmat-refacto*` et le dossier « Assmat - copie archivee 2026-04 » sur le Bureau.
 
@@ -145,7 +126,7 @@ Suite sans dépendance basée sur le runner intégré de node — lancer depuis 
 node --test
 ```
 
-Le harnais (`tests/harness.js`) charge les modules réels (config, utils, calc, storage, compute) avec `window`/`localStorage` simulés. Pas de DOM dans cette suite : les renderers, `app.js` et la navigation à 4 piliers se vérifient à la main dans le navigateur (section Lancement) — éventuellement via un Chrome headless piloté en CDP pour une passe ponctuelle (cf. lot 10), mais aucun script de ce type n'est conservé dans le dépôt. Couverture actuelle (52 tests) : bornes 8 h / prorata / créneaux invalides (`calc.test.js`), imports malformés et export/import d'année (`storage.test.js`), abattement, statuts annuels et case 1AJ calculée sur l'année (`year-recap.test.js`), années déclarées (`declared-years.test.js`), lecture des montants `parseMoneyFR` (`utils.test.js`). Tout changement du moteur doit faire tourner cette suite avant commit.
+Le harnais (`tests/harness.js`) charge les modules réels (config, utils, calc, overtime, storage, compute — même ordre qu'`index.html`) avec `window`/`localStorage` simulés. Pas de DOM dans cette suite : les écrans se vérifient dans le navigateur (section Lancement). Couverture (87 tests) : bornes 8 h / prorata / créneaux invalides / simultanéité (`calc`), heures sup. et explications (`overtime`), stockage v3, migrations et fusion (`storage`, `merge`), profil daté, pré-remplissage et report d'un changement d'horaires (`profile`), récap et case 1AJ annuelle (`year-recap`, `month-print`), calendrier (`month-view`), pointeuse (`punch`), rappels de copie (`backup-rules`), années déclarées et effacement (`declared-years`), montants (`utils`). Tout changement du moteur doit faire tourner cette suite avant commit.
 
 Sémantique historique à connaître : deux horaires *tous deux* imparsables valent « empty » (case vide), pas « invalid » — documenté dans `calc.test.js`.
 
@@ -155,23 +136,23 @@ Sémantique historique à connaître : deux horaires *tous deux* imparsables val
 Tout en **français** : commentaires, en-têtes de fichiers, messages d'erreur, textes UI, commits.
 
 ### 2. Échouer bruyamment
-**Interdiction du code défensif silencieux** : pas de try/catch qui avale, pas de fallback multi-signatures « au cas où », pas de `|| 0` masquant une fonction absente. C'est précisément ce style qui a caché le bug P0 du récap annuel pendant des mois. Si une dépendance manque, `throw` avec un message clair (comme le font déjà les guards `ABMAT.utils est requis…`).
+**Interdiction du code défensif silencieux** : pas de try/catch qui avale, pas de fallback multi-signatures « au cas où », pas de `|| 0` masquant une fonction absente. C'est précisément ce style qui a caché le bug P0 du récap annuel pendant des mois. Si une dépendance manque, `throw` avec un message clair ; une erreur que l'utilisatrice peut rencontrer (fichier illisible, mémoire pleine) s'affiche dans un message, jamais dans la seule console.
 
 ### 3. Pas de code mort ni d'alias de compat
 Supprimer plutôt que conserver (`R.renderX || R.renderY`, anciens noms « pendant la refacto »). Le dépôt git garde l'historique.
 
 ### 4. Taille des fichiers
-~150 lignes max par fichier ; au-delà, découper par responsabilité (modèle existant : un fichier `render/` par zone d'écran).
+~150 lignes max par fichier ; au-delà, découper par responsabilité (modèle : un fichier `render/` par zone d'écran, un fichier `ctrl/` par écran).
 
 ### 5. KISS / SOLID / POO progressive
-Une fonction = une chose ; noms explicites ; pas de duplication. Refactoriser en classe uniquement au moment où l'on touche un fichier qui le justifie (état partagé implicite, fonction qui grossit) — pas de réécriture globale.
+Une fonction = une chose ; noms explicites ; pas de duplication. Refactoriser en classe uniquement au moment où l'on touche un fichier qui le justifie — pas de réécriture globale.
 
 ### 6. Schémas Mermaid
-Tout diagramme (flux de calcul, structure des données) vit dans `docs/` au format Mermaid, un fichier par schéma, mis à jour à chaque changement structurel.
+Tout diagramme (flux de calcul, structure des données, modules) vit dans `docs/` au format Mermaid, un fichier par schéma, mis à jour à chaque changement structurel.
 
 ### 7. Avant / après chaque modification
 - Avant : lire le fichier **en entier** ; grep les appelants dans `app/` avant de changer une signature.
-- Après : vérification manuelle minimale (section Lancement) — y compris l'onglet RÉCAP et l'impression, les deux zones les plus fragiles.
+- Après : `node --test`, puis vérification minimale (section Lancement) — y compris l'impression et la largeur iPhone, les zones les plus fragiles.
 
 ### 8. Git — commits atomiques
 Format existant de l'historique : `type(scope): description courte en français` (`feat`, `fix`, `refactor`, `style`, `docs`, `chore`).

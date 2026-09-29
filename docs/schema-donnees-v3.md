@@ -83,6 +83,8 @@ classDiagram
 - **4 enfants au plus en même temps** : contrôlé par `C.maxSimultaneous(jour)`, pas par le nombre d'enfants dans la journée.
 - **SMIC** : un seul par année. `ReglagesAnnee.smic` s'il est réglé, sinon le barème de `config.js`, sinon « SMIC manquant » (aucun abattement calculé en silence).
 - **Mois** : `verified` (jours vérifiés) et `done` (mois terminé) portent l'état du mois ; `off` marque un jour non travaillé ; `meetings` sert aux heures supplémentaires.
+- **Jour pointé** (au moins une présence `punched`) : heures réelles, jamais modifiées par une action de masse (semaine de congés, journée habituelle) ni par un changement d'horaires.
+- **Hors sauvegarde, propre à l'appareil** : `abmat:declaredYears` (repère « déclarée ») et `abmat:sync` (copie manuelle sur iPhone : `lastSentAt`, `lastImportAt`, `pending` = jours/mois modifiés depuis le dernier envoi, `lastPromptOn`, `sendSnoozeUntil`, `importSnoozeUntil`). Effacer une année (`S.eraseYear`) retire ses mois, ses réglages et son repère « déclarée ».
 
 ## Migrations (automatiques, à la lecture)
 
