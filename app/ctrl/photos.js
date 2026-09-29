@@ -1,8 +1,9 @@
 /* ============================================================================
    app/ctrl/photos.js — Photos de la fiche de présence (A.photos)
    ----------------------------------------------------------------------------
-   Prendre ou choisir une photo (recto, verso), la réduire (lib/image.js), la
-   ranger (storage/fiches.js), la remplacer ou la supprimer (avec « Annuler »).
+   Prendre ou choisir une photo (recto, verso), la réduire et la redresser
+   (lib/image.js), la ranger (storage/fiches.js), la tourner, la remplacer ou
+   la supprimer (avec « Annuler »).
    Les photos d'un mois sont gardées en mémoire (adresses d'affichage) pour
    l'écran et pour l'impression, qui ne peut pas attendre.
    ========================================================================== */
@@ -92,6 +93,20 @@
       changed(year, m);
       A.render();
       R.toast(`${label(side)} supprimé.`, kept ? [{ label: "Annuler", run: async () => { await store(key, kept.blob); changed(year, m); A.render(); } }] : []);
+    },
+
+    /** Tourne une photo d'un quart de tour (fiche prise dans le mauvais sens). */
+    async turn(year, m, side) {
+      const key = F.key(year, m, side);
+      try {
+        const r = await F.get(key);
+        await store(key, await IMG.turn(r.blob));
+      } catch (err) {
+        R.toast(`Photo non tournée : ${err.message}`);
+        return;
+      }
+      changed(year, m);
+      A.render();
     },
 
     /** Oublie les photos gardées en mémoire d'une année (après une reprise de copie). */

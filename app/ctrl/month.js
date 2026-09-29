@@ -102,6 +102,7 @@
       }),
       R.buildFicheCard({ monthName: F.monthName(st.monthIndex), state: photos }, {
         onPick: (side) => A.photos.pick(st.year, st.monthIndex, side),
+        onTurn: (side) => A.photos.turn(st.year, st.monthIndex, side),
         onRemove: (side) => A.photos.remove(st.year, st.monthIndex, side)
       }),
       R.hsMonthCard(hsModel(data, todayIso)),
