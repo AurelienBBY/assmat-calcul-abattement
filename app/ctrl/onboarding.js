@@ -1,7 +1,8 @@
 /* ============================================================================
    app/ctrl/onboarding.js — Mise en route guidée (A.startOnboarding)
    ----------------------------------------------------------------------------
-   Plein écran, sans les onglets : accueil (0), Vous (1), les enfants (2,
+   Plein écran, sans les onglets : sur téléphone, d'abord « Installez
+   AB’assmat » (app/ctrl/install.js) ; puis accueil (0), Vous (1), les enfants (2,
    app/ctrl/onboarding-kids.js), l'année (3), les mois passés (4), la copie de
    secours (5), c'est prêt (6). L'étape atteinte est mémorisée
    (abmat:ui:onboarding) : « Plus tard » ramène à l'outil, une carte sur
@@ -19,8 +20,8 @@
   const Compute = window.ABMAT.compute;
   const F = R.fmt;
 
-  if (!A || !A.onbKids || !A.onbSteps || !R.buildOnbFrame) {
-    throw new Error("app/ctrl/onboarding-kids.js, app/ctrl/onboarding-steps.js et render/onboarding.js doivent être chargés avant app/ctrl/onboarding.js.");
+  if (!A || !A.onbKids || !A.onbSteps || !A.install || !R.buildOnbFrame) {
+    throw new Error("app/ctrl/onboarding-kids.js, app/ctrl/onboarding-steps.js, app/ctrl/install.js et render/onboarding.js doivent être chargés avant app/ctrl/onboarding.js.");
   }
 
   let hidden = false; // carte de reprise masquée jusqu'au prochain lancement
@@ -76,6 +77,7 @@
 
   A.renderOnboarding = function renderOnboarding(main) {
     const step = saved().step;
+    if (step === 0 && A.install.shouldAsk()) { main.appendChild(A.install.build()); return; }
     if (step === 0) {
       main.appendChild(R.buildOnbWelcome({ childrenCount: A.profile().children.length }, { onStart: () => go(1), onRestore: B.importFile, onFinish: () => leave(true) }));
       return;

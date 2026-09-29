@@ -14,9 +14,11 @@
 .onb-progress span{ height: 6px; border-radius: 3px; background: var(--surface-2); }
 .onb-progress span.on{ background: var(--accent); }
 .onb-title{ font-size: 26px; line-height: 1.15; }
+.onb-logo{ width: 88px; height: 88px; }
 .lead{ font-size: 18px; }
 .onb-foot{ position: sticky; bottom: 0; display: grid; gap: 6px; background: var(--bg); padding-block: 10px calc(10px + env(safe-area-inset-bottom, 0px)); }
 .onb-foot .btn-big{ width: 100%; }
+.onb-foot.is-static{ position: static; } /* installation : les boutons après les gestes, pas par-dessus */
 .onb-steps{ margin: 0; padding-left: 22px; display: grid; gap: 6px; }
 .onb .field :is(input[type="text"], input[type="date"], select){ width: 100%; }
 
@@ -41,6 +43,17 @@
 .note{ background: var(--surface-2); border-radius: 12px; padding: 10px 12px; font-size: 15px; }
 .note.ok{ background: var(--ok-soft); color: var(--ok); font-weight: 650; }
 .note.warn{ background: var(--warn-soft); }
+
+/* Installer AB’assmat : l'icône telle qu'elle apparaîtra, puis les gestes un par un */
+.inst-app{ display: grid; justify-items: center; gap: 6px; padding-block: 4px; }
+.inst-app img{ width: 76px; height: 76px; }
+.inst-app span{ font-size: 14px; font-weight: 650; }
+.inst-steps{ list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; counter-reset: inst; }
+.inst-steps li{ display: flex; gap: 12px; align-items: flex-start; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; counter-increment: inst; }
+.inst-ic{ width: 40px; height: 40px; border-radius: 12px; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; flex: 0 0 auto; }
+.inst-ic svg{ width: 22px; height: 22px; }
+.inst-txt{ display: grid; gap: 2px; min-width: 0; }
+.inst-txt b::before{ content: counter(inst) ". "; }
 
 /* C'est prêt : le rythme d'utilisation ; carte de reprise (Aujourd'hui) */
 .onb-rhythm{ display: grid; gap: 10px; }

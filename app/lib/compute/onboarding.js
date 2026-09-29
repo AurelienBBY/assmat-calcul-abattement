@@ -95,6 +95,18 @@
   };
 
   /**
+   * Installation sur l'écran d'accueil : "installed" (ouvert depuis l'icône),
+   * "ios", "android" (à proposer) ou "desktop" (rien à proposer).
+   * @param {{ua:string, maxTouchPoints:number, standalone:boolean}} env
+   */
+  Compute.installTarget = function installTarget(env) {
+    if (env.standalone) return "installed";
+    if (/iPhone|iPad|iPod/.test(env.ua) || (/Macintosh/.test(env.ua) && env.maxTouchPoints > 1)) return "ios"; // iPad récent : « Macintosh » tactile
+    if (/Android/.test(env.ua)) return "android";
+    return "desktop";
+  };
+
+  /**
    * Mois passés à remplir avec les horaires habituels : seulement les mois
    * encore vides (rien n'est jamais écrasé) et où au moins un enfant venait.
    * @param {(m:number)=>boolean} isBlank - le mois m est-il vide ?

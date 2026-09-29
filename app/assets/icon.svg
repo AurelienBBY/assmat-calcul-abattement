@@ -1,9 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="96" fill="#380f3e"/>
-  <rect x="96" y="120" width="320" height="272" rx="24" fill="#ffffff"/>
-  <rect x="96" y="120" width="320" height="72" rx="24" fill="#66386d"/>
-  <rect x="96" y="168" width="320" height="24" fill="#66386d"/>
-  <circle cx="140" cy="156" r="12" fill="#ffffff"/>
-  <circle cx="180" cy="156" r="12" fill="#ffffff"/>
-  <text x="256" y="330" font-family="Arial, Helvetica, sans-serif" font-size="150" font-weight="bold" fill="#380f3e" text-anchor="middle">A€</text>
+  <!-- AB’assmat : le biberon-horloge (piste A, trait dessiné), fond mauve. Source des icônes PNG. -->
+  <rect width="512" height="512" rx="112" fill="#ddc7d6"/>
+  <g>
+    <path fill="#faf9f5" d="M222 168 C266 160 310 162 344 172 C352 244 354 334 348 406 C342 440 314 452 278 452 C242 452 218 440 214 408 C208 330 208 244 222 168 Z"/>
+    <path fill="#faf9f5" d="M244 146 C244 112 258 90 274 90 C290 92 302 112 300 148 Z"/>
+    <g fill="none" stroke="#141413" stroke-width="13" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M228 150 C225 118 238 92 256 90 C275 92 289 118 286 151"/>
+      <path d="M200 153 C236 145 280 146 312 153 C316 166 315 180 309 190 C272 197 236 197 203 190 C197 178 196 165 202 152"/>
+      <path d="M190 196 C182 256 181 334 186 404 C190 440 214 452 257 451 C300 451 324 438 327 404 C332 332 331 256 322 194"/>
+      <path d="M257 247 C288 246 311 270 310 301 C309 331 285 353 255 352 C225 350 204 327 205 298 C206 270 229 247 266 249"/>
+      <path d="M256 300 L257 263 M256 300 L228 316"/>
+      <path d="M196 390 C228 382 262 396 294 388 C306 385 316 384 322 386"/>
+    </g>
+  </g>
 </svg>
