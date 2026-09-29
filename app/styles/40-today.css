@@ -1,0 +1,21 @@
+/* ============================================================================
+   40-today.css — Aujourd'hui : la pointeuse
+   ========================================================================== */
+
+.today{ display: grid; gap: 14px; max-width: 640px; width: 100%; margin: 0 auto; }
+.clockbar{ display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.clock{ font-size: 30px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.pk{ display: grid; gap: 10px; }
+.pk-top{ display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.pk-top b{ font-size: 20px; }
+.pk-top .muted{ font-size: 15px; }
+.pk .times{ display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 16px; }
+.pk.is-abs{ background: var(--surface-2); }
+.rel-form{ display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.rel-form input{ flex: 1 1 160px; }
+.welcome{ display: grid; gap: 12px; }
+.welcome ol{ margin: 0; padding-left: 22px; display: grid; gap: 6px; }
+
+@media (max-width: 640px){
+  .clock{ font-size: 26px; }
+}

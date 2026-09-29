@@ -67,7 +67,7 @@
               ? (day.ferie ? `${day.label} — Férié` : day.label)
               : "";
             tr.appendChild(P.el("td", "doc-day", dayLabel));
-            tr.appendChild(P.el("td", null, P.childName(profile, child.key)));
+            tr.appendChild(P.el("td", null, P.childName(profile, child.key, child)));
 
             let presence;
             let duree;
@@ -122,13 +122,18 @@
     addRow("Indemnités représentatives de frais", U.fmtEuro(t.irf));
     addRow("Total perçu", U.fmtEuro(t.percu));
     addRow(`Abattement forfaitaire (${t.joursGarde} jour${t.joursGarde > 1 ? "s" : ""} de garde)`, `− ${U.fmtEuro(t.abatt)}`);
-    addRow(`Revenu à déclarer — ${U.MONTHS_FR[model.monthIndex].toLowerCase()} ${model.year}`, U.fmtEuro(t.imposable), true);
+    // Le montant à déclarer est annuel (récapitulatif) : ici, la part du mois,
+    // négative si l'abattement dépasse le perçu (elle se déduit des autres mois).
+    const apresLabel = (t.apres < 0)
+      ? `Après abattement — ${U.MONTHS_FR[model.monthIndex].toLowerCase()} ${model.year} (se déduit des autres mois)`
+      : `Après abattement — ${U.MONTHS_FR[model.monthIndex].toLowerCase()} ${model.year}`;
+    addRow(apresLabel, U.fmtEuro(t.apres), true);
 
     grid.appendChild(synth);
     grid.appendChild(P.rulesBox(model.rules));
     sheet.appendChild(grid);
 
-    sheet.appendChild(P.docFooter());
+    sheet.appendChild(P.docFooter("Le montant à déclarer est celui du récapitulatif annuel."));
     return sheet;
   };
 

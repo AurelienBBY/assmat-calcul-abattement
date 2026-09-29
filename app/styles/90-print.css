@@ -167,6 +167,8 @@
 
   #print-doc .doc-synth .row{
     display: flex;
+    flex-wrap: nowrap;      /* .row existe aussi à l'écran (00-vars-base.css) */
+    align-items: baseline;
     justify-content: space-between;
     gap: 12px;
     padding: 3px 0;

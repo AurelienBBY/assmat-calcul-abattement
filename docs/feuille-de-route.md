@@ -1,6 +1,6 @@
 # Feuille de route — Assmat Calcul abattement
 
-Mise à jour : 2026-07-21. Ce document fixe **où on va et pourquoi**. Le « comment coder » vit dans `CLAUDE.md` ; ici on ne liste que les objectifs et les décisions produit.
+Mise à jour : 2026-09-29. Ce document fixe **où on va et pourquoi**. Le « comment coder » vit dans `CLAUDE.md` ; ici on ne liste que les objectifs et les décisions produit.
 
 ## Cap produit
 
@@ -132,6 +132,44 @@ Périmètre d'origine :
 - ✅ Nettoyage : `app/style.css` (739 lignes mortes depuis le tout premier commit, jamais chargé par `index.html`) supprimé.
 - ✅ 48 tests toujours verts (aucune logique pure touchée). Vérifié en Chrome headless CDP : les 3 étapes, la bascule de mise en avant profil-vide → profil-rempli (via la vraie saisie du champ nom, pas un contournement du storage), l'ouverture de la fiche par les deux chemins, le contenu de l'iframe (10 cartes, 4 sections) — zéro exception JS.
 
+## Corrections P0 de la revue — ✅ faites le 2026-09-29
+
+Suite de `docs/revue-2026-09-29.md`, avant toute nouvelle fonction :
+
+- ✅ **Case 1AJ calculée sur l'année** : total perçu − abattement annuel, plancher à 0 appliqué une seule fois. Le récap additionnait des mois plafonnés à 0 et perdait l'abattement des mois où il dépasse la paie (versements décalés, 3 enfants à temps plein). Le solde d'un mois peut désormais être négatif (affiché, expliqué). Le test annuel existant figeait l'erreur ; 2 tests ajoutés.
+- ✅ **Dossier complet** : il n'imprimait que le récap (`beforeprint` le reconstruisait) — vérifié avec le vrai `window.print()` de Chromium.
+- ✅ **Montants de la fiche de paie** en champs texte, virgule ou point, montant compris réaffiché, saisie ambiguë refusée (`U.parseMoneyFR`, 2 tests).
+- ✅ **Défauts visuels** : icônes géantes des boutons, cartes de Ma déclaration, défilement horizontal sur iPhone (onglets en 2 × 2), JUIN/JUIL.
+- ✅ **Textes** : case 1AJ ou 1BJ ; fiche de référence (IRF, heures de présence, versements décalés).
+- Reste à confirmer sur impots.gouv avant la campagne 2027 : la case dédiée au montant de l'abattement (1GA/1HA) citée par plusieurs guides.
+
+## Lot 12 — Refonte « calendrier » + pointeuse — ✅ fait le 2026-09-29
+
+**Réalisé** (branche `claude/review-abattement-fiscal-tool-lamcwx`) : données v3 et migrations, heures supplémentaires expliquées, puis nouvelle interface à 4 onglets conforme à la maquette (pointeuse, calendrier par exceptions, fiche du jour, semaine de congés, 3 étapes du mois, Mon année avec « Préparer AAAA », Mon profil avec enfants datés et horaires « à partir du … », copie iCloud avec rappels iPhone, effacer une année). Décisions prises en cours de route :
+- un **jour pointé n'est jamais touché** par une action de masse (semaine de congés, journée habituelle) : ses heures sont réelles ;
+- la pointeuse compte une **réunion en cours** jusqu'à l'heure actuelle ; sans heure actuelle (calcul du mois), une réunion sans fin reste « à vérifier » ;
+- l'onglet de départ n'est pas mémorisé : **Aujourd'hui** sur téléphone et au premier lancement, **Mon mois** sur ordinateur ;
+- design **opaque** (fin du verre « Liquid Glass ») et mode sombre automatique.
+
+**Reste à faire (suite du lot)** : fusion **jour par jour** plutôt que mois par mois ; sur ordinateur, fusionner puis supprimer les doublons « abattement-assmat-AAAA 2.json » créés par erreur ; rappel d'envoi après un changement important du profil ; heures sup. dans le relevé imprimé ; arbitrage d'un conflit de fusion dans une fenêtre de l'outil (aujourd'hui `confirm()`).
+
+### Proposition initiale (2026-09-29)
+
+**Origine** : revue complète du 2026-09-29 (`docs/revue-2026-09-29.md`) — pages trop longues, 22 cartes de jours à parcourir chaque mois. Maquette cliquable validée par l'utilisateur (artifact privé « Calendrier Ass-Mat », v2), puis décisions ci-dessous.
+
+- **Navigation** : 4 onglets — **Aujourd'hui** (pointeuse), **Mon mois** (calendrier), **Mon année** (montant à déclarer, passage d'année), **Mon profil**. Barre d'onglets en bas sur iPhone. L'actuel Accueil ne sert plus qu'au premier lancement.
+- **Mon mois = saisie par exceptions** : calendrier pré-rempli avec les horaires habituels ; un clic ouvre la fiche du jour (« Journée habituelle », « Je n'ai pas travaillé », présence/absence par enfant, 2ᵉ horaire, réunion, détail des heures sup.) ; « Semaine de congés » par semaine ; « Annuler » après chaque action de masse. Chaque mois = 3 étapes (vérifier les jours, recopier la fiche de paie, « Terminé ») ; la copie de secours est proposée à chaque « Terminé ».
+- **Pointeuse (Aujourd'hui)** : « Arrivée » / « Départ » par enfant à l'heure du téléphone, « Pas là aujourd'hui », « Début / Fin de réunion », heures corrigeables au toucher, explication des heures sup. en direct. Les jours pointés sont justes par construction (pas à re-vérifier).
+- **Enfants (décision 2026-09-29)** : liste **datée** (date d'arrivée, date de départ facultative), **autant d'enfants que nécessaire sur l'année, 4 au maximum présents en même temps** (confirmé le 2026-09-29 : c'est la présence simultanée qui compte, pas le nombre d'enfants dans la journée ; remplace « hors périmètre : plus de 3 enfants par jour »). **Horaires habituels versionnés** (« à partir du … ») : un changement ne modifie **jamais** un jour pointé, modifié à la main, ou d'un mois terminé — seuls les jours encore « comme d'habitude » d'un mois non terminé après la date d'effet sont mis à jour. L'historique reste visible dans le profil.
+- **Accueil relais (décision 2026-09-29, confirmée)** : case à cocher **par année** (« Je fais de l'accueil relais en AAAA »). Elle ajoute « + Enfant en accueil relais » dans la fiche du jour et la pointeuse (prénom saisi ce jour-là, sans semaine type). Ces enfants comptent dans l'abattement comme les autres et dans la limite de 4 présents en même temps.
+- **Profil (décision 2026-09-29)** : prénom, nom, employeur, modifiables ; **plus de n° d'agrément** ni de champ « mention ».
+- **SMIC par année (décision 2026-09-29, remplace « consultable, jamais modifiable » du 2026-07-19)** : réglé au **passage d'année** dans un écran « Préparer AAAA » (1. SMIC horaire brut au 1er janvier, pré-rempli si l'outil le connaît, avec contrôle de vraisemblance et aperçu du forfait ; 2. enfants qui continuent ; 3. accueil relais). **Un seul SMIC par année** : fin du `smicOverride` mensuel (cf. revue, point C5). L'année précédente reste accessible pour la déclaration du printemps.
+- **Heures supplémentaires** : règle validée et explication jour par jour, voir `docs/spec-heures-supplementaires.md`. Une réunion un jour sans enfant compte en heures supplémentaires (décision 2026-09-29) — il faudra donc pouvoir saisir une réunion un samedi.
+- **Modèle de données v3** (à concevoir et tester avant l'interface) : enfants du profil identifiés par un **id stable** (migration des clés `"1"`/`"2"`/`"3"` actuelles), périodes d'horaires datées ; par jour : `off` (non travaillé), `meetings`, enfants relais (prénom), marqueur « pointé » par enfant ; par mois : `verified`, `done` ; par année : `smic`, `relais`.
+- **Sauvegarde / iPhone — iCloud Drive retenu (décision 2026-09-29)** : le fichier `abattement-assmat-AAAA.json` vit dans un dossier iCloud Drive. **PC** : « iCloud pour Windows » installé, ce dossier choisi une fois comme dossier de sauvegarde automatique (dossier réglé sur « toujours conserver sur cet appareil ») — lecture/fusion à l'ouverture et écriture à chaque modification, sans geste. **iPhone** : deux gestes guidés — « Envoyer ma copie » (feuille de partage → Enregistrer dans Fichiers → iCloud Drive → même dossier → remplacer) et « Reprendre la copie » (sélecteur de fichiers → fusion). Remplacer le fichier est sans risque grâce à la fusion horodatée. À ajouter : le PC fusionne aussi les doublons créés par erreur (« abattement-assmat-AAAA 2.json ») puis les supprime ; rappels « dernière copie il y a N jours » et copie proposée à chaque mois terminé ; fusion jour par jour plutôt que mois par mois. **CloudKit rejeté** : 99 €/an de compte développeur Apple pour une seule utilisatrice, plus une connexion Apple ID et des appels réseau.
+- **Rappels sur iPhone (proposés le 2026-09-29, maquette v3, à valider)** — l'iPhone ne peut pas savoir seul si l'ordinateur a du nouveau, donc on lui **pose la question** plutôt que d'imposer un fichier à ouvrir. *Reprise* : à l'ouverture, au plus une fois par semaine, « Avez-vous saisi quelque chose sur l'ordinateur depuis le … ? » (Oui → reprendre la copie ; Non → plus de question pendant une semaine). *Envoi* : aux moments clés seulement — mois terminé (fenêtre), fin de journée pointée s'il y a au moins 3 jours non envoyés (simple message en bas), ouverture si la copie a plus de 7 jours (fenêtre), changement important du profil. « Plus tard » = 3 jours de calme. Garde-fous : au plus une fenêtre par jour, jamais deux à la suite, **jamais de fenêtre pendant qu'un enfant est pointé présent** (un bandeau non bloquant la remplace). Pastille permanente « N jours à envoyer » dans l'en-tête, qui ouvre « Envoyer ma copie » / « Reprendre la copie ». Sur l'ordinateur : aucun rappel (tout est automatique).
+- **Ordre proposé** : 1) corrections P0 de la revue (case 1AJ annuelle, dossier complet, virgule, défauts visuels) ; 2) modèle v3 + migration + tests ; 3) calendrier et fiche du jour ; 4) heures sup. ; 5) pointeuse ; 6) passage d'année ; 7) sauvegarde iPhone (rappels, doublons, fusion par jour).
+
 ## Lot 7 — Pièces justificatives (décidé le 2026-07-19, à faire après le lot 6)
 
 **Besoin** : les heures proviennent d'une fiche papier signée par les parents ; en cas de contrôle il faut retrouver, par mois, le calcul ET la pièce signée.
@@ -145,6 +183,6 @@ Périmètre d'origine :
 ## Différé / décisions en attente
 
 - ~~Garde en deux fois~~ → **tranché le 2026-07-19** : multi-créneaux par enfant/jour (voir lot 3).
-- **SMIC : consultable, jamais modifiable** (décision 2026-07-19) : le barème s'affiche en lecture seule dans « Mes informations » ; il est maintenu dans `config.js` (livré automatiquement via GitHub Pages une fois le lot 6 fait). La saisie manuelle n'apparaît que si l'année n'est pas encore dans le barème (début janvier) — un champ modifiable en permanence serait un risque d'erreur fiscale.
-- Samedi travaillé, 4ᵉ enfant : hors périmètre tant que le besoin réel n'existe pas.
+- ~~**SMIC : consultable, jamais modifiable** (décision 2026-07-19)~~ → remplacé au lot 12 par le réglage du SMIC au passage d'année (« Préparer AAAA », pré-rempli par le barème de `config.js` quand il connaît l'année, avec contrôle de vraisemblance).
+- ~~Samedi travaillé, 4ᵉ enfant~~ → **tranché au lot 12** : jusqu'à 4 enfants présents en même temps ; samedi saisissable (réunions).
 - Design system Claude Design (claude.ai/design) : optionnel, seulement si on veut itérer visuellement sur les composants ; la maquette artifact suffit pour ce projet.

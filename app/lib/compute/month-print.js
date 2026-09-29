@@ -16,26 +16,27 @@
   const U = window.ABMAT.utils;
   const C = window.ABMAT.calc;
 
-  if (!U || !C) {
-    throw new Error("ABMAT.compute : utils et calc doivent être chargés avant compute/month-print.js.");
+  if (!U || !C || !Compute.compareChildIds) {
+    throw new Error("ABMAT.compute : utils, calc et compute/children.js doivent être chargés avant compute/month-print.js.");
   }
 
-  // Entrées "enfant" d'un jour : uniquement les enfants ayant des données.
+  // Entrées "enfant" d'un jour : uniquement les enfants ayant des données,
+  // enfants du profil puis accueil relais. Jour non travaillé : aucune.
   function childEntries(dayObj, forfaitJour) {
     const out = [];
-    const children = (dayObj && dayObj.children) ? dayObj.children : {};
+    if (!dayObj || dayObj.off === true) return out;
+    const children = dayObj.children || {};
 
-    for (let i = 1; i <= 3; i++) {
-      const key = String(i);
+    Object.keys(children).sort(Compute.compareChildIds).forEach((key) => {
       const c = children[key];
-      if (!c) continue;
-
       const hasData = (c.absent === true) || (Array.isArray(c.slots) && c.slots.length > 0);
-      if (!hasData) continue;
+      if (!hasData) return;
 
       const r = C.computeChildDay(c, forfaitJour);
       out.push({
         key,
+        relais: c.relais === true,
+        name: (typeof c.name === "string") ? c.name : "",
         absent: c.absent === true,
         motif: (typeof c.motif === "string") ? c.motif : "",
         slots: (Array.isArray(c.slots) ? c.slots : []).map((s) => ({
@@ -46,7 +47,7 @@
         hours: r.hours,
         abatt: r.abatt
       });
-    }
+    });
     return out;
   }
 
@@ -116,7 +117,7 @@
         irf,
         percu,
         abatt: monthAbatt,
-        imposable: Math.max(0, U.round2(percu - monthAbatt)),
+        apres: U.round2(percu - monthAbatt), // négatif si l'abattement dépasse le perçu du mois
         joursGarde,
         j_lt8,
         j_ge8
