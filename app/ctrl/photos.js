@@ -121,16 +121,23 @@
     }
   };
 
+  // Étape qui ne répond pas → message qui la nomme (jamais « rien »).
+  const inTime = (name, promise, ms) => Promise.race([promise,
+    new Promise((resolve, reject) => setTimeout(() => reject(new Error(`${name} : pas de réponse`)), ms))]);
+
   document.getElementById("photo-file").addEventListener("change", async (e) => {
     const input = e.target;
-    if (!input.files.length) return;
+    if (!input.files.length) {
+      R.toast("Aucune photo reçue du téléphone. Si elle est dans iCloud, ouvrez-la d'abord dans Photos pour la télécharger, ou prenez la fiche en photo directement.");
+      return;
+    }
     const key = input.dataset.key;
     const year = Number(input.dataset.year);
     const m = Number(input.dataset.month);
     const had = Boolean(cache[key]);
     R.toast("Photo en cours d'enregistrement…");
     try {
-      await store(key, await IMG.compress(input.files[0]));
+      await store(key, await inTime("lecture de la photo", IMG.compress(input.files[0]), 20000));
     } catch (err) {
       R.toast(`Photo non enregistrée : ${err.message}`);
       return;

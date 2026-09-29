@@ -22,7 +22,12 @@
       const url = URL.createObjectURL(blob);
       const img = new Image();
       img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
-      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("format de photo non reconnu (prenez une photo, ou choisissez un JPEG ou un PNG).")); };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error(/hei[cf]/i.test(blob.type)
+          ? "photo au format HEIC non lue par ce navigateur (Réglages › Appareil photo › Formats › « Le plus compatible »)."
+          : "format de photo non reconnu (prenez une photo, ou choisissez un JPEG ou un PNG)."));
+      };
       img.src = url;
     });
   }

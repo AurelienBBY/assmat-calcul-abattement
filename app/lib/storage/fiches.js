@@ -43,13 +43,15 @@
     return dbPromise;
   }
 
+  // Une opération qui ne se termine pas (ni fin, ni erreur) devient un message après 15 s.
   function run(mode, fn) {
     return db().then((d) => new Promise((resolve, reject) => {
       const tx = d.transaction(STORE, mode);
+      const timer = setTimeout(() => reject(new Error("la mémoire des photos ne répond pas : fermez l'outil puis rouvrez-le.")), 15000);
       const out = fn(tx.objectStore(STORE));
-      tx.oncomplete = () => resolve(out && "result" in out ? out.result : undefined);
-      tx.onerror = () => reject(tx.error);
-      tx.onabort = () => reject(tx.error || new Error("enregistrement interrompu (mémoire du téléphone pleine ?)."));
+      tx.oncomplete = () => { clearTimeout(timer); resolve(out && "result" in out ? out.result : undefined); };
+      tx.onerror = () => { clearTimeout(timer); reject(tx.error); };
+      tx.onabort = () => { clearTimeout(timer); reject(tx.error || new Error("enregistrement interrompu (mémoire du téléphone pleine ?).")); };
     }));
   }
 
