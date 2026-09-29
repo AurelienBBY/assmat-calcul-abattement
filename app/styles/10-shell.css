@@ -6,7 +6,8 @@
    ========================================================================== */
 
 .top{ position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 16px; padding: 12px 20px; padding-top: calc(12px + env(safe-area-inset-top, 0px)); border-bottom: 1px solid var(--line); background: var(--surface); flex-wrap: wrap; }
-.brand{ font-weight: 800; font-size: 18px; margin-right: auto; }
+.brand{ display: inline-flex; align-items: center; gap: 8px; font-weight: 800; font-size: 18px; margin-right: auto; }
+.brand img{ width: 30px; height: 30px; flex: 0 0 auto; }
 .tabs{ display: flex; gap: 4px; background: var(--surface-2); padding: 4px; border-radius: 999px; flex-wrap: wrap; }
 .tabs button{ display: inline-flex; align-items: center; gap: 7px; border: 0; background: transparent; padding: 8px 14px; border-radius: 999px; font-weight: 650; font-size: 16px; color: var(--muted); }
 .tabs button[aria-current="page"]{ background: var(--accent); color: var(--accent-ink); }

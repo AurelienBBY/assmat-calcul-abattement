@@ -14,6 +14,7 @@
 .onb-progress span{ height: 6px; border-radius: 3px; background: var(--surface-2); }
 .onb-progress span.on{ background: var(--accent); }
 .onb-title{ font-size: 26px; line-height: 1.15; }
+.onb-logo{ width: 88px; height: 88px; }
 .lead{ font-size: 18px; }
 .onb-foot{ position: sticky; bottom: 0; display: grid; gap: 6px; background: var(--bg); padding-block: 10px calc(10px + env(safe-area-inset-bottom, 0px)); }
 .onb-foot .btn-big{ width: 100%; }
@@ -45,7 +46,7 @@
 
 /* Installer AB’assmat : l'icône telle qu'elle apparaîtra, puis les gestes un par un */
 .inst-app{ display: grid; justify-items: center; gap: 6px; padding-block: 4px; }
-.inst-app img{ width: 76px; height: 76px; border-radius: 17px; box-shadow: var(--shadow); }
+.inst-app img{ width: 76px; height: 76px; }
 .inst-app span{ font-size: 14px; font-weight: 650; }
 .inst-steps{ list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; counter-reset: inst; }
 .inst-steps li{ display: flex; gap: 12px; align-items: flex-start; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; counter-increment: inst; }

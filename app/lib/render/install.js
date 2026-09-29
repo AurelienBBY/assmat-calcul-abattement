@@ -45,7 +45,7 @@
     const ios = m.target === "ios";
     const head = [
       h("h2", { class: "onb-title", text: "Installez d'abord AB’assmat sur votre téléphone" }),
-      h("div", { class: "inst-app" }, [h("img", { src: "app/assets/apple-touch-icon.png", alt: "" }), h("span", { text: "AB’assmat" })]),
+      h("div", { class: "inst-app" }, [h("img", { src: "app/assets/icon.svg", alt: "" }), h("span", { text: "AB’assmat" })]),
       h("p", { class: "lead", text: "Elle s'ouvrira comme une application, depuis son icône, même sans internet." })
     ];
     if (m.state === "done") {

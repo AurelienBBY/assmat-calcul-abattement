@@ -45,7 +45,8 @@
   R.buildOnbWelcome = function buildOnbWelcome(m, hd) {
     const restored = m.childrenCount > 0;
     return h("div", { class: "onb" }, [
-      h("h2", { class: "onb-title", text: "Bienvenue" }),
+      h("img", { class: "onb-logo", src: "app/assets/icon.svg", alt: "" }),
+      h("h2", { class: "onb-title", text: "Bienvenue dans AB’assmat" }),
       h("p", { class: "lead", text: "Cet outil calcule votre abattement d'assistante maternelle, le montant à déclarer aux impôts et vos heures supplémentaires. Tout reste sur cet appareil." }),
       restored
         ? h("div", { class: "card" }, [h("h3", { text: "Copie reprise ✓" }), h("p", { text: `${R.fmt.plural(m.childrenCount, "enfant")} et vos mois retrouvés : la mise en route n'est pas nécessaire.` })])
