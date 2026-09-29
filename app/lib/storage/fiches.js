@@ -35,7 +35,11 @@
         const req = indexedDB.open(DB_NAME, 1);
         const timer = setTimeout(() => reject(new Error("la mémoire des photos ne répond pas : fermez l'outil puis rouvrez-le.")), 10000);
         req.onupgradeneeded = () => req.result.createObjectStore(STORE, { keyPath: "key" }).createIndex("year", "year");
-        req.onsuccess = () => { clearTimeout(timer); resolve(req.result); };
+        req.onsuccess = () => {
+          clearTimeout(timer);
+          req.result.onversionchange = () => { req.result.close(); dbPromise = null; }; // « Tout effacer »
+          resolve(req.result);
+        };
         req.onerror = () => { clearTimeout(timer); reject(req.error); };
       });
       dbPromise.catch(() => { dbPromise = null; });
@@ -83,6 +87,9 @@
 
   /** Tous les enregistrements d'une année (suppressions comprises). */
   F.records = (year) => run("readonly", (st) => st.index("year").getAll(Number(year))).then((list) => list || []);
+
+  /** Toutes les photos, toutes années (« Tout effacer sur cet appareil »). */
+  F.eraseAll = () => S.deleteDatabase(DB_NAME);
 
   F.eraseYear = (year) => F.records(year).then((list) => run("readwrite", (st) => { list.forEach((r) => st.delete(r.key)); }));
 

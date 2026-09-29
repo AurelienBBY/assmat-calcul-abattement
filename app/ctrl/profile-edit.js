@@ -86,6 +86,7 @@
     onEdit: (id, kind) => { A.profileEdit = { id, kind }; A.render(); focusFirst(".edit input, #nc-name"); },
     onCancelEdit: () => { A.profileEdit = null; A.render(); },
     onEraseYear: () => A.eraseYearSheet(),
+    onEraseAll: () => A.eraseAllSheet(),
 
     onSaveSched: (id, form) => {
       const err = weekError(form.week);

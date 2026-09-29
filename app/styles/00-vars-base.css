@@ -76,6 +76,8 @@ svg.i{ width: 20px; height: 20px; flex: 0 0 auto; }
 .btn-primary{ background: var(--accent); color: var(--accent-ink); border-color: transparent; }
 .btn-primary:hover{ background: var(--accent); filter: brightness(1.08); }
 .btn[disabled]{ opacity: .45; cursor: not-allowed; }
+.btn-danger{ background: var(--warn); color: var(--accent-ink); border-color: transparent; }
+.btn-danger:hover{ background: var(--warn); filter: brightness(1.08); }
 .btn-quiet{ border: 0; background: transparent; color: var(--accent); padding: 0 8px; min-height: 36px; }
 .btn-quiet:hover{ background: var(--accent-soft); }
 .btn-big{ min-height: 56px; font-size: 18px; padding: 0 26px; }

@@ -59,4 +59,18 @@
     localStorage.removeItem(S.settingsKey(y));
     S.setYearDeclared(y, false);
   };
+
+  /**
+   * « Tout effacer sur cet appareil » : toutes les clés de l'outil (« abmat: »)
+   * — mois, profil, réglages, années déclarées, état de la copie et de la
+   * mise en route. Les autres sites et les photos (storage/fiches.js) : à part.
+   */
+  S.eraseAll = function eraseAll() {
+    const keys = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith("abmat:")) keys.push(k);
+    }
+    keys.forEach((k) => localStorage.removeItem(k));
+  };
 })();
