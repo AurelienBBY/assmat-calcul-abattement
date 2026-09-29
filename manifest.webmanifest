@@ -1,6 +1,6 @@
 {
-  "name": "Abattement Ass-Mat",
-  "short_name": "Ass-Mat",
+  "name": "AB’assmat — abattement assistante maternelle",
+  "short_name": "AB’assmat",
   "description": "Calcul de l'abattement fiscal des assistantes maternelles — outil hors-ligne, données locales.",
   "lang": "fr",
   "start_url": ".",

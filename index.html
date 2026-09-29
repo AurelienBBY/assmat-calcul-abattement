@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Abattement Ass-Mat</title>
+  <title>AB’assmat</title>
 
   <!-- Écran (préfixe = ordre de chargement) ; 90-print.css : documents imprimés -->
   <link rel="stylesheet" href="app/styles/00-vars-base.css" />
@@ -23,12 +23,16 @@
   <meta name="theme-color" content="#2b2029" media="(prefers-color-scheme: dark)" />
   <link rel="icon" href="app/assets/icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="app/assets/apple-touch-icon.png" />
+  <!-- Nom sous l'icône de l'écran d'accueil (iPhone ; Android : short_name du manifest) -->
+  <meta name="apple-mobile-web-app-title" content="AB’assmat" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
 </head>
 <body>
 
   <!-- En-tête : nom, 4 onglets (ordinateur), copie de secours, aide -->
   <header class="top">
-    <span class="brand">Abattement Ass-Mat</span>
+    <span class="brand">AB’assmat</span>
     <nav class="tabs" aria-label="Sections">
       <button type="button" data-tab="today">
         <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg><span>Aujourd'hui</span>
