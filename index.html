@@ -2,335 +2,87 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Calcul de l’abattement – Assistante maternelle</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Abattement Ass-Mat</title>
 
-  <!--
-    Feuille de style principale.
-    Contient la mise en page écran + les règles d’impression (PDF).
-  -->
+  <!-- Écran (préfixe = ordre de chargement) ; 90-print.css : documents imprimés -->
   <link rel="stylesheet" href="app/styles/00-vars-base.css" />
-  <link rel="stylesheet" href="app/styles/10-layout-cards.css" />
-  <link rel="stylesheet" href="app/styles/15-toolbar.css" />
-
-  <link rel="stylesheet" href="app/styles/20-period.css" />
-  <link rel="stylesheet" href="app/styles/30-year-params.css" />
-  <link rel="stylesheet" href="app/styles/40-table.css" />
-  <link rel="stylesheet" href="app/styles/45-accueil.css" />
-  <link rel="stylesheet" href="app/styles/46-onboarding.css" />
-
-  <link rel="stylesheet" href="app/styles/60-tuto.css" />
-  <link rel="stylesheet" href="app/styles/70-modal.css" />
-  <link rel="stylesheet" href="app/styles/75-payslip-inputs.css" />
-  <link rel="stylesheet" href="app/styles/80-month-results.css" />
-  <link rel="stylesheet" href="app/styles/82-infos.css" />
-  <link rel="stylesheet" href="app/styles/85-year-recap.css" />
-
+  <link rel="stylesheet" href="app/styles/10-shell.css" />
+  <link rel="stylesheet" href="app/styles/20-calendar.css" />
+  <link rel="stylesheet" href="app/styles/30-month-side.css" />
+  <link rel="stylesheet" href="app/styles/40-today.css" />
+  <link rel="stylesheet" href="app/styles/50-sheet.css" />
+  <link rel="stylesheet" href="app/styles/60-profile-year.css" />
   <link rel="stylesheet" href="app/styles/90-print.css" />
-
-  <!--
-    Empêche le zoom automatique sur mobile (lisible mais usage prévu surtout sur ordinateur).
-  -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- PWA : installable, hors-ligne, icônes -->
   <link rel="manifest" href="manifest.webmanifest" />
-  <meta name="theme-color" content="#380f3e" />
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#2b2029" media="(prefers-color-scheme: dark)" />
   <link rel="icon" href="app/assets/icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="app/assets/apple-touch-icon.png" />
 </head>
 <body>
 
-  <!-- =========================================================
-       GROUPE STICKY : TOOLBAR (ACTIONS + CONTEXTE) + NAV (PÉRIODE)
-       Les deux se soudent visuellement (une seule carte verre) une fois
-       qu'on a scrollé sous le hero — cf. #topbar-group--stuck (app.js).
-       ========================================================= -->
-  <div id="topbar-group" class="topbar-group no-print">
-  <header id="app-toolbar" class="app-toolbar app-toolbar--context-hidden" role="banner">
-    <div class="app-toolbar__left">
-      <div class="app-toolbar__topline">
-        <div class="app-toolbar__title">Abattement Ass-Mat</div>
-        <div class="pillar-tabs" role="tablist" aria-label="Sections">
-          <button type="button" class="pillar-tab" role="tab" data-pillar="accueil">Accueil</button>
-          <button type="button" class="pillar-tab" role="tab" data-pillar="infos">Mes informations</button>
-          <button type="button" class="pillar-tab" role="tab" data-pillar="declaration">Déclaration</button>
-          <button type="button" class="pillar-tab" role="tab" data-pillar="ma-declaration">Ma déclaration</button>
-        </div>
-        <div class="app-toolbar__context" data-toolbar-context aria-live="polite"></div>
-        <span class="pill pill-accent toolbar-total" data-toolbar-total hidden></span>
-      </div>
-
-      <p class="intro">Outil de calcul pour la déclaration des revenus avec abattement forfaitaire.</p>
-    </div>
-
-    <div class="app-toolbar__actions" aria-label="Actions">
-      <div class="toolbar-icon-group">
-        <button type="button" class="icon-btn" data-toolbar-action="data-toggle" id="abmat-action-data-toggle" aria-haspopup="true" aria-expanded="false" aria-label="Données (sauvegarder, importer)" title="Données">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h11l3 3v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M8 4v5h7V4"/><path d="M7 21v-7h10v7"/></svg>
-        </button>
-
-        <div class="data-menu glass-strong" id="abmat-data-menu" hidden>
-          <div class="data-menu__status" data-saved-indicator aria-live="polite" hidden></div>
-
-          <button type="button" class="data-menu__item" data-toolbar-action="export" id="abmat-action-save">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
-            <span class="toolbar-btn__label">Sauvegarder l’année</span>
-          </button>
-
-          <button type="button" class="data-menu__item toolbar-btn--load" data-toolbar-action="import" id="abmat-action-load">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 21h16"/></svg>
-            <span class="toolbar-btn__content">
-              <span class="toolbar-btn__label" data-toolbar-load-label>Importer une sauvegarde</span>
-              <span class="toolbar-btn__sub" data-toolbar-load-status style="display:none"></span>
-            </span>
-          </button>
-
-          <button type="button" class="data-menu__item toolbar-autosave" data-autosave hidden></button>
-        </div>
-      </div>
-
-      <input id="abmat-action-file" type="file" accept="application/json" hidden />
-
-      <button type="button" class="icon-btn icon-btn--primary" data-toolbar-action="print" title="Imprimer" aria-label="Imprimer" id="abmat-action-print">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+  <!-- En-tête : nom, 4 onglets (ordinateur), copie de secours, aide -->
+  <header class="top">
+    <span class="brand">Abattement Ass-Mat</span>
+    <nav class="tabs" aria-label="Sections">
+      <button type="button" data-tab="today">
+        <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg><span>Aujourd'hui</span>
       </button>
+      <button type="button" data-tab="month">
+        <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>Mon mois</span>
+      </button>
+      <button type="button" data-tab="year">
+        <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Mon année</span>
+      </button>
+      <button type="button" data-tab="profile">
+        <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span>Mon profil</span>
+      </button>
+    </nav>
+    <div class="top-actions">
+      <button type="button" class="backup" id="backup-pill">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 18a5 5 0 1 1 .9-9.9A6 6 0 0 1 19 10a4 4 0 0 1-1 8z"/><path d="m9 13 2 2 4-4"/></svg>
+        <span class="lbl"></span><span class="lbl-phone"></span>
+      </button>
+      <button type="button" class="help-btn" id="help-btn" aria-label="Points d'attention" title="Points d'attention">?</button>
     </div>
   </header>
 
-  <!-- =========================================================
-       SÉLECTION DE LA PÉRIODE (MOIS / ANNÉE)
-       ========================================================= -->
-  <section id="period-section">
-    <div id="period-selector">
-      <!-- Généré dynamiquement par app.js -->
-    </div>
-  </section>
-  </div><!-- /#topbar-group -->
-  <div id="period-sentinel" aria-hidden="true"></div>
+  <!-- Onglet affiché (app/ctrl/*.js) -->
+  <main id="main"></main>
 
-  <!-- Restauration : proposé au démarrage quand l'appareil n'a aucune donnée -->
-  <div id="restore-banner" class="restore-banner glass-strong no-print" hidden>
-    <span>
-      Vos données ne sont pas sur cet appareil. Si vous avez une sauvegarde
-      (fichier <strong>abattement-assmat-….json</strong>), importez-la —
-      sinon, commencez simplement à saisir.
-    </span>
-    <span class="restore-banner__actions">
-      <button type="button" class="restore-banner__btn" data-restore-import>Importer ma sauvegarde</button>
-      <button type="button" class="restore-banner__close" data-restore-dismiss aria-label="Fermer">✕</button>
-    </span>
-  </div>
+  <p class="footer-note">Calcul basé sur le SMIC horaire brut au 1er janvier de l'année — article 80 sexies du Code général des impôts. Aide au calcul, sans valeur justificative.</p>
 
-  <!-- =========================================================
-       ACCUEIL — bienvenue + raccourcis + onboarding (JS) + règles (statique)
-       Visible uniquement quand le pilier actif est "accueil" (app.js).
-       ========================================================= -->
-  <div id="accueil-section" class="no-print">
+  <!-- 4 onglets en bas de l'écran (iPhone) -->
+  <nav class="bottomtabs" aria-label="Sections">
+    <button type="button" data-tab="today">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg><span>Aujourd'hui</span>
+    </button>
+    <button type="button" data-tab="month">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>Mon mois</span>
+    </button>
+    <button type="button" data-tab="year">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Mon année</span>
+    </button>
+    <button type="button" data-tab="profile">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span>Mon profil</span>
+    </button>
+  </nav>
 
-    <section id="accueil-hero-section">
-      <div id="accueil-quick">
-        <!-- Généré dynamiquement par app.js (renderAccueil) -->
-      </div>
-    </section>
+  <!-- Reprendre une copie de secours (fichier choisi) -->
+  <input id="backup-file" type="file" accept=".json,application/json" multiple hidden />
 
-    <section id="onboarding-section">
-      <div id="accueil-onboarding">
-        <!-- Généré dynamiquement par app.js (R.renderOnboarding) -->
-      </div>
-    </section>
-
-    <section id="explain-section">
-      <h2>Explication — règles générales</h2>
-
-      <div id="explain">
-        <!-- Généré dynamiquement par app.js (renderExplain) -->
-      </div>
-    </section>
-
-  </div><!-- /#accueil-section -->
-
-  <!-- =========================================================
-       MES INFORMATIONS — identité, enfants, semaines types
-       Visible uniquement quand le pilier actif est "infos" (app.js).
-       ========================================================= -->
-  <section id="infos-section" class="no-print">
-    <h2>Mes informations</h2>
-    <p class="hint">Vos informations apparaissent dans la saisie et en en-tête des documents imprimés.</p>
-
-    <div id="infos-content">
-      <!-- Généré dynamiquement par app.js (renderInfos) -->
-    </div>
-  </section>
-
-  <!-- =========================================================
-       MA DÉCLARATION — récap annuel + impression du dossier complet
-       Visible uniquement quand le pilier actif est "ma-declaration" (app.js).
-       Remplace l'ancien onglet RÉCAP de Déclaration : même contenu (encart
-       1AJ, détail par mois, comparaison des régimes), promu au rang de
-       pilier, avec un sélecteur d'années dédié (pas de mois ici) et la
-       nouvelle impression du dossier complet.
-       ========================================================= -->
-  <section id="ma-declaration-section" class="no-print">
-    <h2>Ma déclaration</h2>
-    <p class="hint">Résultats annuels prêts à reporter sur votre déclaration de revenus, et impression du dossier complet.</p>
-
-    <div id="ma-declaration-year-selector">
-      <!-- Généré dynamiquement par app.js (sélecteur d'année seul, cf. render/period.js) -->
-    </div>
-
-    <div class="dossier-complet glass-strong">
-      <div class="dossier-complet__text">
-        <strong>Dossier complet <span data-dossier-year></span></strong>
-        <span class="hint" data-dossier-hint></span>
-      </div>
-      <button type="button" class="btn btn-primary" id="abmat-print-dossier">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-        Imprimer le dossier complet
-      </button>
-    </div>
-
-    <div id="ma-declaration-content">
-      <!-- Généré dynamiquement par app.js (R.renderYearRecap) -->
-    </div>
-  </section>
-
-  <!-- =========================================================
-       CONTENU : grille 2 colonnes sur ordinateur (résultat collant à
-       droite pendant qu'on saisit) ; 1 colonne sur mobile (cf. .fab).
-       Le pilier Déclaration n'affiche plus que la saisie du mois : le
-       récap annuel vit désormais dans Ma déclaration (ci-dessus).
-       ========================================================= -->
-  <div id="content-grid" class="content-grid">
-    <div class="content-grid__main">
-
-      <!--
-          Cette section affiche :
-          - le SMIC horaire brut retenu pour l’année
-          - le coefficient légal (3 × SMIC)
-          - le forfait journalier par enfant
-          Elle est principalement informative mais peut être modifiable
-          si le SMIC de l’année n’est pas encore connu.
-        -->
-      <section id="year-params-section">
-        <h2>Paramètres de calcul — déclaration avec abattement</h2>
-
-        <div id="year-params">
-          <!-- Généré dynamiquement par app.js -->
-        </div>
-      </section>
-
-      <!-- =========================================================
-           TABLEAU DES JOURS DU MOIS
-           ========================================================= -->
-      <section id="month-table-section">
-        <h2>Temps de présence des enfants</h2>
-        <div id="month-table"></div>
-      </section>
-
-      <!-- =========================================================
-           DÉCLARATION DU MOIS (FICHE DE PAIE)
-           ========================================================= -->
-      <section id="payslip-section">
-        <h2>Déclaration du mois</h2>
-
-        <p class="hint">
-          Renseignez ici les montants de votre fiche de paie (net imposable et IRF).
-        </p>
-
-        <div id="payslip-inputs">
-          <!-- Généré dynamiquement par app.js -->
-        </div>
-      </section>
-
-    </div>
-
-    <!-- =========================================================
-         RÉSULTATS DU MOIS (CALCULÉS) — colonne collante sur ordinateur
-         ========================================================= -->
-    <div class="content-grid__aside glass">
-      <section id="month-results-section">
-        <h2>Revenus perçus en </h2>
-
-        <p class="hint">
-          Résumé des montants calculés (abattement total et montant à déclarer).
-        </p>
-
-        <div id="month-results">
-          <!-- Généré dynamiquement par app.js -->
-        </div>
-      </section>
-    </div>
-  </div><!-- /#content-grid -->
-
-  <!-- Bouton flottant Imprimer (mobile uniquement — la colonne résultat
-       n'est plus collante sur petit écran, cf. .fab et son media query) -->
-  <button type="button" class="fab" data-toolbar-action="print" aria-label="Imprimer">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-  </button>
-
-  <!-- =========================================================
-       PIED DE PAGE / MENTIONS
-       ========================================================= -->
-  <footer>
-    <p class="footer-note">
-      Calcul basé sur le SMIC horaire brut au 1er janvier de l’année considérée
-      – Article 80 sexies du Code général des impôts.
-    </p>
-
-    <p class="footer-date">
-      Document généré le <span id="generated-date"></span>.
-    </p>
-  </footer>
-
-  <div class="modal" id="tuto-modal" aria-hidden="true">
-  <div class="modal__overlay" data-close-tuto></div>
-
-  <div class="modal__panel glass-strong" role="dialog" aria-modal="true" aria-labelledby="tuto-modal-title" tabindex="-1">
-    <header class="modal__header">
-      <h2 id="tuto-modal-title">Points d’attention</h2>
-      <button type="button" class="modal__close" data-close-tuto aria-label="Fermer">✕</button>
-    </header>
-
-    <div class="modal__content" id="tuto-modal-content">
-      <iframe
-        id="tuto-modal-frame"
-        class="tuto-embed"
-        title="Points d’attention"
-        src=""
-        loading="lazy"
-    ></iframe>
-    </div>
-  </div>
-</div>
-
-  <!-- =========================================================
-       GABARIT D'IMPRESSION (seul contenu visible à l'impression,
-       généré par app.js au moment d'imprimer)
-       ========================================================= -->
+  <!-- Document imprimé (seul contenu visible à l'impression, construit au moment d'imprimer) -->
   <div id="print-doc" aria-hidden="true"></div>
 
-  <!-- =========================================================
-       SCRIPTS
-       ========================================================= -->
-
-  <!--
-    Configuration légale :
-    - SMIC horaire par année
-    - coefficient légal
-  -->
+  <!-- Modules : l'ordre des <script> fait office de système de modules -->
   <script src="app/config.js"></script>
-
-  <!--
-    Modules (ordre important) :
-    - utils   : helpers + locale FR
-    - calc    : calculs métier (sans DOM)
-    - storage : localStorage + export/import JSON
-    - render  : rendu DOM + événements
-    - app     : orchestration (bootstrap)
-  -->
   <script src="app/lib/utils.js"></script>
   <script src="app/lib/calc.js"></script>
   <script src="app/lib/overtime.js"></script>
+
   <script src="app/lib/storage/core.js"></script>
   <script src="app/lib/storage/month.js"></script>
   <script src="app/lib/storage/profile.js"></script>
@@ -348,44 +100,38 @@
   <script src="app/lib/compute/backup-rules.js"></script>
   <script src="app/lib/storage/device.js"></script>
 
-  <!-- Renderers (ordre important) -->
-  <script src="app/lib/render/index.js"></script>
-  <script src="app/lib/render/explain.js"></script>
-  <script src="app/lib/render/accueil.js"></script>
-  <script src="app/lib/render/onboarding.js"></script>
-  <script src="app/lib/render/period.js"></script>
-  <script src="app/lib/render/rules.js"></script>
-  <script src="app/lib/render/day-rows.js"></script>
-  <script src="app/lib/render/month-table.js"></script>
-  <script src="app/lib/render/payslip-inputs.js"></script>
-  <script src="app/lib/render/month-summary.js"></script>
-  <script src="app/lib/render/year-recap.js"></script>
-  <script src="app/lib/render/week-template.js"></script>
-  <script src="app/lib/render/infos.js"></script>
+  <!-- Rendu (DOM uniquement, jamais de calcul) -->
+  <script src="app/lib/render/dom.js"></script>
+  <script src="app/lib/render/format.js"></script>
+  <script src="app/lib/render/sheet.js"></script>
+  <script src="app/lib/render/overtime-view.js"></script>
+  <script src="app/lib/render/calendar.js"></script>
+  <script src="app/lib/render/month-panel.js"></script>
+  <script src="app/lib/render/day-kid.js"></script>
+  <script src="app/lib/render/day-sheet.js"></script>
+  <script src="app/lib/render/punch-card.js"></script>
+  <script src="app/lib/render/today.js"></script>
+  <script src="app/lib/render/profile-child.js"></script>
+  <script src="app/lib/render/profile.js"></script>
+  <script src="app/lib/render/year-view.js"></script>
+  <script src="app/lib/render/prepare-year.js"></script>
+  <script src="app/lib/render/backup.js"></script>
   <script src="app/lib/render/print-common.js"></script>
   <script src="app/lib/render/print-month.js"></script>
   <script src="app/lib/render/print-year.js"></script>
   <script src="app/lib/render/print-full-year.js"></script>
-  <script src="app/lib/render/toolbar-actions.js"></script>
-  <script src="app/lib/render/footer.js"></script>
 
+  <!-- Écrans : état, données, gestes -->
+  <script src="app/ctrl/ctx.js"></script>
+  <script src="app/ctrl/backup.js"></script>
+  <script src="app/ctrl/backup-folder.js"></script>
+  <script src="app/ctrl/print.js"></script>
+  <script src="app/ctrl/day.js"></script>
+  <script src="app/ctrl/month.js"></script>
+  <script src="app/ctrl/today.js"></script>
+  <script src="app/ctrl/profile.js"></script>
+  <script src="app/ctrl/profile-edit.js"></script>
+  <script src="app/ctrl/year.js"></script>
   <script src="app/app.js"></script>
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const frame = document.getElementById('tuto-modal-frame');
-    if (!frame) return;
-
-    // Délégation : le bouton [data-open-tuto] vit maintenant dans Accueil
-    // (render/onboarding.js), recréé à chaque affichage — jamais présent au
-    // DOMContentLoaded si Accueil n'est pas le premier pilier ouvert.
-    document.addEventListener('click', (e) => {
-      if (!(e.target instanceof Element) || !e.target.closest('[data-open-tuto]')) return;
-      if (frame.dataset.loaded) return;
-      frame.src = 'app/modals/reference.html';
-      frame.dataset.loaded = '1';
-    });
-  });
-</script>
-
 </body>
 </html>

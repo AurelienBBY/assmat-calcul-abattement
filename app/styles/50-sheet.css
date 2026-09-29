@@ -1,0 +1,42 @@
+/* ============================================================================
+   50-sheet.css — Fenêtres (fiche du jour, préparer l'année, copie de
+   secours, points d'attention) et message du bas
+   ----------------------------------------------------------------------------
+   Ordinateur : fenêtre centrée. iPhone : feuille qui monte du bas.
+   ========================================================================== */
+
+.scrim{ position: fixed; inset: 0; background: var(--scrim); z-index: 40; }
+.dlg{ position: fixed; z-index: 41; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(580px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow-y: auto; background: var(--surface); border-radius: 20px; box-shadow: var(--shadow-lg); padding: 20px; display: grid; gap: 14px; }
+.dlg:focus{ outline: none; }
+.dlg-body{ display: grid; gap: 14px; min-width: 0; }
+.dlg.is-wide{ width: min(880px, calc(100vw - 32px)); }
+.dlg-head{ display: flex; align-items: center; gap: 10px; }
+.dlg-head h3{ font-size: 21px; margin-right: auto; }
+.close{ width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); display: grid; place-items: center; flex: 0 0 auto; }
+.close svg{ width: 18px; height: 18px; }
+.dlg-foot{ display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 12px; }
+.dlg iframe{ width: 100%; height: min(70vh, 720px); border: 0; display: block; }
+.hr{ border: 0; border-top: 1px solid var(--line); margin: 4px 0; width: 100%; }
+.ios-steps{ margin: 0; padding-left: 22px; display: grid; gap: 8px; font-size: 16px; }
+
+/* --- Fiche du jour : un bloc par enfant ------------------------------------ */
+.kid{ border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; display: grid; gap: 10px; }
+.kid-top{ display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.kid-top b{ font-size: 18px; margin-right: auto; }
+.kid .calc{ font-size: 15px; color: var(--muted); }
+.kid .calc b{ color: var(--ink); }
+.kid .usual{ font-size: 14px; color: var(--accent); }
+.kid .warn-line, .warn-line{ font-size: 15px; color: var(--warn); font-weight: 650; }
+.pa{ display: inline-flex; background: var(--surface-2); border-radius: 999px; padding: 3px; }
+.pa button{ border: 0; background: transparent; border-radius: 999px; padding: 6px 14px; font-weight: 650; font-size: 15px; color: var(--muted); }
+.pa button[aria-pressed="true"]{ background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+.slot{ display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+/* --- Message du bas (avec « Annuler ») ------------------------------------- */
+.toast{ position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(24px + env(safe-area-inset-bottom, 0px)); z-index: 50; background: var(--ink); color: var(--bg); border-radius: 14px; padding: 12px 14px 12px 18px; display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow); width: max-content; max-width: calc(100vw - 32px); font-size: 15px; }
+.toast button{ border: 0; background: transparent; color: var(--bg); font-weight: 800; text-decoration: underline; padding: 6px; white-space: nowrap; }
+
+@media (max-width: 640px){
+  .dlg, .dlg.is-wide{ left: 0; right: 0; top: auto; bottom: 0; transform: none; width: 100%; max-height: 90vh; border-radius: 22px 22px 0 0; padding: 16px 14px calc(16px + env(safe-area-inset-bottom, 0px)); }
+  .toast{ bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+}

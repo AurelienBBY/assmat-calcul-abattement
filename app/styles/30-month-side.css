@@ -1,0 +1,26 @@
+/* ============================================================================
+   30-month-side.css — Mon mois : colonne « À faire », résultat, heures sup.
+   ========================================================================== */
+
+.side{ display: grid; gap: 16px; position: sticky; top: 84px; }
+.step{ display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 10px; align-items: start; }
+.step .mk{ width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 15px; background: var(--surface-2); color: var(--muted); }
+.step.is-done .mk{ background: var(--ok); color: var(--surface); }
+.step .body{ display: grid; gap: 6px; min-width: 0; }
+.step .body > p{ font-size: 15px; color: var(--muted); }
+
+/* --- Explication des heures supplémentaires -------------------------------- */
+.why{ border-radius: 12px; background: var(--surface-2); padding: 10px 12px; font-size: 15px; display: grid; gap: 4px; }
+.why.is-hs{ background: var(--warn-soft); }
+.why .verdict{ font-weight: 700; }
+.why.is-hs .verdict{ color: var(--warn); }
+details.hsd summary{ cursor: pointer; font-weight: 650; color: var(--accent); font-size: 15px; }
+.hsday{ display: grid; gap: 4px; padding: 10px 0; border-top: 1px solid var(--line); font-size: 15px; }
+.hsday .hd{ display: flex; justify-content: space-between; gap: 10px; font-weight: 650; }
+.hsday .hd .v{ white-space: nowrap; }
+.hsday .hd .v.has{ color: var(--warn); }
+.hsday .ln{ color: var(--muted); font-size: 14.5px; }
+
+@media (max-width: 900px){
+  .side{ position: static; }
+}
