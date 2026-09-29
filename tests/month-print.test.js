@@ -51,7 +51,7 @@ test("relevé : jours renseignés seulement, groupés par semaine, sous-totaux",
 
   assert.equal(m.totals.abatt, 72.12);
   assert.equal(m.totals.percu, 1100);
-  assert.equal(m.totals.imposable, 1027.88);
+  assert.equal(m.totals.apres, 1027.88);
   assert.equal(m.totals.joursGarde, 3);
   assert.equal(m.totals.j_ge8, 1);
   assert.equal(m.totals.j_lt8, 2);

@@ -131,13 +131,14 @@
       `            <th class="year-recap__opcol" aria-hidden="true">−</th>` +
       `            <th>Abattement</th>` +
       `            <th class="year-recap__opcol" aria-hidden="true">=</th>` +
-      `            <th>Imposable</th>` +
+      `            <th>Après abattement</th>` +
       `            <th>Statut</th>` +
       `          </tr>` +
       `        </thead>` +
       `        <tbody data-year-months></tbody>` +
       `      </table>` +
       `    </div>` +
+      `    <p class="hint" data-year-negative-note hidden>Quand l'abattement d'un mois dépasse ce qui a été perçu, le montant est négatif : il se déduit des autres mois. Seul le total de l'année est à déclarer, et il ne peut pas être négatif.</p>` +
       `  </section>` +
       `  <section class="card year-compare" aria-label="Comparaison des régimes">` +
       `    <h3 class="card__title">L'abattement vous est-il favorable cette année ?</h3>` +
@@ -185,7 +186,7 @@
       const irf = fmtEuro(m.irf);
       const percu = fmtEuro(m.percu);
       const abatt = fmtEuro(m.abatt);
-      const imposable = fmtEuro(m.imposable);
+      const apres = fmtEuro(m.apres);
 
       const jlt8 = Number(m.j_lt8);
       const jge8 = Number(m.j_ge8);
@@ -212,7 +213,7 @@
         `<td class="year-recap__opcol" aria-hidden="true"></td>` +
         `<td>${abatt}</td>` +
         `<td class="year-recap__opcol" aria-hidden="true"></td>` +
-        `<td>${imposable}</td>` +
+        `<td>${apres}</td>` +
         `<td>${statusChip(m.status)}</td>`;
 
       // Click / keyboard navigation back to month
@@ -233,5 +234,8 @@
 
     tbody.innerHTML = "";
     tbody.appendChild(frag);
+
+    const negativeNote = container.querySelector("[data-year-negative-note]");
+    if (negativeNote) negativeNote.hidden = !months.some((m) => Number(m.apres) < 0);
   };
 })();

@@ -360,13 +360,15 @@
         const irf = Number.isFinite(Number(state.data.irf)) ? Number(state.data.irf) : 0;
 
         const percu = U.round2(net + irf);
-        const imposable = Math.max(0, U.round2(percu - (monthAbatt || 0)));
+        // Solde du mois, négatif si l'abattement dépasse le perçu : le plancher
+        // à 0 ne s'applique qu'au total annuel (compute/year-recap.js).
+        const apres = U.round2(percu - (monthAbatt || 0));
 
         if (typeof R.updateMonthSummaryComputed === "function") {
             R.updateMonthSummaryComputed(resultsEl, {
                 abatt: monthAbatt || 0,
                 percu,
-                imposable
+                apres
             });
         }
 
@@ -1146,7 +1148,7 @@
         const resultsHint = resultsSection ? resultsSection.querySelector(".hint") : null;
 
         if (resultsHint) {
-            resultsHint.textContent = "Résumé des montants calculés (abattement total et montant à déclarer).";
+            resultsHint.textContent = "Résumé des montants calculés pour ce mois.";
         }
         const monthLabel = getMonthLabelFR(state.monthIndex);
         const yearLabel = state.year;

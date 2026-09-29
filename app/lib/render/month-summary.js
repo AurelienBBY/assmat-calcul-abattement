@@ -64,8 +64,8 @@
 
     box.innerHTML =
       `<div class="summary-result" role="status" aria-live="polite">` +
-      `  <div class="summary-result__label">Revenu imposable après abattement</div>` +
-      `  <div class="hint">À reporter sur votre déclaration.</div>` +
+      `  <div class="summary-result__label">Après abattement, ce mois-ci</div>` +
+      `  <div class="hint">Compte dans le total de l'année, à retrouver dans « Ma déclaration ».</div>` +
       `  <div class="summary-result__value" data-month-imposable>—</div>` +
       `  <div class="summary-result__note" data-month-percu-note></div>` +
       `  <button type="button" class="btn btn-primary summary-result__print" data-toolbar-action="print">` +
@@ -89,7 +89,7 @@
       `    </span>` +
       `    <span data-month-abatt>—</span>` +
       `  </div>` +
-      `  <p class="hint month-details__note">Le revenu imposable après abattement ne peut pas être négatif.</p>` +
+      `  <p class="hint month-details__note">Seul le total de l'année est à déclarer ; il ne peut pas être négatif.</p>` +
       `</div>`;
       
     return box;
@@ -113,7 +113,7 @@
   /**
    * Met à jour les montants calculés (mensuel).
    * @param {HTMLElement} container
-   * @param {Object} computed {abatt, percu, imposable}
+   * @param {Object} computed {abatt, percu, apres} — apres = perçu − abattement, négatif possible
    */
   R.updateMonthSummaryComputed = function updateMonthSummaryComputed(container, computed) {
     if (!container) return;
@@ -125,13 +125,16 @@
 
     const abatt = computed && typeof computed.abatt === "number" ? computed.abatt : 0;
     const percu = computed && typeof computed.percu === "number" ? computed.percu : 0;
-    const imposable = computed && typeof computed.imposable === "number" ? computed.imposable : 0;
+    const apres = computed && typeof computed.apres === "number" ? computed.apres : 0;
 
     if (abattEl) abattEl.textContent = safeFmtEuro(abatt);
     if (percuEl) percuEl.textContent = safeFmtEuro(percu);
-    if (imposableEl) imposableEl.textContent = safeFmtEuro(imposable);
+    if (imposableEl) imposableEl.textContent = safeFmtEuro(Math.max(0, apres));
     if (noteEl) {
-      if (percu > 0 && imposable < percu) {
+      if (percu > 0 && apres < 0) {
+        // L'abattement non utilisé ce mois-ci n'est pas perdu : il compte sur l'année.
+        noteEl.textContent = `L'abattement dépasse ce qui a été perçu de ${safeFmtEuro(-apres)} : la différence se déduit des autres mois.`;
+      } else if (percu > 0 && apres < percu) {
         // La comparaison ne parle que si un abattement réduit réellement le perçu.
         noteEl.textContent = `au lieu de ${safeFmtEuro(percu)} perçus`;
       } else if (percu === 0 && abatt > 0) {

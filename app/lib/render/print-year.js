@@ -43,7 +43,7 @@
     const table = P.el("table", "doc-table");
     const thead = P.el("thead");
     const trh = P.el("tr");
-    [["", "Mois"], ["r", "Net imposable"], ["r", "Indemnités"], ["r", "Perçu"], ["r", "Abattement"], ["r", "À déclarer"]].forEach(([cls, label]) => {
+    [["", "Mois"], ["r", "Net imposable"], ["r", "Indemnités"], ["r", "Perçu"], ["r", "Abattement"], ["r", "Après abattement"]].forEach(([cls, label]) => {
       trh.appendChild(P.el("th", cls || null, label));
     });
     thead.appendChild(trh);
@@ -56,7 +56,7 @@
       if (m.status === "vide") {
         ["", "", "", "", ""].forEach(() => tr.appendChild(P.el("td", "r", "—")));
       } else {
-        [m.net, m.irf, m.percu, m.abatt, m.imposable].forEach((v) => {
+        [m.net, m.irf, m.percu, m.abatt, m.apres].forEach((v) => {
           tr.appendChild(P.el("td", "r", U.fmtEuro(v)));
         });
       }
@@ -66,7 +66,7 @@
     const trTotal = P.el("tr", "doc-total");
     trTotal.appendChild(P.el("td", null, `Total ${recap.year}`));
     const t = recap.totals;
-    [t.net, t.irf, t.percu, t.abatt, t.imposable].forEach((v) => {
+    [t.net, t.irf, t.percu, t.abatt, t.apres].forEach((v) => {
       trTotal.appendChild(P.el("td", "r", U.fmtEuro(v)));
     });
     tbody.appendChild(trTotal);
@@ -87,7 +87,7 @@
     };
     addRow("Total perçu (salaires + indemnités)", U.fmtEuro(t.percu));
     addRow("Abattement forfaitaire annuel", `− ${U.fmtEuro(t.abatt)}`);
-    addRow(`Revenu imposable ${recap.year}`, U.fmtEuro(t.imposable), true);
+    addRow(`Revenu imposable ${recap.year} (jamais négatif)`, U.fmtEuro(t.imposable), true);
     addRow("Jours de garde ≥ 8 h", String(t.j_ge8));
     addRow("Jours de garde < 8 h", String(t.j_lt8));
 

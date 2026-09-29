@@ -116,7 +116,7 @@
         irf,
         percu,
         abatt: monthAbatt,
-        imposable: Math.max(0, U.round2(percu - monthAbatt)),
+        apres: U.round2(percu - monthAbatt), // négatif si l'abattement dépasse le perçu du mois
         joursGarde,
         j_lt8,
         j_ge8

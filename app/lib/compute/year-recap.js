@@ -5,6 +5,9 @@
    - abattement réel du mois (forfait de l'année, smicOverride du mois)
    - compteurs de jours-enfant (< 8 h / ≥ 8 h)
    - statut du mois (vide / incomplet / ok)
+   Le revenu imposable (case 1AJ) est ANNUEL : total perçu − abattement de
+   l'année, plancher à 0 appliqué une seule fois. Le solde d'un mois
+   (`apres`) peut être négatif : il se déduit alors des autres mois.
    ========================================================================== */
 
 (function () {
@@ -91,7 +94,7 @@
 
     const forfaitJour = forfaitJourForMonth(year, data);
     const abatt = C.computeMonthTotal(data.days, forfaitJour).monthTotal;
-    const imposable = Math.max(0, U.round2(percu - abatt));
+    const apres = U.round2(percu - abatt); // négatif si l'abattement dépasse le perçu du mois
 
     const days = countChildDays(data.days);
     const hasMoney = (net > 0) || (irf > 0);
@@ -107,7 +110,7 @@
       irf,
       percu,
       abatt,
-      imposable,
+      apres,
       j_lt8: days.j_lt8,
       j_ge8: days.j_ge8,
       status
@@ -116,6 +119,9 @@
 
   /**
    * Récap des 12 mois d'une année + totaux.
+   * totals.imposable = max(0, perçu annuel − abattement annuel) : montant de
+   * la case 1AJ. Jamais la somme de mois plafonnés à 0 (cela perdrait
+   * l'abattement des mois où il dépasse le perçu).
    *
    * @param {number} year
    * @returns {{year:number, totals:Object, months:Array}}
@@ -123,7 +129,7 @@
   Compute.computeYearRecap = function computeYearRecap(year) {
     const y = Number(year);
     const months = [];
-    const totals = { net: 0, irf: 0, percu: 0, abatt: 0, imposable: 0, j_lt8: 0, j_ge8: 0 };
+    const totals = { net: 0, irf: 0, percu: 0, abatt: 0, apres: 0, imposable: 0, j_lt8: 0, j_ge8: 0 };
 
     for (let m = 0; m < 12; m++) {
       const rec = Compute.computeMonthRecap(y, m);
@@ -133,11 +139,12 @@
       totals.irf = U.round2(totals.irf + rec.irf);
       totals.percu = U.round2(totals.percu + rec.percu);
       totals.abatt = U.round2(totals.abatt + rec.abatt);
-      totals.imposable = U.round2(totals.imposable + rec.imposable);
+      totals.apres = U.round2(totals.apres + rec.apres);
       totals.j_lt8 += rec.j_lt8;
       totals.j_ge8 += rec.j_ge8;
     }
 
+    totals.imposable = Math.max(0, totals.apres);
     return { year: y, totals, months };
   };
 })();
