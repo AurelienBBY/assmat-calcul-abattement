@@ -128,6 +128,7 @@
     const year = Number(input.dataset.year);
     const m = Number(input.dataset.month);
     const had = Boolean(cache[key]);
+    R.toast("Photo en cours d'enregistrement…");
     try {
       await store(key, await IMG.compress(input.files[0]));
     } catch (err) {
