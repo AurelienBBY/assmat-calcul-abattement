@@ -108,7 +108,8 @@ abmat:sync             état de la copie manuelle sur CET appareil (hors export)
 abmat:ui:onboarding    mise en route : { step, done } (hors export)
 abmat:ui:tips          bulles d'aide déjà lues (hors export)
 IndexedDB abmat-autosave : le dossier de copie choisi (ordinateur)
-IndexedDB abmat-fiches   : photos des fiches ("AAAA-MM:recto|verso", blob ou null = supprimée)
+IndexedDB abmat-fiches   : photos des fiches ("AAAA-MM:recto|verso", octets de l'image ou null = supprimée ;
+                           jamais un Blob : Safari iPhone les enregistre mal)
 ```
 
 Un mois v3 : `days` est un **objet indexé par date ISO** (jamais un tableau) ; chaque jour `{ off, children: { c1: { absent, motif, slots: [{in,out}] ≤ 3, punched }, r1: { …, relais, name } }, meetings: [{in,out}] }`. Les jours et présences vides sont retirés à la lecture. Les migrations v1/v2 → v3 (clés `"1"` → `"c1"`, `smicOverride` abandonné) et profil v1 → v2 sont faites **à la lecture** ; tout nouveau changement de schéma incrémente `version` et ajoute sa migration au même endroit.

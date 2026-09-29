@@ -3,9 +3,11 @@
    ----------------------------------------------------------------------------
    Une fiche recto verso par mois : clés "AAAA-MM:recto" et "AAAA-MM:verso".
    Trop lourdes pour localStorage : base IndexedDB « abmat-fiches ».
-   Enregistrement : { key, year, updatedAt, type, blob } ; une suppression
-   garde la clé avec blob = null (sinon la fusion avec une autre copie
-   ferait réapparaître la photo). Copie de secours : fichier à part
+   Enregistrement : { key, year, updatedAt, type, bytes } — les octets de
+   l'image (ArrayBuffer) et non un Blob : Safari sur iPhone enregistre mal
+   les Blob dans IndexedDB (« Error preparing Blob/File data… »). Une
+   suppression garde la clé avec bytes = null (sinon la fusion avec une
+   autre copie ferait réapparaître la photo). Copie de secours : fichier à part
    { format: "abmat-fiches", version: 1, year, photos: { clé: { updatedAt,
    type, data } } } (data = image en base64, null si supprimée).
    Toutes les fonctions sont asynchrones (Promise).
@@ -25,38 +27,59 @@
   const STORE = "photos";
   let dbPromise = null;
 
+  // Ouverture de la base ; si elle ne répond pas, on le dit (au lieu
+  // d'attendre sans fin) et le prochain geste réessaie.
   function db() {
     if (!dbPromise) {
       dbPromise = new Promise((resolve, reject) => {
         const req = indexedDB.open(DB_NAME, 1);
+        const timer = setTimeout(() => reject(new Error("la mémoire des photos ne répond pas : fermez l'outil puis rouvrez-le.")), 10000);
         req.onupgradeneeded = () => req.result.createObjectStore(STORE, { keyPath: "key" }).createIndex("year", "year");
-        req.onsuccess = () => resolve(req.result);
-        req.onerror = () => reject(req.error);
+        req.onsuccess = () => { clearTimeout(timer); resolve(req.result); };
+        req.onerror = () => { clearTimeout(timer); reject(req.error); };
       });
+      dbPromise.catch(() => { dbPromise = null; });
     }
     return dbPromise;
   }
 
+  // Une opération qui ne se termine pas (ni fin, ni erreur) devient un message après 15 s.
   function run(mode, fn) {
     return db().then((d) => new Promise((resolve, reject) => {
       const tx = d.transaction(STORE, mode);
+      const timer = setTimeout(() => reject(new Error("la mémoire des photos ne répond pas : fermez l'outil puis rouvrez-le.")), 15000);
       const out = fn(tx.objectStore(STORE));
-      tx.oncomplete = () => resolve(out && "result" in out ? out.result : undefined);
-      tx.onerror = () => reject(tx.error);
+      tx.oncomplete = () => { clearTimeout(timer); resolve(out && "result" in out ? out.result : undefined); };
+      tx.onerror = () => { clearTimeout(timer); reject(tx.error); };
+      tx.onabort = () => { clearTimeout(timer); reject(tx.error || new Error("enregistrement interrompu (mémoire du téléphone pleine ?).")); };
     }));
   }
 
   const yearOf = (key) => Number(key.slice(0, 4));
-  const record = (key, blob, updatedAt) => ({ key, year: yearOf(key), updatedAt: updatedAt || new Date().toISOString(), type: blob ? blob.type : "", blob });
+
+  // Les octets sont lus AVANT d'ouvrir la transaction (une transaction
+  // IndexedDB se ferme dès qu'on attend autre chose qu'elle).
+  const record = async (key, blob, updatedAt) => ({ key, year: yearOf(key), updatedAt: updatedAt || new Date().toISOString(),
+    type: blob ? blob.type : "", bytes: blob ? await blob.arrayBuffer() : null });
+
+  // Image d'un enregistrement (null = supprimée). Les tout premiers
+  // enregistrements (29/09/2026, ordinateur) gardaient un Blob : lus tels quels.
+  const blobOf = (r) => (r.bytes ? new Blob([r.bytes], { type: r.type }) : (r.blob || null));
 
   const F = S.fiches = {};
 
   F.key = (year, monthIndex, side) => `${year}-${String(monthIndex + 1).padStart(2, "0")}:${side}`;
 
-  /** Photo d'une face ; null si absente ou supprimée. */
-  F.get = (key) => run("readonly", (st) => st.get(key)).then((r) => (r && r.blob ? r : null));
-  F.put = (key, blob, updatedAt) => run("readwrite", (st) => { st.put(record(key, blob, updatedAt)); });
-  F.remove = (key) => run("readwrite", (st) => { st.put(record(key, null)); });
+  /** Photo d'une face : { key, updatedAt, blob } ; null si absente ou supprimée. */
+  F.get = (key) => run("readonly", (st) => st.get(key)).then((r) => {
+    const blob = r ? blobOf(r) : null;
+    return blob ? { key, updatedAt: r.updatedAt, blob } : null;
+  });
+  F.put = async (key, blob, updatedAt) => {
+    const rec = await record(key, blob, updatedAt);
+    return run("readwrite", (st) => { st.put(rec); });
+  };
+  F.remove = (key) => F.put(key, null);
 
   /** Tous les enregistrements d'une année (suppressions comprises). */
   F.records = (year) => run("readonly", (st) => st.index("year").getAll(Number(year))).then((list) => list || []);
@@ -86,7 +109,10 @@
     const list = await F.records(year);
     if (!list.length) return null;
     const photos = {};
-    for (const r of list) photos[r.key] = { updatedAt: r.updatedAt, type: r.type, data: r.blob ? await toDataUrl(r.blob) : null };
+    for (const r of list) {
+      const blob = blobOf(r);
+      photos[r.key] = { updatedAt: r.updatedAt, type: r.type, data: blob ? await toDataUrl(blob) : null };
+    }
     return { format: "abmat-fiches", version: 1, year: Number(year), exportedAt: new Date().toISOString(), photos };
   };
 
