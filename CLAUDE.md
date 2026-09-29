@@ -114,6 +114,8 @@ Une entrée localStorage par mois, clé `abmat:YYYY-MM`. Le bouton Sauvegarder e
 ## Documentation (docs/)
 
 - `docs/feuille-de-route.md` — **où on va et pourquoi** : cap produit, lots 1 à 6 (fiabilité → moteur unifié → UI → PDF → parcours → distribution PWA), décisions en attente. À mettre à jour quand un lot avance ou qu'une décision est prise.
+- `docs/revue-2026-09-29.md` — revue complète (justesse, saisie, RGPD, design, éco-conception, textes, code) avec bugs reproduits et plan d'action priorisé ; captures dans `docs/revue-2026-09-29/`.
+- `docs/spec-heures-supplementaires.md` — proposition de règle et de conception pour le décompte des heures supplémentaires (brouillon, questions à faire valider par le CCAS).
 
 ## État connu (audit du 2026-07-19, lot 1 corrigé le même jour)
 
