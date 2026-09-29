@@ -1,16 +1,16 @@
 # Heures supplémentaires — proposition de spécification
 
-Statut : **brouillon à valider** (29/09/2026). Rien n'est codé. Les règles ci-dessous traduisent le besoin exprimé ; les points marqués **Q** doivent être tranchés, idéalement **par écrit avec le CCAS** (règlement de la crèche familiale ou délibération), avant tout développement.
+Statut : **règle de calcul validée le 29/09/2026** (points 1 à 5 ci-dessous) ; rien n'est codé. Les questions **Q4 à Q7** restent à trancher, idéalement **par écrit avec le CCAS** (règlement de la crèche familiale ou délibération), avant de coder. Maquette : pointeuse + détail jour par jour (artifact « Calendrier Ass-Mat », v2).
 
 ## Besoin exprimé
 
 > Calculer les heures supplémentaires à la demi-heure (toute demi-heure entamée est due), pour les heures au-dessus de 10 h dans une journée — de l'arrivée du premier enfant au départ du dernier — en ajoutant parfois des réunions.
 
-## Règle proposée (v0)
+## Règle validée
 
-1. **Temps de la journée** = de la **première arrivée** d'un enfant au **dernier départ** d'un enfant, tous enfants confondus. Les enfants absents sont ignorés. Un creux sans enfant au milieu de la journée **est compté** (c'est une amplitude). → **Q1**
-2. **Réunions** : saisies avec une heure de début et une heure de fin. Le temps de la journée devient l'**union des plages horaires** « enfants » et « réunions » : une réunion le soir après le départ du dernier enfant s'ajoute ; une réunion qui chevauche la présence des enfants n'est pas comptée deux fois. → **Q2**
-3. **Seuil** : 10 h 00 par jour. Exactement 10 h 00 = aucune heure supplémentaire. → **Q3**
+1. **Temps « enfants »** = de la **première arrivée** d'un enfant au **dernier départ** d'un enfant, tous enfants confondus (accueil relais compris). Les enfants absents sont ignorés. Un creux sans enfant entre les deux **est compté** (décision du 29/09/2026 ; ça n'arrive en pratique jamais).
+2. **Réunions** (heure de début et de fin) : on ajoute le temps de réunion **en dehors** de la plage « enfants ». Une partie de réunion pendant que des enfants sont là n'est **pas comptée deux fois** ; le temps **entre le départ du dernier enfant et le début de la réunion** (ou entre la fin d'une réunion matinale et la première arrivée) **n'est pas compté**. Autrement dit : temps de la journée = union des plages « enfants » et « réunions ».
+3. **Seuil** : au-delà de 10 h 00 par jour (« heures au-dessus de 10 h ») ; exactement 10 h 00 = aucune heure supplémentaire.
 4. **Arrondi** : le dépassement est arrondi à la **demi-heure supérieure** (1 min → 0 h 30 ; 30 min → 0 h 30 ; 31 min → 1 h 00).
 5. Le calcul se fait **jour par jour** ; semaine et mois additionnent des jours **déjà arrondis**.
 6. Un horaire invalide ou incomplet dans la journée → heures supplémentaires **« à vérifier »** pour ce jour, jamais un calcul silencieux (même principe que l'abattement).
@@ -26,15 +26,26 @@ Statut : **brouillon à valider** (29/09/2026). Rien n'est codé. Les règles ci
 | Léa 7h00 → 17h45 | 10 h 45 | 1 h 00 |
 | Léa 7h30 → 12h00, Tom 13h30 → 18h00 | 10 h 30 (creux compté) | 0 h 30 |
 | Léa 8h00 → 17h00 + réunion 19h00 → 21h00 | 9 h + 2 h = 11 h 00 | 1 h 00 |
-| Léa 8h00 → 18h00 + réunion 17h00 → 19h00 | 8h00 → 19h00 = 11 h 00 | 1 h 00 |
+| Léa 8h00 → 18h00 + réunion 17h00 → 19h00 | 8h00 → 19h00 = 11 h 00 (1 h de chevauchement comptée une fois) | 1 h 00 |
+| Léa 8h00 → 18h15 + réunion 17h30 → 19h00 | 10 h 15 + 45 min = 11 h 00 | 1 h 00 |
+| Réunion 7h00 → 7h30, Léa 8h00 → 17h30 | 30 min + 9 h 30 = 10 h 00 (pause 7h30 → 8h00 non comptée) | 0 |
 | Léa absente, Tom 9h00 → 16h00 | 7 h 00 | 0 |
 | Léa 8h00 → ⚠ (sortie manquante) | — | à vérifier |
 
-## Questions à trancher
+## Explication affichée pour chaque jour (demandé le 29/09/2026)
 
-- **Q1 — Creux sans enfant** : une pause sans aucun enfant (entre deux accueils) compte-t-elle dans le temps de travail ?
-- **Q2 — Réunions** : se cumulent-elles comme proposé (union des plages) ou s'ajoutent-elles simplement en durée ? Une réunion **un jour sans enfant** (mercredi libre, samedi) compte-t-elle seule ? Si oui, il faudra afficher les samedis, aujourd'hui masqués.
-- **Q3 — Seuil** : 10 h pile = 0, confirmé ?
+Chaque jour travaillé affiche **pourquoi** il y a, ou non, des heures supplémentaires, dans la fiche du jour, dans la pointeuse (en direct) et dans le détail du mois. Modèles de phrases :
+
+- « Enfants : de 7h15 (arrivée de Léa) à 18h00 (départ de Tom) = 10 h 45. »
+- « Réunion de 19h00 à 21h00 : 2 h ajoutées. La pause de 17h30 à 19h00 n'est pas comptée. »
+- « Réunion de 17h30 à 19h00 : 45 min en même temps que les enfants (comptées une seule fois), 45 min ajoutées. »
+- « Réunion de 16h00 à 17h00 : pendant que des enfants étaient là, déjà comptée. Rien à ajouter. »
+- « Journée retenue : 11 h 30. »
+- Verdict : « 9 h 30 : 10 h ou moins, pas d'heure supplémentaire. » ou « 1 h 15 au-delà de 10 h → 1 h 30 d'heures sup. (toute demi-heure commencée compte) ».
+
+## Questions encore ouvertes
+
+- **Q2 bis — Réunion un jour sans enfant** (mercredi libre, samedi) : compte-t-elle seule ? Si oui, il faudra afficher les samedis, aujourd'hui masqués.
 - **Q4 — Autres seuils** : existe-t-il aussi un seuil **hebdomadaire** (ex. 45 h) ou un plafond ? Si oui, comment se combine-t-il avec le seuil journalier (sans compter deux fois les mêmes minutes) ?
 - **Q5 — Paiement** : quelle majoration, payée ou récupérée ? L'outil doit-il afficher un **montant en euros** (taux horaire à saisir) ou seulement des **heures** (recommandé pour commencer) ?
 - **Q6 — Temps hors enfants** : préparation, ménage, transmissions avant l'arrivée ou après le départ des enfants — exclus, comme le dit la définition ?
@@ -52,7 +63,7 @@ Statut : **brouillon à valider** (29/09/2026). Rien n'est codé. Les règles ci
 
 ```json
 "2026-09-14": {
-  "children": { "1": { "absent": false, "motif": "", "slots": [ { "in": "07:45", "out": "18:10" } ] } },
+  "children": { "lea": { "absent": false, "motif": "", "slots": [ { "in": "07:45", "out": "18:10" } ], "punched": true } },
   "meetings": [ { "in": "19:00", "out": "21:00", "label": "Réunion crèche familiale" } ]
 }
 ```
@@ -73,14 +84,15 @@ Tests `tests/overtime.test.js` : les 10 exemples ci-dessus + chevauchement de r�
 
 ### Interface
 
-- **Carte du jour** : bouton « + réunion » à côté de « + enfant » ; ligne réunion `[19:00 → 21:00] [libellé facultatif]`. Un badge **n'apparaît que s'il y a dépassement** : « 10 h 45 de travail · 1 h 00 sup. ». Rien sinon, pour garder l'écran calme.
-- **Colonne résultat** : un bloc **séparé** du bloc impôts, « Heures supplémentaires : 3 h 30 ce mois-ci (4 jours) », avec la phrase « À comparer avec votre fiche de paie ».
+- **Fiche du jour** : bloc « Réunion » (+ Ajouter une réunion) et bloc « Heures supplémentaires de la journée » avec l'explication ci-dessus.
+- **Pointeuse** : boutons « Début de réunion » / « Fin de réunion » ; explication en direct (« Pour l'instant : … ») et heure à partir de laquelle les heures sup. commencent.
+- **Colonne du mois** : un bloc **séparé** du bloc impôts, « Heures supplémentaires : 3 h 30 », « 3 jours au-delà de 10 h », « À comparer avec la fiche de paie », et « Voir le détail jour par jour » (tous les jours, avec ou sans heures sup., chacun avec son explication).
 - **Impression** : une section « Heures supplémentaires » en fin de relevé mensuel (jour, arrivée du 1ᵉʳ enfant, départ du dernier, réunions, temps retenu, heures sup.) ou un **document séparé** à remettre au CCAS (**Q** : lequel est utile en pratique ?).
 - **Mon année** : total annuel pour information.
 
 ### Ordre de réalisation
 
-1. Réponses aux questions Q1-Q7.
+1. Réponses aux questions Q2 bis et Q4-Q7.
 2. Calcul + tests (sans interface).
 3. Schéma v3 + migration + tests.
 4. Interface de saisie des réunions, badge, bloc résultat.

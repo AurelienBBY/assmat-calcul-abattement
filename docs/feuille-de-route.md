@@ -1,6 +1,6 @@
 # Feuille de route — Assmat Calcul abattement
 
-Mise à jour : 2026-07-21. Ce document fixe **où on va et pourquoi**. Le « comment coder » vit dans `CLAUDE.md` ; ici on ne liste que les objectifs et les décisions produit.
+Mise à jour : 2026-09-29. Ce document fixe **où on va et pourquoi**. Le « comment coder » vit dans `CLAUDE.md` ; ici on ne liste que les objectifs et les décisions produit.
 
 ## Cap produit
 
@@ -131,6 +131,22 @@ Périmètre d'origine :
 - ✅ Bouton renommé « Voir les points d'attention » (`[data-open-tuto]`), ouvert soit depuis le bloc onboarding, soit depuis la carte « book » des raccourcis (profil vide). **Piège corrigé** : ce bouton vit maintenant dans du contenu recréé à chaque affichage d'Accueil — `initTutoModal()` et le chargement paresseux de l'iframe sont passés d'un binding direct (posé une fois, perdu à la recréation) à une **délégation d'événement sur `document`**.
 - ✅ Nettoyage : `app/style.css` (739 lignes mortes depuis le tout premier commit, jamais chargé par `index.html`) supprimé.
 - ✅ 48 tests toujours verts (aucune logique pure touchée). Vérifié en Chrome headless CDP : les 3 étapes, la bascule de mise en avant profil-vide → profil-rempli (via la vraie saisie du champ nom, pas un contournement du storage), l'ouverture de la fiche par les deux chemins, le contenu de l'iframe (10 cartes, 4 sections) — zéro exception JS.
+
+## Lot 12 — Refonte « calendrier » + pointeuse — proposé le 2026-09-29 (rien de codé)
+
+**Origine** : revue complète du 2026-09-29 (`docs/revue-2026-09-29.md`) — pages trop longues, 22 cartes de jours à parcourir chaque mois. Maquette cliquable validée par l'utilisateur (artifact privé « Calendrier Ass-Mat », v2), puis décisions ci-dessous.
+
+- **Navigation** : 4 onglets — **Aujourd'hui** (pointeuse), **Mon mois** (calendrier), **Mon année** (montant à déclarer, passage d'année), **Mon profil**. Barre d'onglets en bas sur iPhone. L'actuel Accueil ne sert plus qu'au premier lancement.
+- **Mon mois = saisie par exceptions** : calendrier pré-rempli avec les horaires habituels ; un clic ouvre la fiche du jour (« Journée habituelle », « Je n'ai pas travaillé », présence/absence par enfant, 2ᵉ horaire, réunion, détail des heures sup.) ; « Semaine de congés » par semaine ; « Annuler » après chaque action de masse. Chaque mois = 3 étapes (vérifier les jours, recopier la fiche de paie, « Terminé ») ; la copie de secours est proposée à chaque « Terminé ».
+- **Pointeuse (Aujourd'hui)** : « Arrivée » / « Départ » par enfant à l'heure du téléphone, « Pas là aujourd'hui », « Début / Fin de réunion », heures corrigeables au toucher, explication des heures sup. en direct. Les jours pointés sont justes par construction (pas à re-vérifier).
+- **Enfants (décision 2026-09-29)** : liste **datée** (date d'arrivée, date de départ facultative), **autant d'enfants que nécessaire sur l'année, 4 au maximum le même jour** (remplace « hors périmètre : plus de 3 enfants par jour »). **Horaires habituels versionnés** (« à partir du … ») : un changement ne modifie **jamais** un jour pointé, modifié à la main, ou d'un mois terminé — seuls les jours encore « comme d'habitude » d'un mois non terminé après la date d'effet sont mis à jour. L'historique reste visible dans le profil.
+- **Accueil relais (décision 2026-09-29)** : case à cocher **par année** (« Je fais de l'accueil relais en AAAA »). Elle ajoute « + Enfant en accueil relais » dans la fiche du jour et la pointeuse (prénom saisi ce jour-là, sans semaine type). Ces enfants comptent dans l'abattement comme les autres et dans la limite de 4 par jour.
+- **Profil (décision 2026-09-29)** : prénom, nom, employeur, modifiables ; **plus de n° d'agrément** ni de champ « mention ».
+- **SMIC par année (décision 2026-09-29, remplace « consultable, jamais modifiable » du 2026-07-19)** : réglé au **passage d'année** dans un écran « Préparer AAAA » (1. SMIC horaire brut au 1er janvier, pré-rempli si l'outil le connaît, avec contrôle de vraisemblance et aperçu du forfait ; 2. enfants qui continuent ; 3. accueil relais). **Un seul SMIC par année** : fin du `smicOverride` mensuel (cf. revue, point C5). L'année précédente reste accessible pour la déclaration du printemps.
+- **Heures supplémentaires** : règle validée et explication jour par jour, voir `docs/spec-heures-supplementaires.md`.
+- **Modèle de données v3** (à concevoir et tester avant l'interface) : enfants du profil identifiés par un **id stable** (migration des clés `"1"`/`"2"`/`"3"` actuelles), périodes d'horaires datées ; par jour : `off` (non travaillé), `meetings`, enfants relais (prénom), marqueur « pointé » par enfant ; par mois : `verified`, `done` ; par année : `smic`, `relais`.
+- **Sauvegarde / iPhone** : iCloud Drive est une destination équivalente à OneDrive (automatique sur le PC via iCloud pour Windows, manuelle sur iPhone). Synchronisation automatique iPhone via CloudKit JS : **décision en attente** (compte développeur Apple, connexion Apple ID, appels réseau vers Apple — contraire au principe « aucun appel réseau », à ne rouvrir que si la pointeuse devient l'usage principal).
+- **Ordre proposé** : 1) corrections P0 de la revue (case 1AJ annuelle, dossier complet, virgule, défauts visuels) ; 2) modèle v3 + migration + tests ; 3) calendrier et fiche du jour ; 4) heures sup. ; 5) pointeuse ; 6) passage d'année ; 7) sauvegarde iPhone.
 
 ## Lot 7 — Pièces justificatives (décidé le 2026-07-19, à faire après le lot 6)
 
