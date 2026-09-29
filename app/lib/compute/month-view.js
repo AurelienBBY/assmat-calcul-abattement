@@ -24,6 +24,7 @@
 
   const hm = (t) => { const v = U.parseTimeToMinutes(t); if (v === null) return "…"; const h = Math.floor(v / 60); const m = v % 60; return m ? `${h}h${U.pad2(m)}` : `${h}h`; };
   const slotsText = (slots) => slots.map((s) => `${hm(s.in)}–${hm(s.out)}`).join(", ");
+  const isPunched = (day) => Boolean(day && Object.keys(day.children).some((id) => day.children[id].punched === true));
 
   // Horaires habituels d'un enfant ce jour-là (aucun un jour férié).
   function usualOn(profile, id, iso, holidays) {
@@ -49,7 +50,7 @@
    * @returns {"empty"|"ferie"|"off"|"today"|"punched"|"future"|"modified"|"usual"}
    */
   Compute.dayState = function dayState(iso, day, profile, todayIso, holidays) {
-    if (!day) return holidays[iso] ? "ferie" : "empty";
+    if (!day) return holidays[iso] ? "ferie" : (iso === todayIso ? "today" : "empty");
     if (day.off === true) return "off";
     if (iso === todayIso) return "today";
     if (Object.keys(day.children).some((id) => day.children[id].punched === true)) return "punched";
@@ -76,6 +77,7 @@
   /**
    * Semaines du mois (lundi → vendredi), plus les samedis qui portent une donnée
    * (réunion un jour sans enfant).
+   * allOff : semaine en congés (les jours pointés, jamais mis en congés, ne comptent pas).
    * @returns {{weeks:Array<{isos:string[], cells:Array, allOff:boolean, hasDays:boolean}>, saturdays:Array}}
    */
   Compute.buildCalendar = function buildCalendar(year, monthIndex, monthData, profile, todayIso) {
@@ -95,8 +97,9 @@
     }
     weeks.forEach((w) => {
       const withDays = w.isos.filter((iso) => monthData.days[iso]);
+      const notPunched = withDays.filter((iso) => !isPunched(monthData.days[iso])); // cf. setWeekOff
       w.hasDays = withDays.length > 0;
-      w.allOff = w.hasDays && withDays.every((iso) => monthData.days[iso].off === true);
+      w.allOff = notPunched.length > 0 && notPunched.every((iso) => monthData.days[iso].off === true);
     });
     return { weeks, saturdays };
   };
@@ -142,10 +145,14 @@
     else Compute.setDayUsual(monthData, iso, profile);
   };
 
-  /** Semaine de congés : chaque jour prévu (habituel ou saisi) devient non travaillé. */
+  /**
+   * Semaine de congés : chaque jour prévu (habituel ou saisi) devient non
+   * travaillé — sauf un jour pointé : ses heures sont réelles, on n'y touche pas.
+   */
   Compute.setWeekOff = function setWeekOff(monthData, isos, off, profile) {
     const holidays = U.getFrenchHolidays(monthData.year);
     isos.forEach((iso) => {
+      if (isPunched(monthData.days[iso])) return;
       if (off) {
         const planned = monthData.days[iso] || profile.children.some((c) => usualOn(profile, c.id, iso, holidays).length);
         if (planned) Compute.setDayOff(monthData, iso, true, profile);

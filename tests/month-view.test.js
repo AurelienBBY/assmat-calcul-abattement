@@ -41,6 +41,8 @@ test("états des jours : habituel, modifié, pointé, non travaillé, aujourd'hu
   delete m.days["2026-09-17"].children.c2; // Tom attendu mais absent de la journée → modifié
   assert.equal(st("2026-09-17"), "modified");
   assert.equal(Compute.dayState("2026-11-11", undefined, profile, TODAY, ABMAT.utils.getFrenchHolidays(2026)), "ferie");
+  assert.equal(Compute.dayState(TODAY, undefined, profile, TODAY, h), "today"); // rien encore saisi aujourd'hui
+  assert.equal(Compute.dayState("2026-09-30", undefined, profile, TODAY, h), "empty");
 });
 
 test("calendrier : semaines lun → ven, lignes par enfant, samedis avec donnée", () => {
@@ -90,4 +92,14 @@ test("journée habituelle, jour non travaillé, semaine de congés", () => {
   assert.equal(Compute.buildCalendar(2026, 8, m, profile, TODAY).weeks[3].allOff, true);
   Compute.setWeekOff(m, semaine, false, profile);
   assert.ok(semaine.every((iso) => !m.days[iso].off));
+
+  // Un jour pointé garde ses heures réelles : ni congés, ni retour à l'habituel.
+  m.days["2026-09-28"].children.c1 = { absent: false, motif: "", slots: [{ in: "07:56", out: "17:34" }], punched: true };
+  const fin = ["2026-09-28", "2026-09-29", "2026-09-30"];
+  Compute.setWeekOff(m, fin, true, profile);
+  assert.equal(m.days["2026-09-28"].off, false);
+  assert.equal(m.days["2026-09-29"].off, true);
+  assert.equal(Compute.buildCalendar(2026, 8, m, profile, TODAY).weeks[4].allOff, true);
+  Compute.setWeekOff(m, fin, false, profile);
+  assert.deepEqual(m.days["2026-09-28"].children.c1.slots, [{ in: "07:56", out: "17:34" }]);
 });
