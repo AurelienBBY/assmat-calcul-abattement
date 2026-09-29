@@ -40,7 +40,11 @@ function loadApp() {
     "app/lib/compute/children.js",
     "app/lib/compute/year-recap.js",
     "app/lib/compute/month-print.js",
-    "app/lib/compute/prefill.js"
+    "app/lib/compute/prefill.js",
+    "app/lib/compute/month-view.js",
+    "app/lib/compute/punch.js",
+    "app/lib/compute/backup-rules.js",
+    "app/lib/storage/device.js"
   ].forEach((rel) => {
     vm.runInThisContext(fs.readFileSync(path.join(ROOT, rel), "utf8"), { filename: rel });
   });
