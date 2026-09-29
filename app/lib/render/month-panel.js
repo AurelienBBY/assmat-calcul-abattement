@@ -70,8 +70,9 @@
   }
 
   /**
-   * @param {{monthIndex, verified, done, toVerify, payDone, net, irf, canFinish}} m
-   * @param {{onVerify, onMoney:(key, v)=>void, onMoneyCommit, onDone}} handlers
+   * @param {{monthIndex, verified, done, toVerify, payDone, net, irf, canFinish, canReview, askFiche}} m
+   *   canReview : il y a des jours passés à vérifier ; askFiche : « Terminer » sans fiche jointe
+   * @param {{onVerify, onReview, onMoney:(key, v)=>void, onMoneyCommit, onDone, onDoneAnyway, onAttach}} handlers
    */
   R.buildMonthTodo = function buildMonthTodo(m, handlers) {
     const name = F.monthName(m.monthIndex);
@@ -80,8 +81,14 @@
       : "Aucun jour différent de d'habitude. Les jours pointés sont déjà justes.";
     return h("div", { class: "card" }, [
       h("h3", { text: `À faire pour ${name}` }),
-      step(1, m.verified, "Vérifier les jours", verifyText,
-        h("div", null, h("button", { type: "button", class: "btn", text: m.verified ? "Vérifié ✓" : "J'ai vérifié les jours", "aria-pressed": String(m.verified), on: { click: () => handlers.onVerify(!m.verified) } }))),
+      step(1, m.verified, "Vérifier les jours", m.verified ? verifyText : `${verifyText} Le plus simple : semaine par semaine, la fiche de présence à côté.`,
+        h("div", { class: "row" }, m.verified ? [
+          h("button", { type: "button", class: "btn", text: "Vérifié ✓", "aria-pressed": "true", on: { click: () => handlers.onVerify(false) } }),
+          m.canReview ? h("button", { type: "button", class: "btn btn-quiet", text: "Revérifier avec la fiche", on: { click: handlers.onReview } }) : null
+        ] : [
+          m.canReview ? h("button", { type: "button", class: "btn btn-primary", text: "Vérifier avec la fiche", on: { click: handlers.onReview } }) : null,
+          h("button", { type: "button", class: m.canReview ? "btn btn-quiet" : "btn", text: "J'ai déjà vérifié", on: { click: () => handlers.onVerify(true) } })
+        ])),
       step(2, m.payDone, "Recopier la fiche de paie", `La fiche de paie versée en ${name}.`, [
         R.moneyField({ id: "f-net", label: "Net imposable", help: "Ligne « Net imposable » (pas la somme virée)", value: m.net > 0 ? m.net : null, placeholder: "1 850,40" },
           (v) => handlers.onMoney("netImposable", v), handlers.onMoneyCommit),
@@ -89,7 +96,13 @@
           (v) => handlers.onMoney("irf", v), handlers.onMoneyCommit)
       ]),
       step(3, m.done, "Terminer le mois", m.done ? "Mois terminé. Vous pouvez encore le corriger." : "Une copie de secours vous est proposée au passage.",
-        h("div", null, h("button", { type: "button", class: "btn btn-primary", text: m.done ? "Terminé ✓" : `J'ai terminé ${name}`, disabled: !m.canFinish, on: { click: handlers.onDone } })))
+        m.askFiche ? [
+          h("p", { class: "warn-line", text: "La fiche de présence n'est pas jointe. Elle sert de justificatif : elle est imprimée avec le mois dans le dossier." }),
+          h("div", { class: "row" }, [
+            h("button", { type: "button", class: "btn btn-primary", on: { click: handlers.onAttach } }, [R.icon("camera"), "Joindre la fiche"]),
+            h("button", { type: "button", class: "btn btn-quiet", text: "Terminer quand même", on: { click: handlers.onDoneAnyway } })
+          ])
+        ] : h("div", null, h("button", { type: "button", class: "btn btn-primary", text: m.done ? "Terminé ✓" : `J'ai terminé ${name}`, disabled: !m.canFinish, on: { click: handlers.onDone } })))
     ]);
   };
 

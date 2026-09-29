@@ -34,15 +34,24 @@
     color: #111;
   }
 
-  /* Dossier complet (render/print-full-year.js) : plusieurs .sheet dans
-     #print-doc, un par page — un seul document ne produit jamais deux
-     .sheet, cette règle ne s'applique donc que dans ce cas-là. */
+  /* Plusieurs .sheet (dossier complet, ou relevé suivi des photos de la
+     fiche de présence) : une par page. */
   #print-doc .sheet + .sheet{
     break-before: page;
     page-break-before: always;
   }
 
   #print-doc .num{ font-variant-numeric: tabular-nums; }
+
+  /* Photo de la fiche de présence (render/print-photo.js) */
+  #print-doc .sheet-photo img{
+    display: block;
+    width: 100%;
+    max-height: 230mm;
+    object-fit: contain;
+    margin: 0 auto 10px;
+    border: 1px solid #111;
+  }
 
   /* --- En-tête d'identité ------------------------------------------------- */
 

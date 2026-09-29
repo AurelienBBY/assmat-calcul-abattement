@@ -90,7 +90,7 @@ svg.i{ width: 20px; height: 20px; flex: 0 0 auto; }
 /* --- Champs ---------------------------------------------------------------- */
 input[type="time"], input[type="date"], input[type="text"], select{ border: 1px solid var(--line); border-radius: var(--r-sm); padding: 8px 10px; background: var(--surface); font-size: 17px; min-width: 0; }
 .field{ display: grid; gap: 4px; }
-.field label{ font-weight: 650; font-size: 15px; }
+.field label, .field .lbl{ font-weight: 650; font-size: 15px; }
 .field .help{ font-size: 14px; color: var(--muted); }
 .fields{ display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
 .fields input{ width: 100%; }

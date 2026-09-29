@@ -4,6 +4,8 @@
    - abmat:sync : suivi de la copie de secours manuelle (iPhone) — cf.
      compute/backup-rules.js ; illisible → état vierge (simple rappel, pas
      une donnée fiscale).
+   - abmat:ui:onboarding : où en est la mise en route { step, done }.
+   - abmat:ui:tips : bulles d'aide déjà vues (une par onglet).
    ========================================================================== */
 
 (function () {
@@ -35,4 +37,28 @@
   };
 
   S.saveDeviceSync = (sync) => S.writeRaw(SYNC_KEY, sync);
+
+  // Lecture d'un petit état d'interface ; illisible → valeur par défaut
+  // (ce n'est pas une donnée fiscale : repartir de zéro est sans risque).
+  function readUi(key, fallback) {
+    try {
+      const raw = JSON.parse(localStorage.getItem(key) || "null");
+      return (raw && typeof raw === "object") ? raw : fallback;
+    } catch (e) {
+      return fallback;
+    }
+  }
+
+  const ONBOARDING_KEY = "abmat:ui:onboarding";
+  const TIPS_KEY = "abmat:ui:tips";
+
+  S.loadOnboarding = function loadOnboarding() {
+    const raw = readUi(ONBOARDING_KEY, {});
+    const step = Number(raw.step);
+    return { step: Number.isInteger(step) && step >= 0 ? step : 0, done: raw.done === true };
+  };
+  S.saveOnboarding = (state) => S.writeRaw(ONBOARDING_KEY, { step: state.step, done: state.done === true });
+
+  S.tipSeen = (name) => readUi(TIPS_KEY, {})[name] === true;
+  S.markTipSeen = (name) => S.writeRaw(TIPS_KEY, Object.assign(readUi(TIPS_KEY, {}), { [name]: true }));
 })();

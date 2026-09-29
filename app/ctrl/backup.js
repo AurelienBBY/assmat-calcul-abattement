@@ -2,8 +2,9 @@
    app/ctrl/backup.js — Copie de secours (A.backup)
    ----------------------------------------------------------------------------
    iPhone (pas d'accès aux dossiers) : copie « à la main » — rappels aux
-   moments clés selon Compute.backupPrompt, envoi par la feuille de partage,
-   reprise par fusion. Ordinateur : dossier automatique (app/ctrl/backup-folder.js).
+   moments clés selon Compute.backupPrompt, envoi par la feuille de partage
+   (app/ctrl/backup-send.js), reprise par fusion (app/ctrl/backup-import.js).
+   Ordinateur : dossier automatique (app/ctrl/backup-folder.js).
    ========================================================================== */
 
 (function () {
@@ -50,43 +51,18 @@
     B.refreshPill();
   };
 
-  // --- Envoi (iPhone) ------------------------------------------------------------
-
-  function pendingYears() {
-    const years = new Set(sync.pending.filter((k) => /^\d{4}-/.test(k)).map((k) => Number(k.slice(0, 4))));
-    if (!years.size) years.add(new Date().getFullYear());
-    return Array.from(years).sort();
-  }
-
-  function sent() {
-    Compute.syncSent(sync, Date.now());
-    S.setLastMergedAt(new Date().toISOString());
-    saveSync();
-    A.state.banner = null;
-    R.closeSheet();
-    A.render();
-    R.toast("Copie envoyée. L'ordinateur la reprendra à sa prochaine ouverture.");
-  }
-
-  function share() {
-    const years = pendingYears();
-    const files = years.map((y) => new File([JSON.stringify(S.buildYearExport(y), null, 2)], AS.fileName(y), { type: "application/json" }));
-    if (typeof navigator.canShare === "function" && navigator.canShare({ files })) {
-      navigator.share({ files }).then(sent, (e) => { if (e.name !== "AbortError") R.toast(`Envoi impossible : ${e.message}`); });
-      return;
-    }
-    years.forEach((y) => S.exportYearToJsonFile(y)); // navigateur sans partage : téléchargement
-    sent();
-  }
-
-  function openSheet(kind, extra) {
-    const s = R.buildBackupSheet(kind, Object.assign(info(), extra || {}), handlers);
-    R.openSheet({ title: s.title, body: s.body });
-  }
+  // Fenêtres de la copie (render/backup.js) ; l'envoi est dans app/ctrl/backup-send.js.
+  const sheetOf = (kind, extra) => R.buildBackupSheet(kind, Object.assign(info(), extra || {}), handlers);
+  B.info = info;
+  B.sheetBody = (kind, extra) => sheetOf(kind, extra).body;
+  B.openSheet = function openSheet(kind, extra) {
+    const s = sheetOf(kind, extra);
+    return R.openSheet({ title: s.title, body: s.body });
+  };
 
   const handlers = {
-    onSend: () => openSheet("sending"),
-    onShare: share,
+    onSend: () => B.openSending(),
+    onShare: () => B.share(),
     onImport: () => { R.closeSheet(); A.state.banner = null; B.importFile(); },
     onNoNew: () => { Compute.syncSnoozeImport(sync, Date.now()); saveSync(); B.dismiss("D'accord. La question reviendra dans une semaine."); },
     onLater: () => { Compute.syncSnoozeSend(sync, Date.now()); saveSync(); B.dismiss("D'accord. Rappel dans 3 jours."); },
@@ -100,7 +76,7 @@
     R.toast(message);
   };
 
-  B.openMenu = () => openSheet("menu");
+  B.openMenu = () => B.openSheet("menu");
   B.buildProfileCard = () => R.buildBackupCard(info(), handlers);
   B.buildBanner = (kind) => R.buildBackupBanner(kind, info(), handlers);
 
@@ -127,14 +103,14 @@
       return;
     }
     if (prompt.kind === "toast") {
-      R.toast(`Journée terminée. ${F.cap(F.plural(info().pendingDays, "jour"))} pas encore envoyé${info().pendingDays > 1 ? "s" : ""} dans iCloud.`, [{ label: "Envoyer ma copie", run: () => openSheet("sending") }]);
+      R.toast(`Journée terminée. ${F.cap(F.plural(info().pendingDays, "jour"))} pas encore envoyé${info().pendingDays > 1 ? "s" : ""} dans iCloud.`, [{ label: "Envoyer ma copie", run: () => B.openSending() }]);
     } else if (prompt.kind === "banner") {
       A.state.banner = prompt.type === "import" ? "import" : "send";
       A.render();
     } else {
       Compute.syncPrompted(sync, A.todayIso());
       saveSync();
-      openSheet(prompt.type === "send-day" ? "send-old" : prompt.type, { monthName });
+      B.openSheet(prompt.type === "send-day" ? "send-old" : prompt.type, { monthName });
     }
   };
 })();

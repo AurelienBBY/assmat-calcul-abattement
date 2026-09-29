@@ -43,6 +43,8 @@ function loadApp() {
     "app/lib/compute/prefill.js",
     "app/lib/compute/month-view.js",
     "app/lib/compute/punch.js",
+    "app/lib/compute/onboarding.js",
+    "app/lib/compute/review.js",
     "app/lib/compute/backup-rules.js",
     "app/lib/storage/device.js"
   ].forEach((rel) => {

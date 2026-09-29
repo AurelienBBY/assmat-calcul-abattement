@@ -52,6 +52,11 @@
     return `abattement-assmat-${Number(year)}.json`;
   };
 
+  /** Fichier à part des photos des fiches de présence (réécrit seulement quand une photo change). */
+  A.fichesFileName = function fichesFileName(year) {
+    return `abattement-assmat-${Number(year)}-fiches.json`;
+  };
+
   function getDir() {
     if (!A.isSupported()) return Promise.resolve(null);
     return kvGet(DIR_KEY).catch(() => null);
@@ -79,15 +84,15 @@
     return (await dir.queryPermission({ mode: "readwrite" })) === "granted";
   };
 
-  /** Écrit la sauvegarde d'année. Silencieux : ne demande jamais de permission. */
-  A.writeYear = async function writeYear(year, dataObj) {
+  /** Écrit un fichier du dossier. Silencieux : ne demande jamais de permission. */
+  A.writeText = async function writeText(name, text) {
     const status = await A.getStatus();
     if (status !== "ready") return { status };
     try {
       const dir = await getDir();
-      const handle = await dir.getFileHandle(A.fileName(year), { create: true });
+      const handle = await dir.getFileHandle(name, { create: true });
       const writable = await handle.createWritable();
-      await writable.write(JSON.stringify(dataObj, null, 2));
+      await writable.write(text);
       await writable.close();
       return { status: "ok" };
     } catch (e) {
@@ -96,17 +101,19 @@
     }
   };
 
-  /** Lit la sauvegarde d'année du dossier (null si absente ou inaccessible). */
-  A.readYear = async function readYear(year) {
+  /** Lit un fichier du dossier (null si absent ou inaccessible). */
+  A.readText = async function readText(name) {
     const status = await A.getStatus();
     if (status !== "ready") return null;
     try {
       const dir = await getDir();
-      const handle = await dir.getFileHandle(A.fileName(year));
-      const file = await handle.getFile();
-      return await file.text();
+      const handle = await dir.getFileHandle(name);
+      return await (await handle.getFile()).text();
     } catch (e) {
       return null; // fichier pas encore créé : normal la première fois
     }
   };
+
+  A.writeYear = (year, dataObj) => A.writeText(A.fileName(year), JSON.stringify(dataObj, null, 2));
+  A.readYear = (year) => A.readText(A.fileName(year));
 })();

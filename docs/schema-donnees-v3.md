@@ -1,6 +1,6 @@
 # Schéma des données — v3 (lot 12)
 
-Tout est stocké dans le navigateur (localStorage) et voyage dans le fichier de sauvegarde d'année `abattement-assmat-AAAA.json`.
+Tout est stocké dans le navigateur (localStorage) et voyage dans le fichier de sauvegarde d'année `abattement-assmat-AAAA.json`. Les photos des fiches de présence, trop lourdes pour localStorage, sont dans IndexedDB et voyagent dans un second fichier, `abattement-assmat-AAAA-fiches.json`.
 
 ```mermaid
 classDiagram
@@ -73,6 +73,20 @@ classDiagram
   SauvegardeAnnee --> Mois
   SauvegardeAnnee --> Profil
   SauvegardeAnnee --> ReglagesAnnee
+  class PhotoFiche {
+    IndexedDB abmat-fiches, magasin photos
+    key : "AAAA-MM:recto" ou "AAAA-MM:verso"
+    year
+    blob : JPEG ≤ 1800 px, ou null (supprimée)
+    updatedAt
+  }
+  class SauvegardeFiches {
+    format = "abmat-fiches"
+    version = 1
+    year
+    photos : clé → updatedAt, data (image en base64) ou null
+  }
+  SauvegardeFiches --> PhotoFiche
 ```
 
 ## Règles
@@ -84,7 +98,8 @@ classDiagram
 - **SMIC** : un seul par année. `ReglagesAnnee.smic` s'il est réglé, sinon le barème de `config.js`, sinon « SMIC manquant » (aucun abattement calculé en silence).
 - **Mois** : `verified` (jours vérifiés) et `done` (mois terminé) portent l'état du mois ; `off` marque un jour non travaillé ; `meetings` sert aux heures supplémentaires.
 - **Jour pointé** (au moins une présence `punched`) : heures réelles, jamais modifiées par une action de masse (semaine de congés, journée habituelle) ni par un changement d'horaires.
-- **Hors sauvegarde, propre à l'appareil** : `abmat:declaredYears` (repère « déclarée ») et `abmat:sync` (copie manuelle sur iPhone : `lastSentAt`, `lastImportAt`, `pending` = jours/mois modifiés depuis le dernier envoi, `lastPromptOn`, `sendSnoozeUntil`, `importSnoozeUntil`). Effacer une année (`S.eraseYear`) retire ses mois, ses réglages et son repère « déclarée ».
+- **Photos de la fiche de présence** : une par face (recto = 1er au 15, verso = 16 à la fin du mois), dans IndexedDB (`S.fiches`, `storage/fiches.js`). Une photo supprimée devient une pierre tombale (`blob: null` + `updatedAt`) pour que la suppression gagne aussi à la fusion. Fusion du fichier `abmat-fiches` : la photo la plus récente gagne, clé par clé (`Compute.fichesMergePlan`). Le fichier n'est réécrit (ordinateur) ou envoyé (iPhone, clé `AAAA-MM-fiche` dans `pending`) que si une photo a changé.
+- **Hors sauvegarde, propre à l'appareil** : `abmat:declaredYears` (repère « déclarée »), `abmat:sync` (copie manuelle sur iPhone : `lastSentAt`, `lastImportAt`, `pending` = jours/mois modifiés depuis le dernier envoi, `lastPromptOn`, `sendSnoozeUntil`, `importSnoozeUntil`), `abmat:ui:onboarding` (`{ step, done }` : étape atteinte de la mise en route) et `abmat:ui:tips` (bulles d'aide déjà lues). Effacer une année (`S.eraseYear` + `S.fiches.eraseYear`) retire ses mois, ses réglages, ses photos et son repère « déclarée ».
 
 ## Migrations (automatiques, à la lecture)
 

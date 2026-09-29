@@ -91,6 +91,15 @@
 
   // --- Effacer une année (RGPD : ne garder que le nécessaire) --------------------
 
+  function erase(y) {
+    S.eraseYear(y);
+    R.closeSheet();
+    S.fiches.eraseYear(y).then(() => {
+      A.photos.forget(y);
+      R.toast(`${y} est effacée de cet appareil.`);
+    }, (e) => R.toast(`${y} est effacée, sauf les photos des fiches : ${e.message}`));
+  }
+
   A.eraseYearSheet = function eraseYearSheet() {
     const h = R.h;
     const years = A.storedYears();
@@ -102,9 +111,9 @@
     ]);
     const confirm = (y) => sheet.setBody([
       h("p", null, h("b", { text: `Effacer définitivement ${y} de cet appareil ?` })),
-      h("p", { class: "small", text: "Les jours, les fiches de paie et les réglages de cette année seront supprimés. Votre copie de secours (le fichier) n'est pas touchée : supprimez-la vous-même si besoin." }),
+      h("p", { class: "small", text: "Les jours, les fiches de paie, les photos des fiches de présence et les réglages de cette année seront supprimés. Votre copie de secours (le fichier) n'est pas touchée : supprimez-la vous-même si besoin." }),
       h("div", { class: "row" }, [
-        h("button", { type: "button", class: "btn btn-primary", text: `Oui, effacer ${y}`, on: { click: () => { S.eraseYear(y); R.closeSheet(); R.toast(`${y} est effacée de cet appareil.`); } } }),
+        h("button", { type: "button", class: "btn btn-primary", text: `Oui, effacer ${y}`, on: { click: () => erase(y) } }),
         h("button", { type: "button", class: "btn", text: "Annuler", on: { click: list } })
       ])
     ]);

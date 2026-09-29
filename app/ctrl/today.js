@@ -3,7 +3,7 @@
    ----------------------------------------------------------------------------
    Chaque geste note l'heure du téléphone (compute/punch.js), enregistre et
    propose « Annuler ». L'horloge et les heures sup. avancent toutes seules.
-   Premier lancement (aucune donnée) : carte de bienvenue.
+   Mise en route laissée « pour plus tard » : carte pour la reprendre.
    ========================================================================== */
 
 (function () {
@@ -120,12 +120,7 @@
   };
 
   function render(main) {
-    if (!A.hasAnyData()) {
-      live = null;
-      main.appendChild(R.buildWelcome({ onStart: () => A.go("profile"), onRestore: A.backup.importFile, onHelp: A.openHelp }));
-      return;
-    }
-    const built = R.buildToday(model(), handlers);
+    const built = R.buildToday(Object.assign(model(), { resume: A.onboardingCard() }), handlers);
     live = { clock: built.clock, hs: built.hs, minute: F.nowMin(new Date()), iso: A.todayIso() };
     main.appendChild(built.node);
   }

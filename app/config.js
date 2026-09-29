@@ -44,6 +44,21 @@ window.ABMAT_CONFIG = {
   },
 
   /**
+   * Fiche de présence du CCAS, photographiée puis redressée (paysage) : un
+   * jour par colonne, recto du 1er au 15 (15 colonnes), verso du 16 à la fin
+   * (16 colonnes). Place des colonnes des jours dans la largeur de la photo,
+   * et haut du tableau sous le titre, dans sa hauteur (mesurés sur une vraie
+   * fiche le 2026-09-29) : « Vérifier le mois » zoome sur les colonnes de la
+   * semaine. À ajuster si le modèle de fiche change.
+   */
+  attendanceSheet: {
+    daysLeft: 0.21,
+    daysRight: 0.94,
+    tableTop: 0.05,
+    columns: { recto: 15, verso: 16 }
+  },
+
+  /**
    * Table des SMIC horaires BRUTS au 1er janvier, par année.
    * Clé = année (nombre), valeur = SMIC horaire brut (nombre).
    *

@@ -43,26 +43,9 @@
     return h("div", { class: "card pk" }, [h("div", { class: "pk-top" }, [h("b", { text: "Réunion" }), h("span", { class: "muted", text: "compte pour les heures sup." })]), body]);
   }
 
-  /** Bienvenue (premier lancement : aucun enfant, aucune donnée). */
-  R.buildWelcome = function buildWelcome(handlers) {
-    return h("div", { class: "today" }, h("div", { class: "card welcome" }, [
-      h("h2", { text: "Bienvenue" }),
-      h("p", { text: "Cet outil calcule l'abattement des assistantes maternelles et le montant à déclarer aux impôts. Tout reste sur cet appareil." }),
-      h("ol", null, [
-        h("li", { text: "Dans « Mon profil », indiquez votre nom et les enfants que vous accueillez, avec leurs horaires habituels." }),
-        h("li", { text: "Chaque jour, pointez ici les arrivées et les départs — ou, une fois par mois, vérifiez le calendrier de « Mon mois »." }),
-        h("li", { text: "Au printemps, « Mon année » vous donne le montant à déclarer." })
-      ]),
-      h("div", { class: "row" }, [
-        h("button", { type: "button", class: "btn btn-primary", text: "Commencer : mon profil", on: { click: handlers.onStart } }),
-        h("button", { type: "button", class: "btn", text: "J'ai une copie de secours", on: { click: handlers.onRestore } })
-      ]),
-      h("button", { type: "button", class: "btn btn-quiet", text: "Voir les points d'attention", on: { click: handlers.onHelp } })
-    ]));
-  };
-
   /**
-   * @param {Object} m - modèle (cf. app/ctrl/today.js)
+   * @param {Object} m - modèle (cf. app/ctrl/today.js) ; m.resume : carte
+   *   « La mise en route vous attend » ou null
    * @param {Object} handlers
    * @returns {{node:Node, clock:Node, hs:Node}}
    */
@@ -86,6 +69,7 @@
     R.fillTodayHs(hs, m);
     return { clock, hs, node: h("div", { class: "today" }, [
       head,
+      m.resume,
       m.cards.length ? m.cards.map((k) => R.buildPunchCard(k, m.full, handlers)) : h("p", { class: "muted", text: "Aucun enfant prévu aujourd'hui." }),
       relaisPart(m, handlers),
       others,

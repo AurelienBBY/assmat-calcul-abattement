@@ -14,7 +14,7 @@ Application **100 % statique et hors-ligne** : un fichier HTML + JS/CSS vanilla,
 
 Double-clic sur `index.html` (ou `open index.html`). Il n'y a ni build ni installation. Toute modification JS/CSS est visible au rechargement de la page. En production, l'outil est servi par **GitHub Pages** (déploiement automatique à chaque push sur `main`) en PWA — le service worker (`sw.js`, réseau d'abord / cache en secours) ne s'active qu'en http(s), jamais en ouverture locale.
 
-**Vérification manuelle minimale après toute modification**, sur ordinateur ET en largeur iPhone (onglets en bas) : premier lancement vierge (carte de bienvenue) ; **Aujourd'hui** (arrivée, départ, absence, relais, début/fin de réunion, heures sup. « pour l'instant ») ; **Mon mois** (calendrier, fiche du jour avec une heure corrigée et une absence, « Semaine de congés » puis « Annuler », fiche de paie « 1 850,40 », « J'ai terminé ») ; **Mon année** (montant = récap, tuile → mois, « Préparer AAAA ») ; **Mon profil** (changer des horaires « à partir du… », ajouter un enfant) ; impression du mois, du récap et du dossier complet (Cmd+P) ; mode sombre ; aucun défilement horizontal à 390 px.
+**Vérification manuelle minimale après toute modification**, sur ordinateur ET en largeur iPhone (onglets en bas) : premier lancement vierge (mise en route jusqu'à « C'est prêt », puis « Plus tard » en cours de route → carte de reprise) ; **Aujourd'hui** (arrivée, départ, absence, relais, début/fin de réunion, heures sup. « pour l'instant ») ; **Mon mois** (calendrier, fiche du jour avec une heure corrigée et une absence, « Semaine de congés » puis « Annuler », photo du recto puis « Vérifier avec la fiche » jusqu'au bout, fiche de paie « 1 850,40 », « J'ai terminé » sans photo → rappel) ; **Mon année** (montant = récap, tuile → mois, « Préparer AAAA ») ; **Mon profil** (changer des horaires « à partir du… », ajouter un enfant) ; impression du mois, du récap et du dossier complet (Cmd+P) ; mode sombre ; aucun défilement horizontal à 390 px.
 
 ## Règles métier (source de vérité)
 
@@ -32,32 +32,43 @@ Double-clic sur `index.html` (ou `open index.html`). Il n'y a ni build ni instal
 Pas de modules ES : **l'ordre des `<script>` dans `index.html` fait office de système de modules** (schéma : `docs/architecture-ecrans.md`). Chaque fichier est une IIFE qui augmente un namespace global et **lève une erreur** si une dépendance manque.
 
 ```
-window.ABMAT_CONFIG      app/config.js              SMIC par année, coefficient, maxChildrenAtOnce, overtime
+window.ABMAT_CONFIG      app/config.js              SMIC par année, coefficient, maxChildrenAtOnce, overtime,
+                                                    attendanceSheet (colonnes de la fiche photographiée)
 window.ABMAT.utils       app/lib/utils.js           dates, fériés, HH:MM, montants FR (parseMoneyFR)
 window.ABMAT.calc        app/lib/calc.js            abattement jour/mois, maxSimultaneous — pur, testé
 window.ABMAT.overtime    app/lib/overtime.js        heures sup. + phrases d'explication — pur, testé
 window.ABMAT.storage     app/lib/storage/*.js       core, month (v3), profile (v2), year-settings,
-                                                    declared (+ eraseYear), sync (export/fusion), device
+                                                    declared (+ eraseYear), sync (export/fusion),
+                                                    device (état de l'appareil, mise en route, bulles),
+                                                    fiches (photos, IndexedDB)
 window.ABMAT.autosave    app/lib/autosave.js        dossier de copie automatique (File System Access)
+window.ABMAT.image       app/lib/image.js           photo compressée (JPEG ≤ 1800 px, canvas)
 window.ABMAT.compute     app/lib/compute/*.js       children, year-recap, month-print, prefill,
                                                     month-view (calendrier), punch (pointeuse),
-                                                    backup-rules (rappels iPhone) — purs, testés
+                                                    onboarding (formulaire enfant, mois passés),
+                                                    review (semaines, face et zoom de la fiche,
+                                                    tableau de la semaine, fusion des photos), backup-rules (rappels iPhone) — purs, testés
 window.ABMAT.render      app/lib/render/*.js        DOM uniquement, 1 fichier = 1 zone d'écran
 window.ABMAT.app         app/ctrl/*.js              état, données, gestes (1 fichier = 1 écran)
-(démarrage)              app/app.js                 onglets, aide, onglet de départ, service worker
+(démarrage)              app/app.js                 onglets, aide, mise en route ou onglet de départ, SW
 ```
 
 - **`render/`** reçoit un modèle + des handlers et construit le DOM avec `R.h(tag, props, enfants)` (`render/dom.js`) : **jamais de donnée dans `innerHTML`**. Formats français dans `render/format.js` (`R.fmt`). Fenêtres et message du bas dans `render/sheet.js` (`R.openSheet`, `R.toast`).
-- **`app/ctrl/`** : `ctx.js` (état `A.state`, lecture/écriture, instantanés « Annuler », `A.render`), un contrôleur par écran (`today`, `month` + `day` pour la fiche du jour, `year` + « Préparer AAAA », `profile` + `profile-edit`), `backup` + `backup-folder` (copie de secours), `print`. Chaque écran s'enregistre dans `A.views[onglet] = { render(main) }`.
+- **`app/ctrl/`** : `ctx.js` (état `A.state`, lecture/écriture, instantanés « Annuler »), `shell.js` (`A.go`, `A.render`, bulles d'aide), un contrôleur par écran (`today`, `month` + `month-calendar` + `day` pour la fiche du jour + `review` pour « Vérifier le mois », `year` + « Préparer AAAA », `profile` + `profile-edit`, `onboarding` + `onboarding-kids` + `onboarding-steps`), `backup` + `backup-send` + `backup-folder` + `backup-import` (copie de secours), `photos` (photos de la fiche), `print`. Chaque écran s'enregistre dans `A.views[onglet] = { render(main) }`.
 - **Chaque geste relit le stockage, modifie, enregistre** (`A.loadMonth` → `Compute.*` → `A.saveMonth`) : aucune copie en mémoire qui pourrait diverger. Seule la fiche du jour garde le mois ouvert le temps de la fenêtre (modale).
 - **« Annuler »** (`A.snapshot` + `A.undoable`) restaure par un **nouvel enregistrement** (nouvel `updatedAt`) — jamais par écriture brute d'un ancien état, sinon la fusion entre appareils ré-appliquerait la version annulée.
 
-### Écrans (lot 12, 2026-09-29)
+### Écrans (lots 12 et 13, 2026-09-29)
 
-4 onglets `[data-tab]` (en haut sur ordinateur, en bas sur iPhone ≤ 640 px), état `A.state.tab` = `today | month | year | profile`, non mémorisé : ouverture sur **Aujourd'hui** sur téléphone et au premier lancement (carte de bienvenue si aucune donnée), **Mon mois** sur ordinateur. `A.state.year` est partagé entre Mon mois et Mon année.
+4 onglets `[data-tab]` (en haut sur ordinateur, en bas sur iPhone ≤ 640 px), état `A.state.tab` = `today | month | year | profile`, non mémorisé : ouverture sur **Aujourd'hui** sur téléphone, **Mon mois** sur ordinateur. `A.state.year` est partagé entre Mon mois et Mon année. Deux modes **plein écran** (`body.is-focus` masque les onglets) : la mise en route (`A.state.onboarding`) et « Vérifier le mois » (`A.state.review`).
+
+- **Mise en route** (`ctrl/onboarding*.js`, `render/onboarding.js` + `onb-kids.js` + `onb-steps.js`, logique `compute/onboarding.js`) : ouverte au premier lancement (aucune donnée et `abmat:ui:onboarding` pas `done`). Accueil (0), Vous (1), les enfants (2 : d'aujourd'hui, puis partis depuis janvier à partir de février), l'année (3 : SMIC confirmé → réglage `null` = barème, corrigé → valeur), les mois passés (4 : `Compute.pastMonthsPlan`, **seuls les mois vides**), la copie (5), c'est prêt (6). Chaque réponse est enregistrée aussitôt (profil, réglages, mois) ; un enfant ajouté est reporté par `A.rescheduleChild`. « Modifier » un enfant n'est proposé que si le formulaire le représente sans perte (sinon : Mon profil). « Plus tard » → carte de reprise sur Aujourd'hui (`A.onboardingCard`) ; « ? » → « Revoir la mise en route ».
+- **Bulles d'aide** (`render/tip.js`, `ctrl/shell.js`) : une par onglet en haut de l'écran, jusqu'à « Compris » (`abmat:ui:tips`) ; aucune tant qu'une mise en route commencée n'est pas terminée.
 
 - **Aujourd'hui** (`ctrl/today.js`, `render/today.js` + `punch-card.js`) : pointeuse à l'heure du téléphone (`compute/punch.js`), heures corrigeables, heures sup. recalculées chaque minute (horloge et encart seulement, jamais pendant une saisie).
-- **Mon mois** (`ctrl/month.js`, `render/calendar.js` + `month-panel.js` + `overtime-view.js`) : calendrier `Compute.buildCalendar` (habituel / modifié / pointé / non travaillé / férié / à venir / aujourd'hui), « Semaine de congés », samedis (réunions), 3 étapes (`verified`, fiche de paie, `done`), heures sup. des jours passés (`A.hsDays`), résultat du mois. **Fiche du jour** (`ctrl/day.js`, `render/day-sheet.js` + `day-kid.js`) : une heure modifiée met à jour les chiffres sans reconstruire (`R.fillDayFigures`), le reste reconstruit.
+- **Mon mois** (`ctrl/month.js` + `month-calendar.js`, `render/calendar.js` + `month-panel.js` + `fiche-card.js` + `overtime-view.js`) : calendrier `Compute.buildCalendar` (habituel / modifié / pointé / non travaillé / férié / à venir / aujourd'hui), « Semaine de congés », samedis (réunions), 3 étapes (`verified`, fiche de paie, `done` — sans aucune photo, rappel « Joindre la fiche / Terminer quand même »), photos de la fiche de présence, heures sup. des jours passés (`A.hsDays`), résultat du mois.
+- **Photos de la fiche de présence** (`ctrl/photos.js`, `storage/fiches.js`, `lib/image.js`, `render/photo-viewer.js`) : une fiche recto verso par mois, un jour par colonne (recto = 1er au 15, verso = 16 à la fin), par enfant une ligne A (arrivée) et D (départ) aux heures réelles. Une photo par face, compressée, dans IndexedDB ; prise en portrait, elle est redressée d'un quart de tour à gauche (la fiche est en paysage), « Tourner » corrige le sens. `A.photos` garde en mémoire les URL du mois affiché (l'impression, déclenchée par `beforeprint`, ne peut pas attendre IndexedDB) ; `A.photos.ensure` les charge, puis l'écran se redessine. Remplacer, supprimer (pierre tombale, « Annuler »), voir en grand (zoom : pincer, Ctrl + molette, − / +). Aucune lecture automatique (OCR écarté).
+- **Vérifier le mois** (`ctrl/review.js`, `render/review.js` + `review-table.js`, `compute/review.js`) : semaines de `Compute.reviewWeeks` (lundi–vendredi + samedis saisis, jusqu'à aujourd'hui). La photo s'ouvre sur la face du jour du milieu (`Compute.weekPage`, modifiable) et zoomée sur les 7 colonnes de la semaine (`Compute.weekFocus`, géométrie `ABMAT_CONFIG.attendanceSheet` mesurée sur une vraie fiche) ; sur iPhone elle reste en haut pendant que le tableau défile. En dessous, la semaine **disposée comme la fiche** (`Compute.reviewGrid` : A/D par enfant dans l'ordre du profil, un jour par colonne) ; toucher une case ouvre la fiche du jour ; marquées : cases modifiées pendant la vérification, cases à vérifier à la minute (moins de 8 h 15 prévues : sous 8 h, prorata) et journées à moins de 30 min des 10 h (heures sup.). À la fin, `verified = true` et heures sup. calculées du mois, à comparer avec la ligne « Heures supplémentaires » de la fiche. **Fiche du jour** (`ctrl/day.js`, `render/day-sheet.js` + `day-kid.js`) : une heure modifiée met à jour les chiffres sans reconstruire (`R.fillDayFigures`), le reste reconstruit.
 - **Mon année** (`ctrl/year.js`, `render/year-view.js` + `prepare-year.js`) : montant de `Compute.computeYearRecap`, tuiles des 12 mois, avec/sans abattement, réglages, documents, « Préparer AAAA » (SMIC, enfants qui continuent → date de départ au 31/12, relais).
 - **Mon profil** (`ctrl/profile.js` + `profile-edit.js`, `render/profile.js` + `profile-child.js`) : identité, relais de l'année, enfants (horaires en vigueur, historique, changement « à partir du … »), copie de secours, effacer une année. Un changement d'enfant est reporté par `Compute.rescheduleMonth` sur les mois enregistrés : **seuls les jours encore « comme d'habitude » d'un mois non terminé bougent** — jamais un jour pointé, modifié à la main ou non travaillé.
 - **Actions de masse** (« Semaine de congés », « Journée habituelle ») : un **jour pointé n'est jamais touché** (heures réelles).
@@ -66,7 +77,8 @@ window.ABMAT.app         app/ctrl/*.js              état, données, gestes (1 f
 ### Copie de secours (iCloud Drive, décision 2026-09-29)
 
 - **Ordinateur** (`AS.isSupported()` : File System Access) : dossier choisi une fois (iCloud Drive via « iCloud pour Windows », ou OneDrive) ; `abattement-assmat-AAAA.json` réécrit 0,6 s après chaque modification, relu et fusionné à l'ouverture de chaque année (`ctrl/backup-folder.js`). Aucun rappel.
-- **iPhone** (pas d'accès aux dossiers) : « Envoyer ma copie » (feuille de partage → Enregistrer dans Fichiers → iCloud Drive → Remplacer) et « Reprendre la copie » (fichier choisi → fusion). Rappels selon `Compute.backupPrompt` : question de reprise à l'ouverture (dernière reprise > 7 jours, « Non » = une semaine de calme), envoi proposé au mois terminé, en fin de journée pointée (≥ 3 jours en attente, simple message) et à l'ouverture si la copie a plus de 7 jours (« Plus tard » = 3 jours). **Au plus une fenêtre par jour, jamais pendant qu'un enfant est pointé présent** (bandeau à la place). État dans `abmat:sync` (`storage/device.js`, jamais exporté) ; `A.saveMonth` y note les jours réellement modifiés (« 5 j. à envoyer »).
+- **iPhone** (pas d'accès aux dossiers) : « Envoyer ma copie » (feuille de partage → Enregistrer dans Fichiers → iCloud Drive → Remplacer) et « Reprendre la copie » (fichier choisi → fusion). Les fichiers sont **préparés à l'avance** (`ctrl/backup-send.js` : bouton « Préparation de la copie… » puis « Envoyer ») car l'iPhone refuse d'ouvrir la feuille de partage après une attente. Rappels selon `Compute.backupPrompt` : question de reprise à l'ouverture (dernière reprise > 7 jours, « Non » = une semaine de calme), envoi proposé au mois terminé, en fin de journée pointée (≥ 3 jours en attente, simple message) et à l'ouverture si la copie a plus de 7 jours (« Plus tard » = 3 jours). **Au plus une fenêtre par jour, jamais pendant qu'un enfant est pointé présent** (bandeau à la place). État dans `abmat:sync` (`storage/device.js`, jamais exporté) ; `A.saveMonth` y note les jours réellement modifiés (« 5 j. à envoyer »).
+- **Photos** : fichier séparé `abattement-assmat-AAAA-fiches.json` (format `abmat-fiches` v1), réécrit (ordinateur) ou joint à l'envoi (iPhone, clé `AAAA-MM-fiche` dans `pending`) seulement quand une photo change ; fusion photo par photo, la plus récente gagne.
 
 ### Design (lot 12, maquette validée le 2026-09-29)
 
@@ -76,7 +88,7 @@ Fonds **opaques**, teinte **Prune** (`--hue: 322`), mode sombre automatique (`pr
 
 ### Impression
 
-On n'imprime jamais l'écran : `ctrl/print.js` construit un document dans `#print-doc` — relevé du mois (`compute/month-print.js` → `render/print-month.js`), récap de l'année (`render/print-year.js`) ou **dossier complet** (`render/print-full-year.js` : récap puis chaque mois renseigné, un par page). `90-print.css` masque tout le reste (`body > :not(#print-doc)`) et met en page en serif. Cmd/Ctrl+P construit le document de l'onglet affiché (`beforeprint`), **sauf** si un bouton vient de le faire (drapeau levé à `afterprint`) — sans ce drapeau, `window.print()` (qui déclenche lui-même `beforeprint`) remplacerait le dossier complet par le seul récap.
+On n'imprime jamais l'écran : `ctrl/print.js` construit un document dans `#print-doc` — relevé du mois (`compute/month-print.js` → `render/print-month.js`) suivi des photos de sa fiche (`render/print-photo.js`, une page par face), récap de l'année (`render/print-year.js`) ou **dossier complet** (`render/print-full-year.js` : récap puis chaque mois renseigné et ses photos). Les boutons attendent le chargement des photos avant `window.print()`. `90-print.css` masque tout le reste (`body > :not(#print-doc)`) et met en page en serif. Cmd/Ctrl+P construit le document de l'onglet affiché (`beforeprint`), **sauf** si un bouton vient de le faire (drapeau levé à `afterprint`) — sans ce drapeau, `window.print()` (qui déclenche lui-même `beforeprint`) remplacerait le dossier complet par le seul récap.
 
 ### Invariant : une seule source de calcul
 
@@ -93,7 +105,10 @@ abmat:settings:AAAA    réglages d'une année : smic (ou null), relais
 abmat:declaredYears    années marquées « déclarées » (repère local, hors export)
 abmat:lastMergedAt     dernière synchro (arbitrage des conflits de fusion)
 abmat:sync             état de la copie manuelle sur CET appareil (hors export)
+abmat:ui:onboarding    mise en route : { step, done } (hors export)
+abmat:ui:tips          bulles d'aide déjà lues (hors export)
 IndexedDB abmat-autosave : le dossier de copie choisi (ordinateur)
+IndexedDB abmat-fiches   : photos des fiches ("AAAA-MM:recto|verso", blob ou null = supprimée)
 ```
 
 Un mois v3 : `days` est un **objet indexé par date ISO** (jamais un tableau) ; chaque jour `{ off, children: { c1: { absent, motif, slots: [{in,out}] ≤ 3, punched }, r1: { …, relais, name } }, meetings: [{in,out}] }`. Les jours et présences vides sont retirés à la lecture. Les migrations v1/v2 → v3 (clés `"1"` → `"c1"`, `smicOverride` abandonné) et profil v1 → v2 sont faites **à la lecture** ; tout nouveau changement de schéma incrémente `version` et ajoute sa migration au même endroit.
@@ -114,6 +129,7 @@ Un mois v3 : `days` est un **objet indexé par date ISO** (jamais un tableau) ; 
 
 - **Lots 1 à 5, 9, 10 (2026-07)** : récap annuel recalculé depuis le stockage, calculs sans lecture du DOM, export/fusion de l'année, profil et pré-remplissage, navigation par piliers, dossier complet.
 - **Revue du 2026-09-29** : corrections P0 (case 1AJ calculée sur l'année, dossier complet, montants en texte, défauts visuels, textes).
+- **Lot 13 (2026-09-29)** : mise en route guidée, bulles d'aide, photos de la fiche de présence (IndexedDB, copie séparée, impression), « Vérifier le mois », rappel de la fiche à « J'ai terminé ». Vérifié dans Chromium (iPhone 13, ordinateur, mode sombre, reprise d'une copie avec photos, impression).
 - **Lot 12 (2026-09-29)** : données v3 (enfants datés, horaires versionnés, relais, jours non travaillés, réunions, SMIC par année), heures supplémentaires, puis nouvelle interface (pointeuse, calendrier, fiche du jour, passage d'année, copie iCloud avec rappels, effacer une année). Vérifié dans Chromium piloté par Playwright (ordinateur, iPhone 13, mode sombre, impression, anciennes données v1/v2) — scripts ponctuels, non conservés dans le dépôt.
 
 Copies **obsolètes** à ne jamais éditer : `~/Downloads/assmat-refacto*` et le dossier « Assmat - copie archivee 2026-04 » sur le Bureau.
@@ -126,7 +142,7 @@ Suite sans dépendance basée sur le runner intégré de node — lancer depuis 
 node --test
 ```
 
-Le harnais (`tests/harness.js`) charge les modules réels (config, utils, calc, overtime, storage, compute — même ordre qu'`index.html`) avec `window`/`localStorage` simulés. Pas de DOM dans cette suite : les écrans se vérifient dans le navigateur (section Lancement). Couverture (87 tests) : bornes 8 h / prorata / créneaux invalides / simultanéité (`calc`), heures sup. et explications (`overtime`), stockage v3, migrations et fusion (`storage`, `merge`), profil daté, pré-remplissage et report d'un changement d'horaires (`profile`), récap et case 1AJ annuelle (`year-recap`, `month-print`), calendrier (`month-view`), pointeuse (`punch`), rappels de copie (`backup-rules`), années déclarées et effacement (`declared-years`), montants (`utils`). Tout changement du moteur doit faire tourner cette suite avant commit.
+Le harnais (`tests/harness.js`) charge les modules réels (config, utils, calc, overtime, storage, compute — même ordre qu'`index.html`) avec `window`/`localStorage` simulés. Pas de DOM dans cette suite : les écrans se vérifient dans le navigateur (section Lancement). Couverture (100 tests) : bornes 8 h / prorata / créneaux invalides / simultanéité (`calc`), heures sup. et explications (`overtime`), stockage v3, migrations et fusion (`storage`, `merge`), profil daté, pré-remplissage et report d'un changement d'horaires (`profile`), récap et case 1AJ annuelle (`year-recap`, `month-print`), calendrier (`month-view`), pointeuse (`punch`), rappels de copie (`backup-rules`), années déclarées et effacement (`declared-years`), montants (`utils`), formulaire enfant et mois passés de la mise en route (`onboarding`), semaines à vérifier, face et zoom de la fiche, tableau de la semaine et fusion des photos (`review`), étape de la mise en route et bulles d'aide (`ui-state`). IndexedDB (photos) et l'appareil photo se vérifient dans le navigateur. Tout changement du moteur doit faire tourner cette suite avant commit.
 
 Sémantique historique à connaître : deux horaires *tous deux* imparsables valent « empty » (case vide), pas « invalid » — documenté dans `calc.test.js`.
 
