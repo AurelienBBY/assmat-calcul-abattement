@@ -22,6 +22,8 @@ main{ max-width: var(--maxw); margin: 0 auto; padding: 20px; display: grid; gap:
 .bottomtabs{ display: none; }
 
 .footer-note{ max-width: var(--maxw); margin: 0 auto; padding: 8px 20px 28px; color: var(--muted); font-size: 13px; }
+/* Mise en route, vérification du mois : plein écran, sans les onglets. */
+body.is-focus .top .tabs, body.is-focus .bottomtabs{ display: none; }
 
 @media (max-width: 640px){
   .top{ padding: 10px 14px; padding-top: calc(10px + env(safe-area-inset-top, 0px)); gap: 10px; }
@@ -36,4 +38,5 @@ main{ max-width: var(--maxw); margin: 0 auto; padding: 20px; display: grid; gap:
   .bottomtabs button{ border: 0; background: transparent; display: grid; justify-items: center; gap: 2px; padding: 6px 2px; font-size: 12.5px; font-weight: 650; color: var(--muted); border-radius: 10px; }
   .bottomtabs button svg{ width: 24px; height: 24px; }
   .bottomtabs button[aria-current="page"]{ color: var(--accent); }
+  body.is-focus main{ padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
 }

@@ -18,16 +18,20 @@
   }
   const U = window.ABMAT.utils;
 
-  function downloadJson(filename, obj) {
-    const blob = new Blob([JSON.stringify(obj, null, 2)], { type: "application/json;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
+  /** Télécharge un fichier (File) : navigateur sans feuille de partage. */
+  S.downloadFile = function downloadFile(file) {
+    const url = URL.createObjectURL(file);
     const a = document.createElement("a");
     a.href = url;
-    a.download = filename;
+    a.download = file.name;
     document.body.appendChild(a);
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
+  };
+
+  function downloadJson(filename, obj) {
+    S.downloadFile(new File([JSON.stringify(obj, null, 2)], filename, { type: "application/json;charset=utf-8" }));
   }
 
   /**

@@ -90,7 +90,10 @@
           h("li", null, ["Choisissez ", h("b", { text: "iCloud Drive" }), ", puis le dossier ", h("b", { text: "Abattement" }), "."]),
           h("li", null, ["Touchez ", h("b", { text: "Enregistrer" }), ". Si l'iPhone le demande, choisissez ", h("b", { text: "Remplacer" }), "."])
         ]),
-        h("div", { class: "row" }, [btn("Envoyer", hd.onShare, true), btn("Annuler", R.closeSheet)])] };
+        h("div", { class: "row" }, [
+          h("button", { type: "button", class: "btn btn-primary", text: i.preparing ? "Préparation de la copie…" : "Envoyer", disabled: i.preparing, on: { click: hd.onShare } }),
+          btn("Annuler", R.closeSheet)
+        ])] };
       default: throw new Error(`R.buildBackupSheet : fenêtre inconnue « ${kind} ».`);
     }
   };

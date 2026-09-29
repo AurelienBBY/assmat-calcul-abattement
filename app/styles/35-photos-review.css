@@ -1,0 +1,58 @@
+/* ============================================================================
+   35-photos-review.css — Photos de la fiche de présence, « Vérifier le mois »
+   ----------------------------------------------------------------------------
+   Miniatures recto / verso (Mon mois), visionneuse avec zoom, vérification
+   semaine par semaine : la photo à gauche sur ordinateur, au-dessus sur
+   iPhone. Uniquement les jetons de 00-vars-base.css.
+   ========================================================================== */
+
+/* --- Fiche du mois : une ligne par face --------------------------------------- */
+.fslot{ display: flex; gap: 12px; align-items: flex-start; }
+.fslot-txt{ display: grid; gap: 4px; min-width: 0; }
+.fthumb{ width: 72px; height: 92px; border-radius: 8px; border: 1px solid var(--line); overflow: hidden; flex: 0 0 auto; padding: 0; background: var(--surface-2); }
+.fthumb img{ width: 100%; height: 100%; object-fit: cover; display: block; }
+.fthumb.is-empty{ display: grid; place-items: center; color: var(--muted); }
+.fthumb.is-empty svg{ width: 26px; height: 26px; }
+
+/* --- Visionneuse : glisser pour déplacer, pincer ou − / + pour zoomer --------- */
+.pv{ display: grid; gap: 6px; min-width: 0; }
+.pv-pane{ overflow: auto; max-height: 62vh; border-radius: var(--r-sm); background: var(--surface-2); touch-action: pan-x pan-y; overscroll-behavior: contain; }
+.pv-pane img{ display: block; width: 100%; max-width: none; user-select: none; -webkit-user-select: none; }
+.pv-tools{ display: flex; align-items: center; justify-content: center; gap: 10px; }
+.pv-btn{ width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); font-size: 22px; font-weight: 700; line-height: 1; }
+.pv-zoom{ min-width: 4.5em; text-align: center; font-size: 14px; color: var(--muted); }
+.pv-full .pv-pane{ max-height: 72vh; }
+
+/* --- Choix à deux ou trois boutons (recto / verso, haut / bas) --------------- */
+.seg{ display: inline-flex; background: var(--surface-2); border-radius: 999px; padding: 3px; }
+.seg button{ border: 0; background: transparent; border-radius: 999px; padding: 6px 14px; min-height: 36px; font-weight: 650; font-size: 15px; color: var(--muted); }
+.seg button[aria-pressed="true"]{ background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+
+/* --- Vérifier le mois ---------------------------------------------------------- */
+.rv{ display: grid; gap: 14px; min-width: 0; }
+.rv-head{ display: grid; gap: 6px; }
+.rv-row{ display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.rv-bars{ display: grid; gap: 4px; }
+.rv-bars span{ height: 5px; border-radius: 3px; background: var(--surface-2); }
+.rv-bars span.on{ background: var(--accent); }
+.rv-body{ display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.rv-photo{ display: grid; gap: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 10px; position: sticky; top: 84px; min-width: 0; }
+.rv-tools{ display: flex; justify-content: space-between; gap: 6px; flex-wrap: wrap; }
+.rv-missing{ display: grid; gap: 10px; justify-items: start; padding: 12px 4px; }
+.rv-list{ display: grid; gap: 8px; align-content: start; min-width: 0; }
+.rv-day{ display: grid; grid-template-columns: 7em minmax(0, 1fr) auto; gap: 8px; align-items: center; min-height: 52px; text-align: left; border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 10px 12px; font-size: 15px; }
+.rv-day:hover{ background: var(--surface-2); }
+.rv-day.is-mod{ border: 2px solid var(--accent); padding: 9px 11px; }
+.rv-d{ font-weight: 800; }
+.rv-tag{ font-size: 12px; font-weight: 700; color: var(--accent); }
+.rv-foot{ display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+.rv-end{ max-width: 560px; width: 100%; margin: 0 auto; }
+
+@media (max-width: 640px){
+  .rv-body{ grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .rv-photo{ position: static; padding: 8px; }
+  .rv-photo .pv-pane{ max-height: 40vh; }
+  .rv-day{ grid-template-columns: 5.6em minmax(0, 1fr) auto; }
+  .rv-foot{ display: grid; }
+  .rv-foot .btn-primary{ order: -1; }
+}

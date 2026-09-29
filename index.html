@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="app/styles/10-shell.css" />
   <link rel="stylesheet" href="app/styles/20-calendar.css" />
   <link rel="stylesheet" href="app/styles/30-month-side.css" />
+  <link rel="stylesheet" href="app/styles/35-photos-review.css" />
   <link rel="stylesheet" href="app/styles/40-today.css" />
   <link rel="stylesheet" href="app/styles/50-sheet.css" />
   <link rel="stylesheet" href="app/styles/60-profile-year.css" />
@@ -73,6 +74,7 @@
 
   <!-- Reprendre une copie de secours (fichier choisi) -->
   <input id="backup-file" type="file" accept=".json,application/json" multiple hidden />
+  <input id="photo-file" type="file" accept="image/*" hidden />
 
   <!-- Document imprimé (seul contenu visible à l'impression, construit au moment d'imprimer) -->
   <div id="print-doc" aria-hidden="true"></div>
@@ -90,6 +92,7 @@
   <script src="app/lib/storage/declared.js"></script>
   <script src="app/lib/storage/sync.js"></script>
   <script src="app/lib/autosave.js"></script>
+  <script src="app/lib/image.js"></script>
 
   <script src="app/lib/compute/children.js"></script>
   <script src="app/lib/compute/year-recap.js"></script>
@@ -101,14 +104,18 @@
   <script src="app/lib/compute/review.js"></script>
   <script src="app/lib/compute/backup-rules.js"></script>
   <script src="app/lib/storage/device.js"></script>
+  <script src="app/lib/storage/fiches.js"></script>
 
   <!-- Rendu (DOM uniquement, jamais de calcul) -->
   <script src="app/lib/render/dom.js"></script>
   <script src="app/lib/render/format.js"></script>
   <script src="app/lib/render/sheet.js"></script>
+  <script src="app/lib/render/photo-viewer.js"></script>
   <script src="app/lib/render/overtime-view.js"></script>
   <script src="app/lib/render/calendar.js"></script>
   <script src="app/lib/render/month-panel.js"></script>
+  <script src="app/lib/render/fiche-card.js"></script>
+  <script src="app/lib/render/review.js"></script>
   <script src="app/lib/render/day-kid.js"></script>
   <script src="app/lib/render/day-sheet.js"></script>
   <script src="app/lib/render/punch-card.js"></script>
@@ -122,13 +129,19 @@
   <script src="app/lib/render/print-month.js"></script>
   <script src="app/lib/render/print-year.js"></script>
   <script src="app/lib/render/print-full-year.js"></script>
+  <script src="app/lib/render/print-photo.js"></script>
 
   <!-- Écrans : état, données, gestes -->
   <script src="app/ctrl/ctx.js"></script>
   <script src="app/ctrl/backup.js"></script>
+  <script src="app/ctrl/backup-send.js"></script>
   <script src="app/ctrl/backup-folder.js"></script>
+  <script src="app/ctrl/backup-import.js"></script>
+  <script src="app/ctrl/photos.js"></script>
   <script src="app/ctrl/print.js"></script>
   <script src="app/ctrl/day.js"></script>
+  <script src="app/ctrl/review.js"></script>
+  <script src="app/ctrl/month-calendar.js"></script>
   <script src="app/ctrl/month.js"></script>
   <script src="app/ctrl/today.js"></script>
   <script src="app/ctrl/profile.js"></script>

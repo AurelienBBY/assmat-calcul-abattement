@@ -23,7 +23,7 @@
 
   const now = new Date();
   const A = window.ABMAT.app = {
-    state: { tab: "today", year: now.getFullYear(), monthIndex: now.getMonth(), hsOpen: false, banner: null },
+    state: { tab: "today", year: now.getFullYear(), monthIndex: now.getMonth(), hsOpen: false, banner: null, review: null, askFiche: false },
     views: {}
   };
 
@@ -138,6 +138,7 @@
   A.go = function go(tab, opts) {
     if (!TABS.includes(tab)) throw new Error(`A.go : onglet inconnu « ${tab} ».`);
     Object.assign(A.state, opts || {}, { tab });
+    if (tab !== "month") A.state.review = null;
     document.querySelectorAll("[data-tab]").forEach((b) => {
       if (b.dataset.tab === tab) b.setAttribute("aria-current", "page");
       else b.removeAttribute("aria-current");
@@ -151,6 +152,8 @@
     const main = document.getElementById("main");
     const focusId = document.activeElement && main.contains(document.activeElement) ? document.activeElement.id : "";
     R.clear(main);
+    // Vérification du mois : plein écran, sans les onglets.
+    document.body.classList.toggle("is-focus", Boolean(A.state.review && A.state.tab === "month"));
     if (A.state.banner) main.appendChild(A.backup.buildBanner(A.state.banner));
     A.views[A.state.tab].render(main);
     A.backup.refreshPill();
