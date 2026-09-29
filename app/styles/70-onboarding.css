@@ -1,0 +1,53 @@
+/* ============================================================================
+   70-onboarding.css — Mise en route guidée, bulles d'aide
+   ----------------------------------------------------------------------------
+   Une colonne étroite, une question par écran, gros bouton en bas (collé au
+   bas de l'écran sur iPhone). Uniquement les jetons de 00-vars-base.css.
+   ========================================================================== */
+
+.onb{ display: grid; gap: 14px; width: 100%; max-width: 620px; margin: 0 auto; min-width: 0; }
+.onb-top{ display: grid; gap: 8px; }
+.onb-row{ display: flex; align-items: center; gap: 8px; }
+.onb-label{ font-size: 15px; font-weight: 700; margin-right: auto; min-width: 0; }
+.onb-row .btn-quiet{ white-space: nowrap; }
+.onb-progress{ display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
+.onb-progress span{ height: 6px; border-radius: 3px; background: var(--surface-2); }
+.onb-progress span.on{ background: var(--accent); }
+.onb-title{ font-size: 26px; line-height: 1.15; }
+.lead{ font-size: 18px; }
+.onb-foot{ position: sticky; bottom: 0; display: grid; gap: 6px; background: var(--bg); padding-block: 10px calc(10px + env(safe-area-inset-bottom, 0px)); }
+.onb-foot .btn-big{ width: 100%; }
+.onb-steps{ margin: 0; padding-left: 22px; display: grid; gap: 6px; }
+.onb .field :is(input[type="text"], input[type="date"], select){ width: 100%; }
+
+/* Enfants : carte d'un enfant, formulaire */
+.onb-kid{ display: flex; gap: 12px; align-items: flex-start; border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; background: var(--surface); }
+.onb-av{ width: 38px; height: 38px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font-weight: 800; display: grid; place-items: center; flex: 0 0 auto; }
+.onb-kid-txt{ display: grid; gap: 2px; min-width: 0; flex: 1; }
+.daypick{ display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.daypick button{ border: 1px solid var(--line); background: var(--surface); border-radius: 12px; min-height: 44px; font-weight: 700; font-size: 15px; color: var(--muted); }
+.daypick button[aria-pressed="true"]{ background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+.onb-times{ display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 8px; align-items: center; }
+.onb-times input{ width: 100%; }
+.onb-perday{ display: grid; grid-template-columns: 6.5em minmax(0, 1fr); gap: 6px 8px; align-items: center; font-size: 15px; }
+.onb-sub{ border-left: 3px solid var(--accent-soft); padding-left: 12px; display: grid; gap: 8px; }
+
+/* Choix (SMIC, mois passés) et messages */
+.choice{ display: flex; gap: 12px; align-items: flex-start; border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; background: var(--surface); cursor: pointer; }
+.choice input{ width: 22px; height: 22px; margin-top: 1px; accent-color: var(--accent); flex: 0 0 auto; }
+.choice:has(input:checked){ border: 2px solid var(--accent); padding: 11px 13px; }
+.choice b, .choice .small{ display: block; }
+.onb-sel{ display: block; margin-top: 8px; }
+.note{ background: var(--surface-2); border-radius: 12px; padding: 10px 12px; font-size: 15px; }
+.note.ok{ background: var(--ok-soft); color: var(--ok); font-weight: 650; }
+.note.warn{ background: var(--warn-soft); }
+
+/* C'est prêt : le rythme d'utilisation ; carte de reprise (Aujourd'hui) */
+.onb-rhythm{ display: grid; gap: 10px; }
+.onb-rhythm .card{ gap: 4px; }
+.onb-resume{ border: 2px solid var(--accent); }
+
+/* Bulle d'aide, en haut de chaque onglet jusqu'à « Compris » */
+.tip{ position: relative; background: var(--accent); color: var(--accent-ink); border-radius: 14px; padding: 12px 14px; display: grid; gap: 8px; font-size: 16px; box-shadow: var(--shadow); }
+.tip::after{ content: ""; position: absolute; left: 28px; bottom: -8px; border: 8px solid transparent; border-bottom: 0; border-top-color: var(--accent); }
+.tip button{ justify-self: start; border: 0; background: var(--accent-ink); color: var(--accent); border-radius: 999px; padding: 7px 16px; min-height: 40px; font-weight: 700; }

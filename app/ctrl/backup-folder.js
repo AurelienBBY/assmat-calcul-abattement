@@ -105,10 +105,10 @@
     }, (e) => { if (e.name !== "AbortError") R.toast(`Dossier inaccessible : ${e.message}`); });
   };
 
-  /** Démarrage : état du dossier (ordinateur), puis rappel éventuel (iPhone). */
+  /** Démarrage : état du dossier (ordinateur), puis rappel éventuel (iPhone, pas pendant la mise en route). */
   B.init = function init() {
     B.refreshPill();
-    if (B.manual) { B.after("open"); return; }
+    if (B.manual) { if (!A.state.onboarding) B.after("open"); return; }
     AS.getStatus().then((status) => { setStatus(status); B.mergeFolder(A.state.year); });
   };
 })();
