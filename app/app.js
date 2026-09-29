@@ -554,24 +554,21 @@
         };
     }
 
-    function onMoneyChange(chg) {
+    // Montant validé par render/payslip-inputs.js (U.parseMoneyFR) : jamais
+    // de valeur illisible ici.
+    function onMoneyChange(key, value) {
         if (!state.data) return;
-
-        // Compat : month-summary peut envoyer {net, irf} ou {netImposable, irf}
-        const netVal = (chg && typeof chg === "object")
-            ? (chg.netImposable ?? chg.net ?? 0)
-            : 0;
-        const irfVal = (chg && typeof chg === "object")
-            ? (chg.irf ?? 0)
-            : 0;
-
-        state.data.netImposable = Number.isFinite(Number(netVal)) ? Number(netVal) : 0;
-        state.data.irf = Number.isFinite(Number(irfVal)) ? Number(irfVal) : 0;
+        if (key !== "netImposable" && key !== "irf") {
+            throw new Error(`onMoneyChange : champ inconnu « ${key} ».`);
+        }
+        if (typeof value !== "number" || !Number.isFinite(value)) {
+            throw new Error(`onMoneyChange : montant invalide pour « ${key} ».`);
+        }
+        state.data[key] = value;
         saveNow();
 
         const monthAbatt = computeMonthTotalAbattAndRefreshTable();
         updateSummary(monthAbatt);
-        saveNow();
     }
 
     // --- Impression : gabarit dédié (#print-doc), seul visible à l'impression

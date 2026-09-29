@@ -2,17 +2,17 @@
    render/payslip-inputs.js — Saisie fiche de paie (mensuel)
    ----------------------------------------------------------------------------
    Rôle :
-   - Affiche la box "À renseigner (fiche de paie)" :
-     - Revenu net imposable
-     - Indemnités représentatives de frais (IRF)
-   - Émet les changements via onMoneyChange
-
-   Attendus dans le DOM :
-   - Le conteneur passé en paramètre (la box est rendue à l'intérieur)
+   - Deux montants du mois : revenu net imposable, indemnités (IRF)
+   - Champs texte (pas type="number") : la virgule et le point sont acceptés
+     quelle que soit la langue du navigateur — un champ number en anglais
+     lisait « 1234,56 » comme 123456, sans rien signaler.
+   - Le montant compris est réaffiché sous le champ ; une saisie illisible
+     est signalée et n'est PAS enregistrée (jamais de 0 silencieux).
+   - Émet onMoneyChange(clé, valeur) avec clé "netImposable" | "irf".
 
    Dépendances :
    - window.ABMAT.render (R) — initialisé par render/index.js
-   - window.ABMAT.utils (U) — helpers divers (fmt, etc.)
+   - window.ABMAT.utils (U) — parseMoneyFR, fmtEuro
    ========================================================================== */
 
 (function () {
@@ -28,130 +28,100 @@
     throw new Error("ABMAT.utils est requis avant ABMAT.render (charger utils.js en premier).");
   }
 
-  // ---------------------------------------------------------------------------
-  // Helpers
-  // ---------------------------------------------------------------------------
+  const FIELDS = [
+    { key: "netImposable", id: "abmat-net", label: "Revenu net imposable",
+      hint: "Ligne « Net imposable » de la fiche de paie (pas la somme virée sur le compte)." },
+    { key: "irf", id: "abmat-irf", label: "Indemnités représentatives de frais (IRF)",
+      hint: "Indemnités d'entretien et de repas. Si vous n'en avez pas, laissez vide." }
+  ];
 
-  function numOrNull(v) {
-    if (typeof v === "number" && Number.isFinite(v)) return v;
-    if (typeof v === "string") {
-      const s = v.trim().replace(",", ".");
-      if (!s) return null;
-      const n = Number.parseFloat(s);
-      return Number.isFinite(n) ? n : null;
-    }
-    return null;
+  // 1850.4 -> "1850,40" (valeur du champ) ; 0 -> "" (champ vide).
+  function toFieldText(value) {
+    const n = Number(value);
+    if (!Number.isFinite(n) || n === 0) return "";
+    return n.toFixed(2).replace(".", ",");
   }
 
-  function initialMoneyFromState(state) {
-    // Compat : on accepte plusieurs clés possibles
-    const net =
-      (state && (state.netImposable ?? state.net ?? state.monthNet ?? state.payslipNetImposable)) ??
-      0;
-    const irf = (state && (state.irf ?? state.monthIrf ?? state.payslipIrf)) ?? 0;
+  function buildRow(field, value, isFirst) {
+    const row = document.createElement("div");
+    row.className = "payslip-row" + (isFirst ? "" : " payslip-row--divider");
 
-    return {
-      net: (typeof net === "number" && Number.isFinite(net)) ? net : 0,
-      irf: (typeof irf === "number" && Number.isFinite(irf)) ? irf : 0,
-    };
+    const text = document.createElement("div");
+    text.className = "payslip-row__text";
+    const label = document.createElement("label");
+    label.className = "inline-label";
+    label.setAttribute("for", field.id);
+    label.textContent = field.label;
+    const hint = document.createElement("div");
+    hint.className = "hint payslip-hint";
+    hint.textContent = field.hint;
+    text.appendChild(label);
+    text.appendChild(hint);
+
+    const fieldWrap = document.createElement("div");
+    fieldWrap.className = "payslip-row__field";
+    const inputWrap = document.createElement("div");
+    inputWrap.className = "payslip-field--currency";
+    const input = document.createElement("input");
+    input.id = field.id;
+    input.type = "text";
+    input.inputMode = "decimal";
+    input.autocomplete = "off";
+    input.placeholder = "ex. 1850,40";
+    input.value = toFieldText(value);
+    input.setAttribute("aria-describedby", `${field.id}-parsed`);
+    const currency = document.createElement("span");
+    currency.className = "payslip-currency";
+    currency.textContent = "€";
+    inputWrap.appendChild(input);
+    inputWrap.appendChild(currency);
+
+    const parsed = document.createElement("div");
+    parsed.id = `${field.id}-parsed`;
+    parsed.className = "payslip-parsed";
+    parsed.setAttribute("aria-live", "polite");
+    fieldWrap.appendChild(inputWrap);
+    fieldWrap.appendChild(parsed);
+
+    row.appendChild(text);
+    row.appendChild(fieldWrap);
+    return { row, input, parsed };
   }
 
-  // ---------------------------------------------------------------------------
-  // Payslip inputs
-  // ---------------------------------------------------------------------------
+  function showParsed(el, result) {
+    el.classList.toggle("is-error", result.status === "invalid");
+    if (result.status === "ok") el.textContent = `Compris : ${U.fmtEuro(result.value)}`;
+    else if (result.status === "invalid") el.textContent = "Montant non compris, il n'est pas enregistré. Exemple : 1850,40";
+    else el.textContent = "";
+  }
 
   /**
-   * Crée la box DOM "À renseigner (fiche de paie)".
-   * @param {Object} state
-   * @returns {HTMLDivElement}
-   */
-  R.renderPayslipInputsBox = function renderPayslipInputsBox(state) {
-    const box = document.createElement("div");
-
-    // IMPORTANT: pas de sous-carte ici. La section HTML est déjà la carte principale.
-    box.className = "payslip-form";
-
-    box.innerHTML =
-      `<div class="payslip-row">` +
-      `  <div class="payslip-row__text">` +
-      `    <label class="inline-label" for="abmat-net">Revenu net imposable :</label>` +
-      `    <div class="hint payslip-hint">Montant "net imposable" du mois.</div>` +
-      `  </div>` +
-      `  <div class="payslip-row__field payslip-field--currency">` +
-      `    <input id="abmat-net" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0,00" />` +
-      `    <span class="payslip-currency">€</span>` +
-      `  </div>` +
-      `</div>` +
-      `<div class="payslip-row payslip-row--divider">` +
-      `  <div class="payslip-row__text">` +
-      `    <label class="inline-label" for="abmat-irf">Indemnités représentatives de frais (IRF) :</label>` +
-      `    <div class="hint payslip-hint">Si vous n’en avez pas, laissez 0.</div>` +
-      `  </div>` +
-      `  <div class="payslip-row__field payslip-field--currency">` +
-      `    <input id="abmat-irf" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0,00" />` +
-      `    <span class="payslip-currency">€</span>` +
-      `  </div>` +
-      `</div>` +
-      `<div class="payslip-warning hint" data-summary-warning style="display:none"></div>`;
-
-    // Pré-remplissage
-    const money = initialMoneyFromState(state);
-    const netEl = box.querySelector("#abmat-net");
-    const irfEl = box.querySelector("#abmat-irf");
-    if (netEl) netEl.value = String(money.net || 0);
-    if (irfEl) irfEl.value = String(money.irf || 0);
-
-    return box;
-  };
-
-  /**
-   * Rend la box dans un conteneur et branche les listeners.
+   * Rend les deux champs et branche les listeners.
    * @param {HTMLElement} container
-   * @param {Object} state
-   * @param {(a:any,b?:any)=>void} onMoneyChange
+   * @param {{netImposable:number, irf:number}} state
+   * @param {(key:"netImposable"|"irf", value:number)=>void} onMoneyChange
    */
   R.renderPayslipInputs = function renderPayslipInputs(container, state, onMoneyChange) {
     if (!container) return;
     container.innerHTML = "";
 
-    const box = R.renderPayslipInputsBox(state);
+    const box = document.createElement("div");
+    box.className = "payslip-form";
+
+    FIELDS.forEach((field, idx) => {
+      const { row, input, parsed } = buildRow(field, state[field.key], idx === 0);
+      box.appendChild(row);
+
+      // Retour immédiat pendant la frappe ; enregistrement à la validation du champ.
+      input.addEventListener("input", () => showParsed(parsed, U.parseMoneyFR(input.value)));
+      input.addEventListener("change", () => {
+        const result = U.parseMoneyFR(input.value);
+        showParsed(parsed, result);
+        if (result.status === "invalid") return;
+        onMoneyChange(field.key, result.status === "ok" ? result.value : 0);
+      });
+    });
+
     container.appendChild(box);
-
-    const netEl = box.querySelector("#abmat-net");
-    const irfEl = box.querySelector("#abmat-irf");
-
-    // Garde anti double-bind (si re-render)
-    const root = container;
-    if (root && root.dataset && root.dataset.abmatBound === "1") {
-      // On re-render quand même (container.innerHTML vient d'être vidé), donc on ne return pas.
-    }
-    if (root && root.dataset) root.dataset.abmatBound = "1";
-
-    const emit = () => {
-      const net = numOrNull(netEl ? netEl.value : "") ?? 0;
-      const irf = numOrNull(irfEl ? irfEl.value : "") ?? 0;
-
-      if (typeof onMoneyChange === "function") {
-        // On envoie un objet explicite (recommandé)
-        onMoneyChange({ netImposable: net, irf });
-      }
-    };
-
-    if (netEl) {
-      netEl.addEventListener("change", emit);
-      netEl.addEventListener("blur", emit);
-    }
-    if (irfEl) {
-      irfEl.addEventListener("change", emit);
-      irfEl.addEventListener("blur", emit);
-    }
   };
-
-  // ---------------------------------------------------------------------------
-  // Compat : alias pour anciens usages (la structure est modifiée mais fonctionnellement identique)
-  // ---------------------------------------------------------------------------
-
-  // Ancien helper utilisé dans month-summary.js (avant découpage)
-  R.renderMonthSummaryInputsBox = R.renderMonthSummaryInputsBox || R.renderPayslipInputsBox;
-
 })();

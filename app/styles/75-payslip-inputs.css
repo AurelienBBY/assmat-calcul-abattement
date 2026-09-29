@@ -51,9 +51,9 @@
   color: var(--muted);
 }
 
-#payslip-inputs .payslip-row__field { display: flex; justify-content: flex-end; }
+#payslip-inputs .payslip-row__field { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
 
-#payslip-inputs .payslip-row__field input[type="number"] {
+#payslip-inputs .payslip-row__field input[type="text"] {
   width: 100%;
   max-width: 260px;
   height: 42px;
@@ -66,25 +66,28 @@
   text-align: right;
 }
 
-#payslip-inputs .payslip-warning {
-  margin-top: 10px;
-  padding: 10px 14px;
-  border-radius: var(--radius-sm);
-  background: var(--warn-pale);
-  color: var(--warn);
+/* Montant compris (ou erreur) sous le champ */
+#payslip-inputs .payslip-parsed {
+  min-height: 1.2em;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ok);
+  text-align: right;
 }
+#payslip-inputs .payslip-parsed.is-error { color: var(--warn); }
 
 @media (max-width: 720px) {
   #payslip-inputs .payslip-row {
     grid-template-columns: 1fr;
     align-items: start;
   }
-  #payslip-inputs .payslip-row__field { justify-content: flex-start; }
-  #payslip-inputs .payslip-row__field input[type="number"] { max-width: 100%; }
+  #payslip-inputs .payslip-row__field { align-items: stretch; }
+  #payslip-inputs .payslip-row__field input[type="text"] { max-width: 100%; }
+  #payslip-inputs .payslip-parsed { text-align: left; }
 }
 
-#payslip-inputs .payslip-field--currency { position: relative; }
-#payslip-inputs .payslip-field--currency input[type="number"] { padding-right: 52px; }
+#payslip-inputs .payslip-field--currency { position: relative; width: 100%; max-width: 260px; }
+#payslip-inputs .payslip-field--currency input[type="text"] { padding-right: 52px; }
 
 #payslip-inputs .payslip-currency {
   position: absolute;

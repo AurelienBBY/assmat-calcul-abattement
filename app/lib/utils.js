@@ -139,6 +139,20 @@
     return (hh * 60) + mm;
   };
 
+  /**
+   * Lit un montant saisi à la française : « 1 234,56 », « 1234.56 », « 1234 ».
+   * Espaces ignorés (y compris insécables), virgule ou point décimal,
+   * 2 décimales au plus. Tout le reste est « invalid » : mieux vaut signaler
+   * qu'enregistrer un montant faux.
+   * @returns {{status:"empty"|"ok"|"invalid", value:number|null}}
+   */
+  U.parseMoneyFR = function parseMoneyFR(text) {
+    const raw = String(text).replace(/\s/g, "").replace(",", ".");
+    if (raw === "") return { status: "empty", value: null };
+    if (!/^\d+(\.\d{1,2})?$/.test(raw)) return { status: "invalid", value: null };
+    return { status: "ok", value: Number(raw) };
+  };
+
   U.round2 = function round2(n) {
     return Math.round(Number(n) * 100) / 100;
   };
