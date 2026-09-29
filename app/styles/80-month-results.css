@@ -3,7 +3,9 @@
    ----------------------------------------------------------------------------
    - La section #month-results-section est la carte principale.
    - Le renderer injecte un conteneur .month-results dans #month-results.
-   - On met en avant le "Revenu imposable après abattement" (héros) + détails.
+   - On met en avant le résultat du mois (héros) + détails.
+   - Les lignes de détail (.month-details, .summary-row) servent aussi au
+     récapitulatif annuel de Ma déclaration (#ma-declaration-content).
    ========================================================================== */
 
 #month-results-section { margin-top: 16px; }
@@ -24,7 +26,7 @@
   margin-top: 12px;
 }
 
-#month-results .month-details {
+:is(#month-results, #ma-declaration-content) .month-details {
   margin-top: 6px;
   padding: 14px 16px;
   border-radius: var(--radius-md);
@@ -34,19 +36,19 @@
   gap: 6px;
 }
 
-#month-results .month-details .summary-row + .summary-row {
+:is(#month-results, #ma-declaration-content) .month-details .summary-row + .summary-row {
   border-top: 1px solid oklch(0% 0 0 / .06);
   padding-top: 10px;
   margin-top: 6px;
 }
 
 #month-results .summary-result .hint,
-#month-results .month-details .hint { display: block; }
+:is(#month-results, #ma-declaration-content) .month-details .hint { display: block; }
 
 #month-results .summary-result .hint { grid-area: hint; margin-top: 0; }
-#month-results .month-details .hint { margin-top: 2px; }
+:is(#month-results, #ma-declaration-content) .month-details .hint { margin-top: 2px; }
 
-#month-results .month-details .summary-row > span:last-child {
+:is(#month-results, #ma-declaration-content) .month-details .summary-row > span:last-child {
   justify-self: end;
   padding: 6px 10px;
   border-radius: 999px;
@@ -57,7 +59,7 @@
   white-space: nowrap;
 }
 
-#month-results .month-details__title {
+:is(#month-results, #ma-declaration-content) .month-details__title {
   font-weight: 700;
   font-size: .95rem;
   color: var(--muted);
@@ -118,7 +120,7 @@
   justify-content: center;
 }
 
-#month-results .summary-row {
+:is(#month-results, #ma-declaration-content) .summary-row {
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
@@ -126,11 +128,11 @@
   padding: 6px 0;
 }
 
-#month-results .summary-row--muted { opacity: .85; }
-#month-results .summary-row > span:first-child strong { font-weight: 700; }
+:is(#month-results, #ma-declaration-content) .summary-row--muted { opacity: .85; }
+:is(#month-results, #ma-declaration-content) .summary-row > span:first-child strong { font-weight: 700; }
 
 @media (max-width: 720px) {
-  #month-results .summary-row { grid-template-columns: 1fr; align-items: start; }
+  :is(#month-results, #ma-declaration-content) .summary-row { grid-template-columns: 1fr; align-items: start; }
 
   #month-results .summary-result {
     grid-template-columns: 1fr;
@@ -139,6 +141,6 @@
   }
   #month-results .summary-result__note,
   #month-results .summary-result__value { justify-self: start; }
-  #month-results .month-details .summary-row > span:last-child { justify-self: start; }
+  :is(#month-results, #ma-declaration-content) .month-details .summary-row > span:last-child { justify-self: start; }
   #month-results .summary-result__value { font-size: 26px; }
 }

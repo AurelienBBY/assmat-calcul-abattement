@@ -180,6 +180,8 @@ input[type="time"]{
   transition: transform .15s ease, filter .15s ease;
 }
 .btn:hover{ filter: brightness(1.03); }
+/* Sans taille explicite, un <svg> prend 300×150 px et recouvre le bouton. */
+.btn svg{ width: 18px; height: 18px; flex: 0 0 auto; }
 .btn:active{ transform: scale(.97); }
 
 .btn-primary{

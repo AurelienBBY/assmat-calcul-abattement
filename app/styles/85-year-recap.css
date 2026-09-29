@@ -11,6 +11,15 @@
 
 .year-recap{ display: flex; flex-direction: column; gap: 20px; }
 
+/* Les cartes du récap sont des <section> : le centrage générique
+   (margin:auto, 10-layout-cards.css) les rétrécissait au contenu dans ce
+   flex (écran) ou les élargissait au tableau (débordement sur iPhone). */
+.year-recap > section{
+  margin: 0;
+  max-width: none;
+  min-width: 0;
+}
+
 .card__title{ margin: 0 0 14px; font-size: 16px; }
 
 /* --- Pilier "Ma déclaration" : sélecteur d'année + dossier complet -------- */

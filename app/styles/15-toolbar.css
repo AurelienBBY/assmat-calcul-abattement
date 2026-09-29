@@ -153,7 +153,17 @@
 }
 
 @media (max-width: 640px){
-  .pillar-tab{ padding: 6px 11px; font-size: 12px; }
+  /* Les 4 onglets ne tiennent pas sur une ligne (399 px pour 390) : grille
+     2 × 2 pleine largeur sous le titre, actions ancrées en haut à droite. */
+  .app-toolbar__actions{ position: absolute; top: 10px; right: 12px; }
+  .app-toolbar__left .intro{ display: none; }
+  .pillar-tabs{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    flex-basis: 100%;
+    border-radius: 18px;
+  }
+  .pillar-tab{ padding: 8px 6px; font-size: 13px; }
 }
 
 /* Contexte (ex: “• Février 2028”) */

@@ -112,10 +112,9 @@ R.renderPeriodSelector = function renderPeriodSelector(container, state, onPerio
   const tabs = document.createElement("div");
   tabs.className = "month-tabs";
 
-  const monthLabelShort = (name) => {
-    const s = String(name || "").trim();
-    return (s.slice(0, 3) || s).toUpperCase();
-  };
+  // Abréviations usuelles : les 3 premières lettres donnaient « JUI » pour
+  // juin ET juillet.
+  const MONTHS_SHORT = ["JANV.", "FÉVR.", "MARS", "AVR.", "MAI", "JUIN", "JUIL.", "AOÛT", "SEPT.", "OCT.", "NOV.", "DÉC."];
 
   const monthLabelFull = (name) => {
     return String(name || "").toUpperCase();
@@ -128,7 +127,7 @@ R.renderPeriodSelector = function renderPeriodSelector(container, state, onPerio
     btn.className = "month-tab" + (isActive ? " is-active" : "");
     btn.setAttribute("data-month", String(idx));
     btn.setAttribute("aria-label", name);
-    btn.textContent = isActive ? monthLabelFull(name) : monthLabelShort(name);
+    btn.textContent = isActive ? monthLabelFull(name) : MONTHS_SHORT[idx];
 
     btn.addEventListener("click", () => emit(idx));
     tabs.appendChild(btn);
