@@ -78,100 +78,73 @@
         }
     }
 
-    // Prénoms pour l'affichage du tableau (clé -> prénom non vide).
-    function getChildNamesMap() {
-        const map = {};
+    // --- Enfants du profil (ids stables c1, c2… ; r1… pour l'accueil relais) --
+
+    // Sans profil renseigné, l'outil reste utilisable avec « Enfant 1… 4 ».
+    const DEFAULT_CHILD_IDS = ["c1", "c2", "c3", "c4"];
+
+    // Enfants proposés à la saisie ce jour-là : accueillis à la date (profil).
+    function candidateChildIds(isoDate) {
         const p = getProfile();
-        for (let i = 1; i <= 3; i++) {
-            const k = String(i);
-            const c = p.children[k];
-            if (c && typeof c.name === "string" && c.name.trim() !== "") map[k] = c.name.trim();
-        }
-        return map;
+        if (p.children.length === 0) return DEFAULT_CHILD_IDS;
+        return window.ABMAT.compute.childrenActiveOn(p, isoDate).map((c) => c.id);
     }
 
-    // --- Config / forfait -----------------------------------------------------
-
-    function getCoefficient() {
-        return (window.ABMAT_CONFIG && window.ABMAT_CONFIG.coefficient)
-            ? Number(window.ABMAT_CONFIG.coefficient)
-            : 3;
+    // Lignes affichées pour un jour : enfants avec une donnée, sinon le 1er proposé.
+    function childIdsForDay(isoDate, dayObj) {
+        const withData = Object.keys((dayObj && dayObj.children) || {});
+        const ids = withData.length ? withData : candidateChildIds(isoDate).slice(0, 1);
+        return ids.slice().sort(window.ABMAT.compute.compareChildIds);
     }
 
-    function getSmicFromConfig(year) {
-        return (window.ABMAT_CONFIG && typeof window.ABMAT_CONFIG.getSmicHoraireBrut === "function")
-            ? window.ABMAT_CONFIG.getSmicHoraireBrut(year)
-            : null;
+    function canAddChild(isoDate, dayObj) {
+        const shown = childIdsForDay(isoDate, dayObj);
+        return candidateChildIds(isoDate).some((id) => !shown.includes(id));
     }
 
-    function getSmicInfo() {
-        const smicFromConfig = getSmicFromConfig(state.year);
-        // Si le SMIC est désormais renseigné dans le code (config), on n’a plus besoin
-        // d’une ancienne valeur manuelle enregistrée (souvent saisie quand le SMIC manquait).
-        // On la neutralise automatiquement pour éviter d’utiliser une valeur obsolète.
-        if (
-            state.data &&
-            typeof smicFromConfig === "number" && Number.isFinite(smicFromConfig) &&
-            typeof state.data.smicOverride === "number" && Number.isFinite(state.data.smicOverride)
-        ) {
-            state.data.smicOverride = null;
-            saveNow();
-        }
-        const override = (state.data && typeof state.data.smicOverride === "number" && Number.isFinite(state.data.smicOverride))
-            ? state.data.smicOverride
-            : null;
-
-        const smicEffective = (typeof override === "number") ? override : smicFromConfig;
-        return { smicFromConfig, smicEffective };
+    function childLabel(id, presence) {
+        return window.ABMAT.compute.childLabel(getProfile(), id, presence);
     }
 
+    // --- SMIC de l'année (un seul par année : réglage, sinon barème) ---------
+
+    // Forfait journalier par enfant de l'année affichée ; null si SMIC manquant.
+    function currentForfait() {
+        return window.ABMAT.compute.forfaitJourForYear(state.year);
+    }
+
+    // Pour les calculs : SMIC manquant → 0 € (l'écran affiche le champ SMIC).
     function computeForfaitJour() {
-        const coeff = getCoefficient();
-        const { smicEffective } = getSmicInfo();
-        const s = Number.isFinite(Number(smicEffective)) ? Number(smicEffective) : 0;
-
-        if (window.ABMAT_CONFIG && typeof window.ABMAT_CONFIG.computeForfaitJourFromSmic === "function") {
-            return U.round2(window.ABMAT_CONFIG.computeForfaitJourFromSmic(s, coeff));
-        }
-        return U.round2(s * coeff);
+        const f = currentForfait();
+        return (f === null) ? 0 : f;
     }
 
     // --- Données --------------------------------------------------------------
 
-    // Garantit la structure v2 d'un enfant précis d'un jour, et la retourne.
+    // Garantit la présence (schéma v3) d'un enfant un jour, et la retourne.
     function ensureChild(isoDate, childKey) {
-        if (!state.data.days[isoDate] || typeof state.data.days[isoDate] !== "object") {
-            state.data.days[isoDate] = { children: {} };
+        if (!state.data.days[isoDate]) {
+            state.data.days[isoDate] = { off: false, children: {}, meetings: [] };
         }
         const day = state.data.days[isoDate];
-        if (!day.children || typeof day.children !== "object") {
-            day.children = {};
+        if (!day.children[childKey]) {
+            day.children[childKey] = { absent: false, motif: "", slots: [], punched: false };
         }
-        if (!day.children[childKey] || typeof day.children[childKey] !== "object") {
-            day.children[childKey] = { absent: false, motif: "", slots: [] };
-        }
-        const child = day.children[childKey];
-        if (typeof child.absent !== "boolean") child.absent = false;
-        if (typeof child.motif !== "string") child.motif = "";
-        if (!Array.isArray(child.slots)) child.slots = [];
-        return child;
+        return day.children[childKey];
     }
 
     function dayHasData(dayObj) {
-        const children = (dayObj && dayObj.children) ? dayObj.children : {};
-        return ["1", "2", "3"].some((k) => {
+        if (!dayObj) return false;
+        if (dayObj.off === true || (dayObj.meetings && dayObj.meetings.length > 0)) return true;
+        const children = dayObj.children || {};
+        return Object.keys(children).some((k) => {
             const c = children[k];
-            if (!c) return false;
             if (c.absent === true) return true;
-            const slots = Array.isArray(c.slots) ? c.slots : [];
-            return slots.some((s) => s && ((s.in && s.in !== "") || (s.out && s.out !== "")));
+            return c.slots.some((s) => s.in !== "" || s.out !== "");
         });
     }
 
-    function isoToDate(iso) {
-        const parts = String(iso).split("-").map(Number);
-        return new Date(parts[0], parts[1] - 1, parts[2]);
-    }
+    const isoToDate = U.isoToDate;
 
     function shiftIso(iso, deltaDays) {
         const d = isoToDate(iso);
@@ -291,12 +264,13 @@
         const forfaitJour = computeForfaitJour();
         const day = C.computeDayTotal(state.data.days[isoDate], forfaitJour);
 
-        for (let child = 1; child <= 3; child++) {
-            const hoursEl = table.querySelector(`[data-hours][data-date="${isoDate}"][data-child="${child}"]`);
+        table.querySelectorAll(`[data-hours][data-date="${isoDate}"]`).forEach((hoursEl) => {
+            const child = hoursEl.getAttribute("data-child");
             const abattEl = table.querySelector(`[data-abatt][data-date="${isoDate}"][data-child="${child}"]`);
-            if (!hoursEl || !abattEl) continue;
+            if (!abattEl) return;
 
-            const r = day.perChild[String(child)];
+            // Ligne affichée sans donnée encore (enfant proposé) : rien à calculer.
+            const r = day.perChild[child] || { status: "empty" };
             if (r.status === "empty") {
                 hoursEl.textContent = "—";
                 abattEl.textContent = "—";
@@ -312,7 +286,7 @@
                 hoursEl.textContent = U.fmtHoursHM(r.hours);
                 abattEl.textContent = U.fmtEuro(r.abatt);
             }
-        }
+        });
 
         const totalEl = table.querySelector(`[data-day-total][data-date="${isoDate}"]`);
         if (totalEl) {
@@ -413,16 +387,20 @@
         loadAndRenderMonth(true);
     }
 
-    function onSmicOverrideChange(nextOverride) {
-        if (!state.data) return;
-        state.data.smicOverride = (typeof nextOverride === "number" && Number.isFinite(nextOverride)) ? nextOverride : null;
-        saveNow();
+    // SMIC de l'année saisi à la main (année absente du barème) : un seul par
+    // année, enregistré dans les réglages de l'année (storage/year-settings.js).
+    function onYearSmicChange(nextSmic) {
+        const settings = S.loadYearSettings(state.year);
+        settings.smic = (typeof nextSmic === "number" && Number.isFinite(nextSmic)) ? nextSmic : null;
+        if (S.saveYearSettings(settings)) {
+            updateSavedIndicator();
+            scheduleAutosave();
+        }
 
         // Le forfait change => recalcul table + récap
         renderAll(false);
         const monthAbatt = computeMonthTotalAbattAndRefreshTable();
         updateSummary(monthAbatt);
-        saveNow();
     }
 
     // Re-render structurel du tableau (créneaux ajoutés/retirés, absences…)
@@ -491,18 +469,13 @@
 
     function onChildAdd(chg) {
         if (!state.data) return;
-        // Révèle le premier enfant encore sans données (créneau vide matérialisé
-        // pour qu'il reste visible pendant la session).
-        for (let k = 1; k <= 3; k++) {
-            const key = String(k);
-            const day = state.data.days[chg.isoDate];
-            const c = (day && day.children) ? day.children[key] : null;
-            const visible = (key === "1") || (c && (c.absent === true || (Array.isArray(c.slots) && c.slots.length > 0)));
-            if (!visible) {
-                ensureChild(chg.isoDate, key).slots.push({ in: "", out: "" });
-                break;
-            }
-        }
+        // Révèle le premier enfant proposé ce jour-là qui n'est pas encore
+        // affiché (créneau vide matérialisé pour qu'il reste visible). La ligne
+        // affichée par défaut (sans donnée) est matérialisée aussi.
+        const shown = childIdsForDay(chg.isoDate, state.data.days[chg.isoDate]);
+        shown.forEach((id) => { if (!state.data.days[chg.isoDate] || !state.data.days[chg.isoDate].children[id]) ensureChild(chg.isoDate, id).slots.push({ in: "", out: "" }); });
+        const next = candidateChildIds(chg.isoDate).find((id) => !shown.includes(id));
+        if (next) ensureChild(chg.isoDate, next).slots.push({ in: "", out: "" });
         saveNow();
         rerenderTableAndRecalc();
     }
@@ -549,7 +522,9 @@
             year: state.year,
             monthIndex: state.monthIndex,
             data: state.data,
-            childNames: getChildNamesMap(),
+            childIdsForDay,
+            canAddChild,
+            childLabel,
             prefillAvailable: isPrefillAvailable()
         };
     }
@@ -573,30 +548,17 @@
 
     // --- Impression : gabarit dédié (#print-doc), seul visible à l'impression
 
-    function buildRulesLabels() {
-        const info = getSmicInfo();
-        const smic = Number.isFinite(Number(info.smicEffective)) ? Number(info.smicEffective) : null;
-        return {
-            year: state.year,
-            smicLabel: (smic !== null) ? U.fmtEuro(smic) : "non renseigné",
-            forfaitLabel: U.fmtEuro(computeForfaitJour())
-        };
-    }
 
-    // Règles d'une année donnée, indépendamment du mois affiché en
-    // Déclaration (utilisé par Ma déclaration : pas de smicOverride mensuel
-    // à ce niveau, seulement le SMIC de référence de l'année).
+    // Règles appliquées d'une année (un seul SMIC par année), pour les
+    // documents imprimés.
     function buildRulesLabelsForYear(year) {
-        const smic = getSmicFromConfig(year);
-        const smicNum = Number.isFinite(Number(smic)) ? Number(smic) : null;
-        const coeff = getCoefficient();
-        const forfait = (window.ABMAT_CONFIG && typeof window.ABMAT_CONFIG.computeForfaitJourFromSmic === "function")
-            ? U.round2(window.ABMAT_CONFIG.computeForfaitJourFromSmic(smicNum || 0, coeff))
-            : U.round2((smicNum || 0) * coeff);
+        const Compute = window.ABMAT.compute;
+        const smic = Compute.smicForYear(year);
+        const forfait = Compute.forfaitJourForYear(year);
         return {
             year,
-            smicLabel: (smicNum !== null) ? U.fmtEuro(smicNum) : "non renseigné",
-            forfaitLabel: U.fmtEuro(forfait)
+            smicLabel: (smic !== null) ? U.fmtEuro(smic) : "non renseigné",
+            forfaitLabel: (forfait !== null) ? U.fmtEuro(forfait) : "non calculable (SMIC manquant)"
         };
     }
 
@@ -624,7 +586,7 @@
         const model = Compute.buildMonthPrintModel(
             state.year, state.monthIndex, state.data, computeForfaitJour()
         );
-        model.rules = buildRulesLabels();
+        model.rules = buildRulesLabelsForYear(state.year);
         R.renderPrintMonth(root, model);
     }
 
@@ -639,14 +601,14 @@
         const rules = buildRulesLabelsForYear(year);
         const recap = Compute.computeYearRecap(year);
 
+        const forfaitJour = Compute.forfaitJourForYear(year);
         const monthModels = [];
         for (let m = 0; m < 12; m++) {
             const monthRecap = recap.months[m];
             if (!monthRecap || monthRecap.status === "vide") continue;
 
             const monthData = S.loadMonth(year, m).data;
-            const forfaitJour = Compute.forfaitJourForMonth(year, monthData);
-            const model = Compute.buildMonthPrintModel(year, m, monthData, forfaitJour);
+            const model = Compute.buildMonthPrintModel(year, m, monthData, (forfaitJour === null) ? 0 : forfaitJour);
             model.rules = rules;
             monthModels.push(model);
         }
@@ -947,7 +909,7 @@
         const hasAny = Object.keys(days).some((iso) => dayHasData(days[iso]));
         if (hasAny) return false;
         const Compute = window.ABMAT.compute;
-        return Compute.profileHasTemplates(getProfile());
+        return Object.keys(Compute.buildMonthDaysFromProfile(state.year, state.monthIndex, getProfile())).length > 0;
     }
 
     function onPrefill() {
@@ -962,11 +924,9 @@
 
     function computeAccueilContext() {
         const p = getProfile();
-        const hasIdentity = typeof p.name === "string" && p.name.trim() !== "";
-        const hasChildName = ["1", "2", "3"].some((k) => (
-            p.children[k] && typeof p.children[k].name === "string" && p.children[k].name.trim() !== ""
-        ));
-        const profileEmpty = !hasIdentity && !hasChildName;
+        const fullName = `${p.firstName} ${p.lastName}`.trim();
+        const hasChildName = p.children.some((c) => c.name !== "");
+        const profileEmpty = fullName === "" && !hasChildName;
 
         const now = new Date();
         const nowYear = now.getFullYear();
@@ -983,11 +943,10 @@
 
         const Compute = window.ABMAT.compute;
         const yearRecap = Compute.computeYearRecap(nowYear);
-        const activeChildren = ["1", "2", "3"]
-            .filter((k) => p.children[k] && p.children[k].active !== false).length;
+        const activeChildren = Compute.childrenActiveOn(p, U.toIsoDate(now)).length;
 
         return {
-            userName: hasIdentity ? p.name.trim().split(/\s+/)[0] : "",
+            userName: p.firstName || fullName.split(/\s+/)[0],
             profileEmpty,
             currentMonthLabel: `${getMonthLabelFR(nowMonthIndex).toLowerCase()} ${nowYear}`,
             currentDaysFilled: filledDays,
@@ -1169,22 +1128,15 @@
         }
 
         // Paramètres année (toujours visibles sous Déclaration)
-        const coeff = getCoefficient();
-        const forfaitJour = computeForfaitJour();
-
         R.renderYearRules(
             yearParamsEl,
             {
                 year: state.year,
-                coefficient: coeff,
-                forfaitJour,
-                smicOverride: state.data ? state.data.smicOverride : null
+                forfaitJour: currentForfait(),
+                smic: window.ABMAT.compute.smicForYear(state.year),
+                smicInConfig: window.ABMAT_CONFIG.getSmicHoraireBrut(state.year) !== null
             },
-            () => {
-                const info = getSmicInfo();
-                return { smicFromConfig: info.smicFromConfig, smicEffective: info.smicEffective };
-            },
-            onSmicOverrideChange
+            onYearSmicChange
         );
 
         R.renderMonthTable(tableEl, buildTableState(), tableHandlers);

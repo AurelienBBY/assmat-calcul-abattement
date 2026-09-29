@@ -92,7 +92,9 @@
 
   /**
    * @param {HTMLElement} container
-   * @param {Object} state {year, monthIndex, data} — data = mois v2 (source des valeurs)
+   * @param {Object} state {year, monthIndex, data, childIdsForDay, canAddChild, childLabel,
+   *   prefillAvailable} — data = mois v3 (source des valeurs) ; les trois fonctions
+   *   viennent d'app.js (enfants du profil accueillis à la date)
    * @param {Object} handlers voir en-tête
    */
   R.renderMonthTable = function renderMonthTable(container, state, handlers) {
@@ -101,7 +103,6 @@
     const year = state.year;
     const monthIndex = state.monthIndex;
     const days = (state.data && state.data.days) ? state.data.days : {};
-    const childNames = state.childNames || null;
     const holidays = U.getFrenchHolidays(year);
 
     const heading = document.createElement("p");
@@ -190,7 +191,9 @@
         dayNumLabel: `${U.pad2(day)}/${U.pad2(monthIndex + 1)}`,
         ferieName: holidays[isoDate] || null,
         dayObj: days[isoDate],
-        childNames
+        childIds: state.childIdsForDay(isoDate, days[isoDate]),
+        canAddChild: state.canAddChild(isoDate, days[isoDate]),
+        labelOf: state.childLabel
       }));
 
       // --- Fin de semaine : total hebdomadaire

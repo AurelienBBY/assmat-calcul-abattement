@@ -19,6 +19,12 @@
     throw new Error("ABMAT.utils est requis avant ABMAT.render (charger utils.js en premier).");
   }
 
+  const S = window.ABMAT.storage;
+  const Compute = window.ABMAT.compute;
+  if (!S || !Compute || !Compute.childLabel) {
+    throw new Error("render/print-common.js : storage et compute/children.js doivent être chargés avant.");
+  }
+
   R.print = R.print || {};
   const P = R.print;
 
@@ -29,42 +35,25 @@
     return node;
   };
 
-  // Profil « Mes informations » (clé abmat:profile — renseigné au lot 5).
-  P.getProfile = function getProfile() {
-    try {
-      const raw = localStorage.getItem("abmat:profile");
-      if (!raw) return null;
-      const p = JSON.parse(raw);
-      return (p && typeof p === "object") ? p : null;
-    } catch (e) {
-      return null;
-    }
-  };
+  // Profil « Mes informations » (storage/profile.js, v2) ; null si jamais renseigné.
+  P.getProfile = () => S.loadProfile();
 
-  P.childName = function childName(profile, key) {
-    const children = (profile && profile.children && typeof profile.children === "object")
-      ? profile.children
-      : null;
-    const entry = children ? children[key] : null;
-    const n = (typeof entry === "string")
-      ? entry.trim()
-      : (entry && typeof entry.name === "string") ? entry.name.trim() : "";
-    return n || `Enfant ${key}`;
-  };
+  // Prénom d'un enfant sur le relevé (relais : prénom saisi ce jour-là).
+  P.childName = (profile, key, entry) => Compute.childLabel(profile, key, entry);
 
   P.docHead = function docHead(docType, periodLabel) {
     const profile = P.getProfile();
     const head = P.el("div", "doc-head");
 
     const who = P.el("div", "doc-who");
-    if (profile && profile.name) {
-      who.appendChild(P.el("strong", null, profile.name));
+    const fullName = profile ? `${profile.firstName} ${profile.lastName}`.trim() : "";
+    if (fullName) {
+      who.appendChild(P.el("strong", null, fullName));
       who.appendChild(P.el("span", null, "Assistante maternelle agréée"));
     } else {
       who.appendChild(P.el("strong", null, "Assistante maternelle agréée"));
     }
     if (profile && profile.employer) who.appendChild(P.el("span", null, `Employeur : ${profile.employer}`));
-    if (profile && profile.mention) who.appendChild(P.el("span", null, profile.mention));
 
     const what = P.el("div", "doc-what");
     what.appendChild(P.el("div", "doc-type", docType));

@@ -67,7 +67,7 @@
               ? (day.ferie ? `${day.label} — Férié` : day.label)
               : "";
             tr.appendChild(P.el("td", "doc-day", dayLabel));
-            tr.appendChild(P.el("td", null, P.childName(profile, child.key)));
+            tr.appendChild(P.el("td", null, P.childName(profile, child.key, child)));
 
             let presence;
             let duree;

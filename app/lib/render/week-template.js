@@ -28,12 +28,11 @@
 
   /**
    * @param {HTMLElement} container
-   * @param {Object} child - entrée profil {name, active, week}
-   * @param {string} childKey - "1".."3" (pour les ids)
-   * @param {()=>void} onChange - appelé après chaque modification (le profil
-   *                              est muté directement)
+   * @param {Object} week - semaine type { "1".."5": {in,out} } (mutée directement)
+   * @param {string} childId - id de l'enfant (pour les ids des champs)
+   * @param {()=>void} onChange - appelé après chaque modification
    */
-  R.renderWeekTemplate = function renderWeekTemplate(container, child, childKey, onChange) {
+  R.renderWeekTemplate = function renderWeekTemplate(container, week, childId, onChange) {
     const wrap = document.createElement("div");
     wrap.className = "week-template";
 
@@ -54,12 +53,12 @@
       label.textContent = day.label;
       cell.appendChild(label);
 
-      const t = child.week[day.key];
+      const t = week[day.key];
 
       ["in", "out"].forEach((kind) => {
         const input = document.createElement("input");
         input.type = "time";
-        input.id = `wt-${childKey}-${day.key}-${kind}`;
+        input.id = `wt-${childId}-${day.key}-${kind}`;
         input.value = (typeof t[kind] === "string") ? t[kind] : "";
         input.setAttribute(
           "aria-label",
