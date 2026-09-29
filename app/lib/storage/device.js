@@ -6,6 +6,7 @@
      une donnée fiscale).
    - abmat:ui:onboarding : où en est la mise en route { step, done }.
    - abmat:ui:tips : bulles d'aide déjà vues (une par onglet).
+   - abmat:ui:install : « Continuer sans installer » choisi (écran d'installation).
    ========================================================================== */
 
 (function () {
@@ -58,6 +59,10 @@
     return { step: Number.isInteger(step) && step >= 0 ? step : 0, done: raw.done === true };
   };
   S.saveOnboarding = (state) => S.writeRaw(ONBOARDING_KEY, { step: state.step, done: state.done === true });
+
+  const INSTALL_KEY = "abmat:ui:install";
+  S.installSkipped = () => readUi(INSTALL_KEY, {}).skipped === true;
+  S.skipInstall = () => S.writeRaw(INSTALL_KEY, { skipped: true });
 
   S.tipSeen = (name) => readUi(TIPS_KEY, {})[name] === true;
   S.markTipSeen = (name) => S.writeRaw(TIPS_KEY, Object.assign(readUi(TIPS_KEY, {}), { [name]: true }));

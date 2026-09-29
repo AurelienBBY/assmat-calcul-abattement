@@ -60,6 +60,12 @@
     close: [["path", { d: "M6 6l12 12M18 6 6 18" }]],
     cloud: [["path", { d: "M7 18a5 5 0 1 1 .9-9.9A6 6 0 0 1 19 10a4 4 0 0 1-1 8z" }], ["path", { d: "m9 13 2 2 4-4" }]],
     camera: [["path", { d: "M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z" }], ["circle", { cx: 12, cy: 13, r: 3.5 }]],
+    // Écran d'installation : Partager (iPhone), Ajouter, menu ⋮ (Android), valider, téléphone
+    share: [["path", { d: "M12 3v12" }], ["path", { d: "m8 7 4-4 4 4" }], ["path", { d: "M8 11H6a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-2" }]],
+    plusSquare: [["rect", { x: 3, y: 3, width: 18, height: 18, rx: 4 }], ["path", { d: "M12 8v8M8 12h8" }]],
+    dots: [["circle", { cx: 12, cy: 5, r: 1.2 }], ["circle", { cx: 12, cy: 12, r: 1.2 }], ["circle", { cx: 12, cy: 19, r: 1.2 }]],
+    check: [["path", { d: "m5 12 5 5 9-10" }]],
+    phone: [["rect", { x: 6, y: 2, width: 12, height: 20, rx: 3 }], ["path", { d: "M11 18h2" }]],
     print: [["path", { d: "M6 9V2h12v7" }], ["path", { d: "M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" }], ["rect", { x: 6, y: 14, width: 12, height: 8 }]]
   };
 
