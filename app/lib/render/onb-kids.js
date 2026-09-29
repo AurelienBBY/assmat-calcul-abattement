@@ -52,6 +52,7 @@
         h("div", { class: "daypick", role: "group", "aria-labelledby": "onb-days" }, WEEKDAYS.map((d) =>
           h("button", { type: "button", text: F.DAYS[d].slice(0, 3), "aria-label": F.DAYS[d], "aria-pressed": String(f.days.includes(d)), on: { click: () => hd.onDay(d) } })))]),
       h("div", { class: "field" }, [h("span", { class: "lbl", text: f.before ? "Ses horaires habituels" : "Ses horaires habituels aujourd'hui" }),
+        h("span", { class: "help", text: "Ceux du contrat, écrits sous son prénom sur la fiche de présence." }),
         f.days.length > 1 ? check("onb-same", f.same, "Les mêmes tous ces jours-là", hd.onSame) : null, hours(f, hd)]),
       m.changeLabel ? check("onb-chg", f.chg.on, `Ses horaires ont changé ${m.changeLabel}`, (v) => hd.onChg("on", v, true)) : null,
       m.changeLabel && f.chg.on ? h("div", { class: "onb-sub" }, [

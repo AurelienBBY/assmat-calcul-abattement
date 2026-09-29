@@ -132,7 +132,7 @@
       if (K.phase === "now") {
         return {
           title: "Les enfants", body,
-          lead: now.length ? null : "Les enfants que vous accueillez aujourd'hui, un par un, avec leurs horaires habituels. Le calendrier et la pointeuse partent de là.",
+          lead: now.length ? null : "Les enfants que vous accueillez aujourd'hui, un par un, avec les horaires de leur contrat. Le calendrier et la pointeuse partent de là.",
           next: { label: now.length ? "C'est tout, continuer" : "Ajoutez au moins un enfant", disabled: !now.length || Boolean(K.form),
             onClick: () => { if (askBefore()) { A.onbKids.enter("before"); A.render(); window.scrollTo(0, 0); } else go(3); } },
           onBack: () => go(1)
