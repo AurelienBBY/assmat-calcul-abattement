@@ -30,7 +30,11 @@ function loadApp() {
     "app/config.js",
     "app/lib/utils.js",
     "app/lib/calc.js",
-    "app/lib/storage.js",
+    "app/lib/storage/core.js",
+    "app/lib/storage/month.js",
+    "app/lib/storage/profile.js",
+    "app/lib/storage/declared.js",
+    "app/lib/storage/sync.js",
     "app/lib/compute/year-recap.js",
     "app/lib/compute/month-print.js",
     "app/lib/compute/prefill.js"
