@@ -3,7 +3,8 @@
    ----------------------------------------------------------------------------
    Miniatures recto / verso (Mon mois), visionneuse avec zoom, vérification
    semaine par semaine : la photo à gauche sur ordinateur, au-dessus sur
-   iPhone. Uniquement les jetons de 00-vars-base.css.
+   iPhone, puis la semaine en tableau comme la fiche. Uniquement les jetons
+   de 00-vars-base.css.
    ========================================================================== */
 
 /* --- Fiche du mois : une ligne par face --------------------------------------- */
@@ -15,12 +16,12 @@
 .fthumb.is-empty svg{ width: 26px; height: 26px; }
 
 /* --- Visionneuse : glisser pour déplacer, pincer ou − / + pour zoomer --------- */
-.pv{ display: grid; gap: 6px; min-width: 0; }
+.pv{ position: relative; min-width: 0; }
 .pv-pane{ overflow: auto; max-height: 62vh; border-radius: var(--r-sm); background: var(--surface-2); touch-action: pan-x pan-y; overscroll-behavior: contain; }
 .pv-pane img{ display: block; width: 100%; max-width: none; user-select: none; -webkit-user-select: none; }
-.pv-tools{ display: flex; align-items: center; justify-content: center; gap: 10px; }
+.pv-tools{ position: absolute; right: 8px; bottom: 8px; display: flex; align-items: center; gap: 4px; padding: 3px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow); }
 .pv-btn{ width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); font-size: 22px; font-weight: 700; line-height: 1; }
-.pv-zoom{ min-width: 4.5em; text-align: center; font-size: 14px; color: var(--muted); }
+.pv-zoom{ min-width: 3.6em; text-align: center; font-size: 13px; color: var(--muted); }
 .pv-full .pv-pane{ max-height: 72vh; }
 
 /* --- Choix à deux ou trois boutons (recto / verso, haut / bas) --------------- */
@@ -40,19 +41,38 @@
 .rv-tools{ display: flex; justify-content: space-between; gap: 6px; flex-wrap: wrap; }
 .rv-missing{ display: grid; gap: 10px; justify-items: start; padding: 12px 4px; }
 .rv-list{ display: grid; gap: 8px; align-content: start; min-width: 0; }
-.rv-day{ display: grid; grid-template-columns: 7em minmax(0, 1fr) auto; gap: 8px; align-items: center; min-height: 52px; text-align: left; border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 10px 12px; font-size: 15px; }
-.rv-day:hover{ background: var(--surface-2); }
-.rv-day.is-mod{ border: 2px solid var(--accent); padding: 9px 11px; }
-.rv-d{ font-weight: 800; }
-.rv-tag{ font-size: 12px; font-weight: 700; color: var(--accent); }
+
+/* Tableau de la semaine, disposé comme la fiche : A / D par enfant, un jour par colonne */
+.rvt-box{ display: grid; gap: 8px; min-width: 0; }
+.rvt-wrap{ overflow-x: auto; min-width: 0; }
+.rvt{ width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 14px; font-variant-numeric: tabular-nums; background: var(--surface); }
+.rvt-c-name{ width: 5em; }
+.rvt-c-ad{ width: 1.6em; }
+.rvt th, .rvt td{ padding: 0; border: 1px solid var(--line); text-align: center; vertical-align: middle; }
+.rvt thead th{ border: 0; background: var(--bg); }
+.rvt tr.rvt-d > *, .rvt tr.rvt-a > th{ border-bottom: 2px solid var(--muted); }
+.rvt-name{ text-align: left !important; padding: 4px 6px !important; font-size: 13px; font-weight: 700; overflow-wrap: anywhere; background: var(--surface-2); }
+.rvt-ad{ font-size: 12px; font-weight: 700; color: var(--muted); background: var(--surface-2); }
+.rvt-day{ width: 100%; min-height: 44px; border: 0; background: transparent; display: grid; justify-items: center; padding: 2px 0 4px; font-size: 12px; color: var(--muted); }
+.rvt-day b{ font-size: 16px; color: var(--ink); }
+.rvt-tag{ font-size: 11px; font-weight: 700; color: var(--muted); }
+.rvt-tag.is-warn{ color: var(--warn); }
+.rvt-cell{ position: relative; width: 100%; min-height: 40px; border: 0; background: transparent; display: grid; place-content: center; gap: 1px; padding: 4px 2px; font-size: 14px; }
+.rvt-cell:hover{ background: var(--surface-2); }
+.rvt-cell.is-mod{ outline: 2px solid var(--accent); outline-offset: -2px; font-weight: 700; }
+.rvt-cell.is-abs{ min-height: 82px; color: var(--muted); font-style: italic; }
+.rvt-cell.is-min::after, .rvt-dot{ content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--warn); }
+.rvt-cell.is-min::after{ position: absolute; top: 3px; right: 3px; }
+.rvt-dot{ display: inline-block; vertical-align: middle; }
 .rv-foot{ display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
 .rv-end{ max-width: 560px; width: 100%; margin: 0 auto; }
 
 @media (max-width: 640px){
   .rv-body{ grid-template-columns: minmax(0, 1fr); gap: 12px; }
-  .rv-photo{ position: static; padding: 8px; }
-  .rv-photo .pv-pane{ max-height: 40vh; }
-  .rv-day{ grid-template-columns: 5.6em minmax(0, 1fr) auto; }
+  /* La photo reste en haut (sous l'en-tête) pendant que le tableau défile dessous. */
+  .rv-photo{ top: calc(57px + env(safe-area-inset-top, 0px)); z-index: 5; padding: 8px; }
+  .rv-photo .pv-pane{ max-height: 34vh; }
+  .rv-photo .pv-tools{ display: none; } /* iPhone : on zoome en pinçant, les boutons cacheraient des cases */
   .rv-foot{ display: grid; }
   .rv-foot .btn-primary{ order: -1; }
 }
